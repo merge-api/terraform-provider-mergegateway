@@ -1,0 +1,6 @@
+# oapi-codegen settings for the Merge Gateway API client generated from openapi.json.
+# Regenerate with `make client`; never edit internal/client/client.gen.go by hand.
+package: client
+generate:
+  models: true
+  client: true

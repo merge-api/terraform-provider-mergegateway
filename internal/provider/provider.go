@@ -6,54 +6,69 @@ package provider
 import (
 	"context"
 	"net/http"
+	"net/url"
+	"os"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
-	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/merge-api/terraform-provider-merge-gateway/internal/client"
 )
 
-// Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &ScaffoldingProvider{}
-var _ provider.ProviderWithFunctions = &ScaffoldingProvider{}
-var _ provider.ProviderWithEphemeralResources = &ScaffoldingProvider{}
-var _ provider.ProviderWithActions = &ScaffoldingProvider{}
+const (
+	defaultBaseURL = "https://api-gateway.merge.dev"
+	apiKeyEnvVar   = "MERGE_GATEWAY_MANAGEMENT_KEY"
 
-// ScaffoldingProvider defines the provider implementation.
-type ScaffoldingProvider struct {
+	// requestTimeout bounds each API request so an unresponsive server cannot hang a plan or apply.
+	requestTimeout = 60 * time.Second
+)
+
+// Ensure MergeGatewayProvider satisfies various provider interfaces.
+var _ provider.Provider = &MergeGatewayProvider{}
+
+// MergeGatewayProvider defines the provider implementation.
+type MergeGatewayProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// ScaffoldingProviderModel describes the provider data model.
-type ScaffoldingProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
+// MergeGatewayProviderModel describes the provider data model.
+type MergeGatewayProviderModel struct {
+	APIKey  types.String `tfsdk:"api_key"`
+	BaseURL types.String `tfsdk:"base_url"`
 }
 
-func (p *ScaffoldingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "scaffolding"
+func (p *MergeGatewayProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "mergegateway"
 	resp.Version = p.version
 }
 
-func (p *ScaffoldingProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *MergeGatewayProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manage Merge Gateway configuration as code.",
 		Attributes: map[string]schema.Attribute{
-			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Example provider attribute",
+			"api_key": schema.StringAttribute{
+				MarkdownDescription: "Merge Gateway management key. Can also be set with the `" + apiKeyEnvVar + "` environment variable.",
+				Optional:            true,
+				Sensitive:           true,
+			},
+			"base_url": schema.StringAttribute{
+				MarkdownDescription: "Base URL of the Merge Gateway API. Defaults to `" + defaultBaseURL + "`.",
 				Optional:            true,
 			},
 		},
 	}
 }
 
-func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScaffoldingProviderModel
+func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var data MergeGatewayProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -61,48 +76,88 @@ func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.Config
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
+	if data.APIKey.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_key"),
+			"Unknown Merge Gateway API key",
+			"The provider cannot create the Merge Gateway API client because api_key is unknown until apply. "+
+				"Set it to a known value or use the "+apiKeyEnvVar+" environment variable.",
+		)
+	}
 
-	// Example client configuration for data sources and resources
-	client := http.DefaultClient
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	if data.BaseURL.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("base_url"),
+			"Unknown Merge Gateway base URL",
+			"The provider cannot create the Merge Gateway API client because base_url is unknown until apply. "+
+				"Set it to a known value or leave it unset to use "+defaultBaseURL+".",
+		)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	apiKey := os.Getenv(apiKeyEnvVar)
+	if data.APIKey.ValueString() != "" {
+		apiKey = data.APIKey.ValueString()
+	}
+
+	baseURL := defaultBaseURL
+	if data.BaseURL.ValueString() != "" {
+		baseURL = data.BaseURL.ValueString()
+	}
+
+	if u, err := url.Parse(baseURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("base_url"),
+			"Invalid Merge Gateway base URL",
+			"base_url must be an http or https URL such as "+defaultBaseURL+", got: "+baseURL,
+		)
+		return
+	}
+
+	if apiKey == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_key"),
+			"Missing Merge Gateway API key",
+			"Set api_key in the provider configuration or the "+apiKeyEnvVar+" environment variable.",
+		)
+		return
+	}
+
+	userAgent := "terraform-provider-mergegateway/" + p.version
+	c, err := client.NewClientWithResponses(baseURL,
+		client.WithHTTPClient(&http.Client{Timeout: requestTimeout}),
+		client.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			req.Header.Set("Authorization", "Bearer "+apiKey)
+			req.Header.Set("User-Agent", userAgent)
+			return nil
+		}),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to create Merge Gateway API client",
+			"An unexpected error occurred when creating the Merge Gateway API client: "+err.Error(),
+		)
+		return
+	}
+
+	resp.DataSourceData = c
+	resp.ResourceData = c
 }
 
-func (p *ScaffoldingProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
-		NewExampleResource,
-	}
+func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.Resource {
+	return []func() resource.Resource{}
 }
 
-func (p *ScaffoldingProvider) EphemeralResources(ctx context.Context) []func() ephemeral.EphemeralResource {
-	return []func() ephemeral.EphemeralResource{
-		NewExampleEphemeralResource,
-	}
-}
-
-func (p *ScaffoldingProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		NewExampleDataSource,
-	}
-}
-
-func (p *ScaffoldingProvider) Functions(ctx context.Context) []func() function.Function {
-	return []func() function.Function{
-		NewExampleFunction,
-	}
-}
-
-func (p *ScaffoldingProvider) Actions(ctx context.Context) []func() action.Action {
-	return []func() action.Action{
-		NewExampleAction,
-	}
+func (p *MergeGatewayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+	return []func() datasource.DataSource{}
 }
 
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &ScaffoldingProvider{
+		return &MergeGatewayProvider{
 			version: version,
 		}
 	}

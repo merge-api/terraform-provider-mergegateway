@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Merge Gateway Management API",
+    "version": "0.0.0-placeholder",
+    "description": "Placeholder spec until the backend publishes openapi.json. Replace this file with the real spec and run `make client`."
+  },
+  "servers": [
+    {
+      "url": "https://api-gateway.merge.dev"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "summary": "List projects",
+        "responses": {
+          "200": {
+            "description": "The organization's projects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

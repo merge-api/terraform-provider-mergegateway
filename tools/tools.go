@@ -6,12 +6,12 @@
 package tools
 
 import (
-	_ "github.com/hashicorp/copywrite"
 	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
+	_ "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen"
 )
 
-// Generate copyright headers
-//go:generate go run github.com/hashicorp/copywrite headers -d .. --config ../.copywrite.hcl
+// Generate the API client from openapi.json.
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -config ../oapi-codegen.yaml -o ../internal/client/client.gen.go ../openapi.json
 
 // Format Terraform code for use in documentation.
 // If you do not have Terraform installed, you can remove the formatting command, but it is suggested
@@ -19,4 +19,4 @@ import (
 //go:generate terraform fmt -recursive ../examples/
 
 // Generate documentation.
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir .. -provider-name scaffolding
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir .. -provider-name mergegateway
