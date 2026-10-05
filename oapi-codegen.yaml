@@ -4,3 +4,17 @@ package: client
 generate:
   models: true
   client: true
+compatibility:
+  # Required read-only fields like a response's id are plain values, not pointers.
+  disable-required-readonly-as-pointer: true
+output-options:
+  # Nullable fields use nullable.Nullable, so a PATCH can send an explicit null to clear a field.
+  nullable-type: true
+  type-mapping:
+    # float32 would turn 0.1 into 0.10000000149 when read back into Terraform.
+    number:
+      default:
+        type: float64
+      formats:
+        float:
+          type: float64
