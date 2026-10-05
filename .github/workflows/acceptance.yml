@@ -1,0 +1,106 @@
+# Acceptance tests against the full Gateway stack (merge-gateway's
+# docker-compose.local.yml), built from the develop branches of the backend
+# repos. The nightly run catches backend changes that break the provider.
+name: Acceptance Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  COMPOSE: docker compose -f gateway/merge-gateway/docker-compose.local.yml
+
+jobs:
+  acceptance:
+    name: Acceptance Tests
+    # The stack is heavy (two data-plane containers, control plane, localstack,
+    # Postgres, Redis); GitHub's standard runners don't have the memory.
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The compose file builds ../merge-gateway-control-backend, so both
+      # repos are checked out side by side.
+      - name: Check out merge-gateway
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: merge-api/merge-gateway
+          ref: develop
+          path: gateway/merge-gateway
+          token: ${{ secrets.GATEWAY_REPOS_TOKEN }}
+          persist-credentials: false
+
+      - name: Check out merge-gateway-control-backend
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: merge-api/merge-gateway-control-backend
+          ref: develop
+          path: gateway/merge-gateway-control-backend
+          token: ${{ secrets.GATEWAY_REPOS_TOKEN }}
+          persist-credentials: false
+
+      # The images install the private merge-api/litellm fork over SSH with a
+      # build secret. Same key and known_hosts as the backend's CI.
+      - name: Stage the litellm fork deploy key
+        env:
+          LITELLM_FORK_SSH_KEY: ${{ secrets.LITELLM_FORK_SSH_KEY }}
+        run: |
+          umask 077
+          printf '%s\n' "$LITELLM_FORK_SSH_KEY" > "$RUNNER_TEMP/litellm_fork_ssh_key"
+          echo "LITELLM_FORK_SSH_KEY_FILE=$RUNNER_TEMP/litellm_fork_ssh_key" >> "$GITHUB_ENV"
+          # Fail here, with GitHub's own message, rather than deep inside pip.
+          ssh -i "$RUNNER_TEMP/litellm_fork_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile=gateway/merge-gateway-control-backend/docker/github_known_hosts \
+            -o ConnectTimeout=15 -T git@github.com 2>&1 | tee /dev/stderr | grep -q "successfully authenticated"
+
+      - name: Start the Gateway stack
+        env:
+          # Skips loading the routing model at startup; the tests don't route requests.
+          MERGE_GATEWAY_INTELLIGENT_ROUTING_WARMUP_ENABLED: "false"
+        run: $COMPOSE up --build --detach --wait --wait-timeout 900 control-plane data-plane-grpc
+
+      - name: Seed a test org and management key
+        run: |
+          key="$(scripts/seed-acceptance.sh)"
+          echo "::add-mask::$key"
+          echo "MERGE_GATEWAY_MANAGEMENT_KEY=$key" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_wrapper: false
+
+      - name: Run acceptance tests
+        env:
+          TF_ACC: "1"
+          MERGE_GATEWAY_BASE_URL: http://localhost:8001
+        run: go test -v -timeout 30m ./internal/acceptance/...
+
+      - name: Print container state and logs
+        if: failure() && hashFiles('gateway/merge-gateway/docker-compose.local.yml') != ''
+        run: |
+          docker ps --all
+          docker stats --no-stream
+          # The data-plane gRPC container has been OOM-killed locally.
+          docker ps --all --quiet | xargs -r docker inspect --format '{{.Name}} OOMKilled={{.State.OOMKilled}} ExitCode={{.State.ExitCode}}'
+          $COMPOSE logs --no-color --timestamps
+
+      - name: Tear down the stack
+        if: always() && hashFiles('gateway/merge-gateway/docker-compose.local.yml') != ''
+        run: $COMPOSE down --volumes --remove-orphans

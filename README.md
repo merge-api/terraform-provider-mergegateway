@@ -57,10 +57,15 @@ To regenerate the API client after `openapi.json` changes, run `make client`. Ne
 
 To generate or update documentation (and the client), run `make generate`.
 
-In order to run the full suite of Acceptance tests, set `MERGE_GATEWAY_MANAGEMENT_KEY` and run `make testacc`.
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
+Acceptance tests (`internal/acceptance/`) create real resources against the full Gateway stack in Docker. CI runs them on every pull request and nightly (`.github/workflows/acceptance.yml`). To run them locally:
 
 ```shell
-make testacc
+# In merge-gateway, with merge-gateway-control-backend checked out next to it:
+docker compose -f docker-compose.local.yml up -d --build --wait control-plane data-plane-grpc
+
+# Back in this repo:
+export MERGE_GATEWAY_MANAGEMENT_KEY="$(scripts/seed-acceptance.sh)"
+TF_ACC=1 go test -v ./internal/acceptance/...
 ```
+
+`MERGE_GATEWAY_BASE_URL` defaults to `http://localhost:8001`. Test resources are named `tf-acc-*`, and leftovers are deleted at the start of each run.
