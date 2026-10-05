@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/merge-api/terraform-provider-merge-gateway/internal/client"
+	"github.com/merge-api/terraform-provider-mergegateway/internal/client"
 )
 
 // testAccProtoV6ProviderFactories is used to instantiate a provider during acceptance testing.

@@ -1,4 +1,4 @@
-module github.com/merge-api/terraform-provider-merge-gateway
+module github.com/merge-api/terraform-provider-mergegateway
 
 go 1.25.8
 
