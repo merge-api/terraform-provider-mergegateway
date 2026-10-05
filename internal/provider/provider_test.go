@@ -6,33 +6,14 @@ package provider
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/merge-api/terraform-provider-mergegateway/internal/client"
 )
-
-// testAccProtoV6ProviderFactories is used to instantiate a provider during acceptance testing.
-// The factory function is called for each Terraform CLI command to create a provider
-// server that the CLI can connect to and interact with.
-//
-//nolint:unused // Used by the acceptance tests that come with each resource.
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"mergegateway": providerserver.NewProtocol6WithError(New("test")()),
-}
-
-//nolint:unused // Used by the acceptance tests that come with each resource.
-func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv(apiKeyEnvVar); v == "" {
-		t.Fatal(apiKeyEnvVar + " must be set for acceptance tests")
-	}
-}
 
 func TestProviderSchema(t *testing.T) {
 	ctx := t.Context()
