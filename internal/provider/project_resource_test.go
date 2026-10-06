@@ -73,7 +73,7 @@ func testBudget(thresholds []int64, emails []string) *projectBudgetConfigModel {
 func testPriorityPolicy(models ...string) *projectRoutingPolicyModel {
 	entries := []attr.Value{}
 	for i, m := range models {
-		entries = append(entries, types.ObjectValueMust(projectPriorityAttrTypes, map[string]attr.Value{
+		entries = append(entries, types.ObjectValueMust(priorityOrderAttrTypes, map[string]attr.Value{
 			"model":    types.StringValue(m),
 			"priority": types.Int64Value(int64(i + 1)),
 		}))
@@ -82,7 +82,7 @@ func testPriorityPolicy(models ...string) *projectRoutingPolicyModel {
 		Strategy:         types.StringValue("PRIORITY"),
 		Axis:             types.StringNull(),
 		AllowedModels:    types.ListNull(types.StringType),
-		PriorityOrder:    types.SetValueMust(types.ObjectType{AttrTypes: projectPriorityAttrTypes}, entries),
+		PriorityOrder:    types.SetValueMust(types.ObjectType{AttrTypes: priorityOrderAttrTypes}, entries),
 		AllowedProviders: types.ListUnknown(types.StringType),
 		ID:               types.StringUnknown(),
 		Slug:             types.StringUnknown(),
@@ -419,6 +419,10 @@ func TestProjectResourceValidateConfig(t *testing.T) {
 		"PRIORITY without priority_order": {
 			body: `routing_policy = { strategy = "PRIORITY" }`,
 			want: "needs priority_order",
+		},
+		"INTELLIGENT without allowed_models": {
+			body: `routing_policy = { strategy = "INTELLIGENT" }`,
+			want: "needs allowed_models",
 		},
 		"INTELLIGENT with priority_order": {
 			body: `routing_policy = {
