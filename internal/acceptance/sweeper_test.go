@@ -56,7 +56,7 @@ func sweep() error {
 // starts with the tf-acc- prefix; each run sweeps again, so one page is enough.
 // Response bodies stay out of errors and logs, since some collections echo secrets.
 func sweepCollection(ctx context.Context, path string) error {
-	status, body, err := apiRequest(ctx, http.MethodGet, path)
+	status, body, err := apiRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func sweepCollection(ctx context.Context, path string) error {
 		if !strings.HasPrefix(item.Name, namePrefix+"-") || item.ID == "" {
 			continue
 		}
-		status, _, err := apiRequest(ctx, http.MethodDelete, path+"/"+item.ID)
+		status, _, err := apiRequest(ctx, http.MethodDelete, path+"/"+item.ID, nil)
 		if err != nil || (status >= 300 && status != http.StatusNotFound) {
 			fmt.Fprintf(os.Stderr, "sweeper: failed deleting %s %q (%s): status %d, err %v\n", path, item.Name, item.ID, status, err)
 			continue

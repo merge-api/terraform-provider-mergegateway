@@ -4,6 +4,7 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,12 +12,1764 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+
+	"github.com/oapi-codegen/nullable"
+	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Project defines model for Project.
-type Project struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+// Defines values for DLPEntityOverrideV1Action.
+const (
+	DLPEntityOverrideV1ActionBlock  DLPEntityOverrideV1Action = "block"
+	DLPEntityOverrideV1ActionLog    DLPEntityOverrideV1Action = "log"
+	DLPEntityOverrideV1ActionRedact DLPEntityOverrideV1Action = "redact"
+)
+
+// Valid indicates whether the value is a known member of the DLPEntityOverrideV1Action enum.
+func (e DLPEntityOverrideV1Action) Valid() bool {
+	switch e {
+	case DLPEntityOverrideV1ActionBlock:
+		return true
+	case DLPEntityOverrideV1ActionLog:
+		return true
+	case DLPEntityOverrideV1ActionRedact:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for KeyListResponseObject.
+const (
+	List KeyListResponseObject = "list"
+)
+
+// Valid indicates whether the value is a known member of the KeyListResponseObject enum.
+func (e KeyListResponseObject) Valid() bool {
+	switch e {
+	case List:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationUsageV1ResponseModelSpendGranularity.
+const (
+	OrganizationUsageV1ResponseModelSpendGranularityMonth OrganizationUsageV1ResponseModelSpendGranularity = "month"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationUsageV1ResponseModelSpendGranularity enum.
+func (e OrganizationUsageV1ResponseModelSpendGranularity) Valid() bool {
+	switch e {
+	case OrganizationUsageV1ResponseModelSpendGranularityMonth:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PIProtectionOverrideV1PiIndirectMode.
+const (
+	PIProtectionOverrideV1PiIndirectModeAlert PIProtectionOverrideV1PiIndirectMode = "alert"
+	PIProtectionOverrideV1PiIndirectModeBlock PIProtectionOverrideV1PiIndirectMode = "block"
+	PIProtectionOverrideV1PiIndirectModeOff   PIProtectionOverrideV1PiIndirectMode = "off"
+)
+
+// Valid indicates whether the value is a known member of the PIProtectionOverrideV1PiIndirectMode enum.
+func (e PIProtectionOverrideV1PiIndirectMode) Valid() bool {
+	switch e {
+	case PIProtectionOverrideV1PiIndirectModeAlert:
+		return true
+	case PIProtectionOverrideV1PiIndirectModeBlock:
+		return true
+	case PIProtectionOverrideV1PiIndirectModeOff:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PIProtectionOverrideV1PiMode.
+const (
+	PIProtectionOverrideV1PiModeAlert PIProtectionOverrideV1PiMode = "alert"
+	PIProtectionOverrideV1PiModeBlock PIProtectionOverrideV1PiMode = "block"
+	PIProtectionOverrideV1PiModeOff   PIProtectionOverrideV1PiMode = "off"
+)
+
+// Valid indicates whether the value is a known member of the PIProtectionOverrideV1PiMode enum.
+func (e PIProtectionOverrideV1PiMode) Valid() bool {
+	switch e {
+	case PIProtectionOverrideV1PiModeAlert:
+		return true
+	case PIProtectionOverrideV1PiModeBlock:
+		return true
+	case PIProtectionOverrideV1PiModeOff:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PIProtectionOverrideV1PiOutputAction.
+const (
+	PIProtectionOverrideV1PiOutputActionBlock    PIProtectionOverrideV1PiOutputAction = "block"
+	PIProtectionOverrideV1PiOutputActionEscalate PIProtectionOverrideV1PiOutputAction = "escalate"
+	PIProtectionOverrideV1PiOutputActionObserve  PIProtectionOverrideV1PiOutputAction = "observe"
+	PIProtectionOverrideV1PiOutputActionRedact   PIProtectionOverrideV1PiOutputAction = "redact"
+	PIProtectionOverrideV1PiOutputActionRoute    PIProtectionOverrideV1PiOutputAction = "route"
+)
+
+// Valid indicates whether the value is a known member of the PIProtectionOverrideV1PiOutputAction enum.
+func (e PIProtectionOverrideV1PiOutputAction) Valid() bool {
+	switch e {
+	case PIProtectionOverrideV1PiOutputActionBlock:
+		return true
+	case PIProtectionOverrideV1PiOutputActionEscalate:
+		return true
+	case PIProtectionOverrideV1PiOutputActionObserve:
+		return true
+	case PIProtectionOverrideV1PiOutputActionRedact:
+		return true
+	case PIProtectionOverrideV1PiOutputActionRoute:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyV2ResponseAxis.
+const (
+	PolicyV2ResponseAxisCAPABILITY  PolicyV2ResponseAxis = "CAPABILITY"
+	PolicyV2ResponseAxisCOST        PolicyV2ResponseAxis = "COST"
+	PolicyV2ResponseAxisPERFORMANCE PolicyV2ResponseAxis = "PERFORMANCE"
+)
+
+// Valid indicates whether the value is a known member of the PolicyV2ResponseAxis enum.
+func (e PolicyV2ResponseAxis) Valid() bool {
+	switch e {
+	case PolicyV2ResponseAxisCAPABILITY:
+		return true
+	case PolicyV2ResponseAxisCOST:
+		return true
+	case PolicyV2ResponseAxisPERFORMANCE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyV2ResponseStrategy.
+const (
+	PolicyV2ResponseStrategyINTELLIGENT PolicyV2ResponseStrategy = "INTELLIGENT"
+	PolicyV2ResponseStrategyPRIORITY    PolicyV2ResponseStrategy = "PRIORITY"
+)
+
+// Valid indicates whether the value is a known member of the PolicyV2ResponseStrategy enum.
+func (e PolicyV2ResponseStrategy) Valid() bool {
+	switch e {
+	case PolicyV2ResponseStrategyINTELLIGENT:
+		return true
+	case PolicyV2ResponseStrategyPRIORITY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectBudgetConfigSchemaEnforcementMode.
+const (
+	ProjectBudgetConfigSchemaEnforcementModeHardLimit ProjectBudgetConfigSchemaEnforcementMode = "hard_limit"
+	ProjectBudgetConfigSchemaEnforcementModeSoftLimit ProjectBudgetConfigSchemaEnforcementMode = "soft_limit"
+)
+
+// Valid indicates whether the value is a known member of the ProjectBudgetConfigSchemaEnforcementMode enum.
+func (e ProjectBudgetConfigSchemaEnforcementMode) Valid() bool {
+	switch e {
+	case ProjectBudgetConfigSchemaEnforcementModeHardLimit:
+		return true
+	case ProjectBudgetConfigSchemaEnforcementModeSoftLimit:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectBudgetConfigSchemaPeriod.
+const (
+	ProjectBudgetConfigSchemaPeriodDaily     ProjectBudgetConfigSchemaPeriod = "daily"
+	ProjectBudgetConfigSchemaPeriodMonthly   ProjectBudgetConfigSchemaPeriod = "monthly"
+	ProjectBudgetConfigSchemaPeriodQuarterly ProjectBudgetConfigSchemaPeriod = "quarterly"
+	ProjectBudgetConfigSchemaPeriodWeekly    ProjectBudgetConfigSchemaPeriod = "weekly"
+	ProjectBudgetConfigSchemaPeriodYearly    ProjectBudgetConfigSchemaPeriod = "yearly"
+)
+
+// Valid indicates whether the value is a known member of the ProjectBudgetConfigSchemaPeriod enum.
+func (e ProjectBudgetConfigSchemaPeriod) Valid() bool {
+	switch e {
+	case ProjectBudgetConfigSchemaPeriodDaily:
+		return true
+	case ProjectBudgetConfigSchemaPeriodMonthly:
+		return true
+	case ProjectBudgetConfigSchemaPeriodQuarterly:
+		return true
+	case ProjectBudgetConfigSchemaPeriodWeekly:
+		return true
+	case ProjectBudgetConfigSchemaPeriodYearly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectBudgetConfigV1ResponseEnforcementMode.
+const (
+	ProjectBudgetConfigV1ResponseEnforcementModeHardLimit ProjectBudgetConfigV1ResponseEnforcementMode = "hard_limit"
+	ProjectBudgetConfigV1ResponseEnforcementModeSoftLimit ProjectBudgetConfigV1ResponseEnforcementMode = "soft_limit"
+)
+
+// Valid indicates whether the value is a known member of the ProjectBudgetConfigV1ResponseEnforcementMode enum.
+func (e ProjectBudgetConfigV1ResponseEnforcementMode) Valid() bool {
+	switch e {
+	case ProjectBudgetConfigV1ResponseEnforcementModeHardLimit:
+		return true
+	case ProjectBudgetConfigV1ResponseEnforcementModeSoftLimit:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectBudgetConfigV1ResponsePeriod.
+const (
+	ProjectBudgetConfigV1ResponsePeriodDaily     ProjectBudgetConfigV1ResponsePeriod = "daily"
+	ProjectBudgetConfigV1ResponsePeriodMonthly   ProjectBudgetConfigV1ResponsePeriod = "monthly"
+	ProjectBudgetConfigV1ResponsePeriodQuarterly ProjectBudgetConfigV1ResponsePeriod = "quarterly"
+	ProjectBudgetConfigV1ResponsePeriodWeekly    ProjectBudgetConfigV1ResponsePeriod = "weekly"
+	ProjectBudgetConfigV1ResponsePeriodYearly    ProjectBudgetConfigV1ResponsePeriod = "yearly"
+)
+
+// Valid indicates whether the value is a known member of the ProjectBudgetConfigV1ResponsePeriod enum.
+func (e ProjectBudgetConfigV1ResponsePeriod) Valid() bool {
+	switch e {
+	case ProjectBudgetConfigV1ResponsePeriodDaily:
+		return true
+	case ProjectBudgetConfigV1ResponsePeriodMonthly:
+		return true
+	case ProjectBudgetConfigV1ResponsePeriodQuarterly:
+		return true
+	case ProjectBudgetConfigV1ResponsePeriodWeekly:
+		return true
+	case ProjectBudgetConfigV1ResponsePeriodYearly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectControlsSourcesV1Regions.
+const (
+	ProjectControlsSourcesV1RegionsOrg     ProjectControlsSourcesV1Regions = "org"
+	ProjectControlsSourcesV1RegionsProject ProjectControlsSourcesV1Regions = "project"
+)
+
+// Valid indicates whether the value is a known member of the ProjectControlsSourcesV1Regions enum.
+func (e ProjectControlsSourcesV1Regions) Valid() bool {
+	switch e {
+	case ProjectControlsSourcesV1RegionsOrg:
+		return true
+	case ProjectControlsSourcesV1RegionsProject:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectControlsSourcesV1Vendors.
+const (
+	ProjectControlsSourcesV1VendorsOrg     ProjectControlsSourcesV1Vendors = "org"
+	ProjectControlsSourcesV1VendorsProject ProjectControlsSourcesV1Vendors = "project"
+)
+
+// Valid indicates whether the value is a known member of the ProjectControlsSourcesV1Vendors enum.
+func (e ProjectControlsSourcesV1Vendors) Valid() bool {
+	switch e {
+	case ProjectControlsSourcesV1VendorsOrg:
+		return true
+	case ProjectControlsSourcesV1VendorsProject:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectControlsSourcesV1ZeroDataRetention.
+const (
+	ProjectControlsSourcesV1ZeroDataRetentionOrg     ProjectControlsSourcesV1ZeroDataRetention = "org"
+	ProjectControlsSourcesV1ZeroDataRetentionProject ProjectControlsSourcesV1ZeroDataRetention = "project"
+)
+
+// Valid indicates whether the value is a known member of the ProjectControlsSourcesV1ZeroDataRetention enum.
+func (e ProjectControlsSourcesV1ZeroDataRetention) Valid() bool {
+	switch e {
+	case ProjectControlsSourcesV1ZeroDataRetentionOrg:
+		return true
+	case ProjectControlsSourcesV1ZeroDataRetentionProject:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectPolicyV1Axis.
+const (
+	ProjectPolicyV1AxisCAPABILITY  ProjectPolicyV1Axis = "CAPABILITY"
+	ProjectPolicyV1AxisCOST        ProjectPolicyV1Axis = "COST"
+	ProjectPolicyV1AxisPERFORMANCE ProjectPolicyV1Axis = "PERFORMANCE"
+)
+
+// Valid indicates whether the value is a known member of the ProjectPolicyV1Axis enum.
+func (e ProjectPolicyV1Axis) Valid() bool {
+	switch e {
+	case ProjectPolicyV1AxisCAPABILITY:
+		return true
+	case ProjectPolicyV1AxisCOST:
+		return true
+	case ProjectPolicyV1AxisPERFORMANCE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectPolicyV1Strategy.
+const (
+	ProjectPolicyV1StrategyINTELLIGENT ProjectPolicyV1Strategy = "INTELLIGENT"
+	ProjectPolicyV1StrategyPRIORITY    ProjectPolicyV1Strategy = "PRIORITY"
+)
+
+// Valid indicates whether the value is a known member of the ProjectPolicyV1Strategy enum.
+func (e ProjectPolicyV1Strategy) Valid() bool {
+	switch e {
+	case ProjectPolicyV1StrategyINTELLIGENT:
+		return true
+	case ProjectPolicyV1StrategyPRIORITY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectUsageV1ResponseModelSpendGranularity.
+const (
+	ProjectUsageV1ResponseModelSpendGranularityMonth ProjectUsageV1ResponseModelSpendGranularity = "month"
+)
+
+// Valid indicates whether the value is a known member of the ProjectUsageV1ResponseModelSpendGranularity enum.
+func (e ProjectUsageV1ResponseModelSpendGranularity) Valid() bool {
+	switch e {
+	case ProjectUsageV1ResponseModelSpendGranularityMonth:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoutingPolicyV1CreateAxis.
+const (
+	RoutingPolicyV1CreateAxisCAPABILITY  RoutingPolicyV1CreateAxis = "CAPABILITY"
+	RoutingPolicyV1CreateAxisCOST        RoutingPolicyV1CreateAxis = "COST"
+	RoutingPolicyV1CreateAxisPERFORMANCE RoutingPolicyV1CreateAxis = "PERFORMANCE"
+)
+
+// Valid indicates whether the value is a known member of the RoutingPolicyV1CreateAxis enum.
+func (e RoutingPolicyV1CreateAxis) Valid() bool {
+	switch e {
+	case RoutingPolicyV1CreateAxisCAPABILITY:
+		return true
+	case RoutingPolicyV1CreateAxisCOST:
+		return true
+	case RoutingPolicyV1CreateAxisPERFORMANCE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoutingPolicyV1CreateStrategy.
+const (
+	RoutingPolicyV1CreateStrategyINTELLIGENT RoutingPolicyV1CreateStrategy = "INTELLIGENT"
+	RoutingPolicyV1CreateStrategyPRIORITY    RoutingPolicyV1CreateStrategy = "PRIORITY"
+)
+
+// Valid indicates whether the value is a known member of the RoutingPolicyV1CreateStrategy enum.
+func (e RoutingPolicyV1CreateStrategy) Valid() bool {
+	switch e {
+	case RoutingPolicyV1CreateStrategyINTELLIGENT:
+		return true
+	case RoutingPolicyV1CreateStrategyPRIORITY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoutingPolicyV1ResponseAxis.
+const (
+	RoutingPolicyV1ResponseAxisCAPABILITY  RoutingPolicyV1ResponseAxis = "CAPABILITY"
+	RoutingPolicyV1ResponseAxisCOST        RoutingPolicyV1ResponseAxis = "COST"
+	RoutingPolicyV1ResponseAxisPERFORMANCE RoutingPolicyV1ResponseAxis = "PERFORMANCE"
+)
+
+// Valid indicates whether the value is a known member of the RoutingPolicyV1ResponseAxis enum.
+func (e RoutingPolicyV1ResponseAxis) Valid() bool {
+	switch e {
+	case RoutingPolicyV1ResponseAxisCAPABILITY:
+		return true
+	case RoutingPolicyV1ResponseAxisCOST:
+		return true
+	case RoutingPolicyV1ResponseAxisPERFORMANCE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoutingPolicyV1ResponseStrategy.
+const (
+	RoutingPolicyV1ResponseStrategyINTELLIGENT RoutingPolicyV1ResponseStrategy = "INTELLIGENT"
+	RoutingPolicyV1ResponseStrategyPRIORITY    RoutingPolicyV1ResponseStrategy = "PRIORITY"
+)
+
+// Valid indicates whether the value is a known member of the RoutingPolicyV1ResponseStrategy enum.
+func (e RoutingPolicyV1ResponseStrategy) Valid() bool {
+	switch e {
+	case RoutingPolicyV1ResponseStrategyINTELLIGENT:
+		return true
+	case RoutingPolicyV1ResponseStrategyPRIORITY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoutingPolicyV1UpdateAxis.
+const (
+	RoutingPolicyV1UpdateAxisCAPABILITY  RoutingPolicyV1UpdateAxis = "CAPABILITY"
+	RoutingPolicyV1UpdateAxisCOST        RoutingPolicyV1UpdateAxis = "COST"
+	RoutingPolicyV1UpdateAxisPERFORMANCE RoutingPolicyV1UpdateAxis = "PERFORMANCE"
+)
+
+// Valid indicates whether the value is a known member of the RoutingPolicyV1UpdateAxis enum.
+func (e RoutingPolicyV1UpdateAxis) Valid() bool {
+	switch e {
+	case RoutingPolicyV1UpdateAxisCAPABILITY:
+		return true
+	case RoutingPolicyV1UpdateAxisCOST:
+		return true
+	case RoutingPolicyV1UpdateAxisPERFORMANCE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoutingPolicyV1UpdateStrategy.
+const (
+	RoutingPolicyV1UpdateStrategyINTELLIGENT RoutingPolicyV1UpdateStrategy = "INTELLIGENT"
+	RoutingPolicyV1UpdateStrategyPRIORITY    RoutingPolicyV1UpdateStrategy = "PRIORITY"
+)
+
+// Valid indicates whether the value is a known member of the RoutingPolicyV1UpdateStrategy enum.
+func (e RoutingPolicyV1UpdateStrategy) Valid() bool {
+	switch e {
+	case RoutingPolicyV1UpdateStrategyINTELLIGENT:
+		return true
+	case RoutingPolicyV1UpdateStrategyPRIORITY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetOrganizationUsageParamsGroupBy.
+const (
+	GetOrganizationUsageParamsGroupByApiKey  GetOrganizationUsageParamsGroupBy = "api_key"
+	GetOrganizationUsageParamsGroupByProject GetOrganizationUsageParamsGroupBy = "project"
+	GetOrganizationUsageParamsGroupByVendor  GetOrganizationUsageParamsGroupBy = "vendor"
+)
+
+// Valid indicates whether the value is a known member of the GetOrganizationUsageParamsGroupBy enum.
+func (e GetOrganizationUsageParamsGroupBy) Valid() bool {
+	switch e {
+	case GetOrganizationUsageParamsGroupByApiKey:
+		return true
+	case GetOrganizationUsageParamsGroupByProject:
+		return true
+	case GetOrganizationUsageParamsGroupByVendor:
+		return true
+	default:
+		return false
+	}
+}
+
+// APIKeySpendV1 defines model for APIKeySpendV1.
+type APIKeySpendV1 struct {
+	// ApiKeyId The key's hash.
+	ApiKeyId string `json:"api_key_id"`
+
+	// ByokSpend BYOK spend at list price.
+	ByokSpend float64 `json:"byok_spend"`
+
+	// MergeHostedSpend Spend on Merge-managed credentials.
+	MergeHostedSpend float64 `json:"merge_hosted_spend"`
+	RequestCount     int     `json:"request_count"`
+	TotalSpend       float64 `json:"total_spend"`
+
+	// WebSearchSpend Server-tool (web search) cost.
+	WebSearchSpend float64 `json:"web_search_spend"`
+}
+
+// DLPEntityOverrideV1 The dashboard's DLP entity override, with “action“ typed.
+type DLPEntityOverrideV1 struct {
+	Action  nullable.Nullable[DLPEntityOverrideV1Action] `json:"action,omitempty"`
+	Enabled nullable.Nullable[bool]                      `json:"enabled,omitempty"`
+}
+
+// DLPEntityOverrideV1Action defines model for DLPEntityOverrideV1.Action.
+type DLPEntityOverrideV1Action string
+
+// ErrorDetail A structured error. Some carry extra fields, like “count“.
+type ErrorDetail struct {
+	Code                 string                 `json:"code"`
+	Message              string                 `json:"message"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// ErrorResponse The body of an error response.
+type ErrorResponse struct {
+	Detail ErrorResponse_Detail `json:"detail"`
+}
+
+// ErrorResponseDetail0 defines model for ErrorResponse.Detail.0.
+type ErrorResponseDetail0 = string
+
+// ErrorResponse_Detail defines model for ErrorResponse.Detail.
+type ErrorResponse_Detail struct {
+	union json.RawMessage
+}
+
+// HTTPValidationError defines model for HTTPValidationError.
+type HTTPValidationError struct {
+	Detail *[]ValidationError `json:"detail,omitempty"`
+}
+
+// KeyCreateRequest defines model for KeyCreateRequest.
+type KeyCreateRequest struct {
+	AllowedModels nullable.Nullable[[]string]           `json:"allowed_models,omitempty"`
+	Limit         nullable.Nullable[float64]            `json:"limit,omitempty"`
+	LimitReset    nullable.Nullable[string]             `json:"limit_reset,omitempty"`
+	Name          nullable.Nullable[string]             `json:"name,omitempty"`
+	ProjectId     nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+}
+
+// KeyCreateResponse defines model for KeyCreateResponse.
+type KeyCreateResponse struct {
+	AllowedModels   nullable.Nullable[[]string]  `json:"allowed_models,omitempty"`
+	BudgetGroupId   nullable.Nullable[string]    `json:"budget_group_id,omitempty"`
+	CreatedAt       nullable.Nullable[time.Time] `json:"created_at,omitempty"`
+	Disabled        bool                         `json:"disabled"`
+	Hash            string                       `json:"hash"`
+	Key             string                       `json:"key"`
+	Label           string                       `json:"label"`
+	Limit           nullable.Nullable[float64]   `json:"limit,omitempty"`
+	LimitRemaining  nullable.Nullable[float64]   `json:"limit_remaining,omitempty"`
+	LimitReset      nullable.Nullable[string]    `json:"limit_reset,omitempty"`
+	Name            nullable.Nullable[string]    `json:"name,omitempty"`
+	ProjectId       nullable.Nullable[string]    `json:"project_id,omitempty"`
+	RoutingPolicyId nullable.Nullable[string]    `json:"routing_policy_id,omitempty"`
+	Usage           float64                      `json:"usage"`
+}
+
+// KeyListResponse List envelope for “GET /v1/keys“.
+type KeyListResponse struct {
+	Data    []KeyObject            `json:"data"`
+	HasMore *bool                  `json:"has_more,omitempty"`
+	Object  *KeyListResponseObject `json:"object,omitempty"`
+}
+
+// KeyListResponseObject defines model for KeyListResponse.Object.
+type KeyListResponseObject string
+
+// KeyObject OpenRouter-shaped key object with usage + limit fields.
+type KeyObject struct {
+	AllowedModels   nullable.Nullable[[]string]  `json:"allowed_models,omitempty"`
+	BudgetGroupId   nullable.Nullable[string]    `json:"budget_group_id,omitempty"`
+	CreatedAt       nullable.Nullable[time.Time] `json:"created_at,omitempty"`
+	Disabled        bool                         `json:"disabled"`
+	Hash            string                       `json:"hash"`
+	Label           string                       `json:"label"`
+	Limit           nullable.Nullable[float64]   `json:"limit,omitempty"`
+	LimitRemaining  nullable.Nullable[float64]   `json:"limit_remaining,omitempty"`
+	LimitReset      nullable.Nullable[string]    `json:"limit_reset,omitempty"`
+	Name            nullable.Nullable[string]    `json:"name,omitempty"`
+	ProjectId       nullable.Nullable[string]    `json:"project_id,omitempty"`
+	RoutingPolicyId nullable.Nullable[string]    `json:"routing_policy_id,omitempty"`
+	Usage           float64                      `json:"usage"`
+}
+
+// KeyUpdateRequest defines model for KeyUpdateRequest.
+type KeyUpdateRequest struct {
+	AllowedModels   nullable.Nullable[[]string]           `json:"allowed_models,omitempty"`
+	BudgetGroupId   nullable.Nullable[string]             `json:"budget_group_id,omitempty"`
+	Disabled        nullable.Nullable[bool]               `json:"disabled,omitempty"`
+	Limit           nullable.Nullable[float64]            `json:"limit,omitempty"`
+	LimitReset      nullable.Nullable[string]             `json:"limit_reset,omitempty"`
+	Name            nullable.Nullable[string]             `json:"name,omitempty"`
+	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+}
+
+// OrganizationUsageV1Response Org spend for the range. “projects“, “api_keys“ and “vendors“ are
+// present only for the matching “group_by“. They are never null, so the
+// None default is kept out of the schema.
+type OrganizationUsageV1Response struct {
+	ApiKeys *[]APIKeySpendV1 `json:"api_keys,omitempty"`
+
+	// ByokSpend BYOK spend at list price.
+	ByokSpend float64 `json:"byok_spend"`
+	End       string  `json:"end"`
+
+	// MergeHostedSpend Spend on Merge-managed credentials.
+	MergeHostedSpend float64 `json:"merge_hosted_spend"`
+
+	// ModelSpend Spend per `provider/model`.
+	ModelSpend map[string]float64 `json:"model_spend"`
+
+	// ModelSpendGranularity model_spend and vendors cover the whole months overlapping [start, end].
+	ModelSpendGranularity OrganizationUsageV1ResponseModelSpendGranularity `json:"model_spend_granularity"`
+	Projects              *[]ProjectSpendV1                                `json:"projects,omitempty"`
+	RequestCount          int                                              `json:"request_count"`
+	Start                 string                                           `json:"start"`
+	TotalSpend            float64                                          `json:"total_spend"`
+	Vendors               *map[string]float64                              `json:"vendors,omitempty"`
+
+	// WebSearchSpend Server-tool (web search) cost.
+	WebSearchSpend float64 `json:"web_search_spend"`
+}
+
+// OrganizationUsageV1ResponseModelSpendGranularity model_spend and vendors cover the whole months overlapping [start, end].
+type OrganizationUsageV1ResponseModelSpendGranularity string
+
+// PIProtectionOverrideV1 The dashboard's PI override, with its fixed-value fields typed. Same
+// values and validation: the dashboard model's validators still run.
+type PIProtectionOverrideV1 struct {
+	PiAllowlistPatterns    nullable.Nullable[[]string]                             `json:"pi_allowlist_patterns,omitempty"`
+	PiBlockThreshold       nullable.Nullable[float64]                              `json:"pi_block_threshold,omitempty"`
+	PiFailClosed           nullable.Nullable[bool]                                 `json:"pi_fail_closed,omitempty"`
+	PiIndirectMode         nullable.Nullable[PIProtectionOverrideV1PiIndirectMode] `json:"pi_indirect_mode,omitempty"`
+	PiMode                 nullable.Nullable[PIProtectionOverrideV1PiMode]         `json:"pi_mode,omitempty"`
+	PiOutputAction         nullable.Nullable[PIProtectionOverrideV1PiOutputAction] `json:"pi_output_action,omitempty"`
+	PiTier2aBlockThreshold nullable.Nullable[float64]                              `json:"pi_tier2a_block_threshold,omitempty"`
+	PiTier2bBlockThreshold nullable.Nullable[float64]                              `json:"pi_tier2b_block_threshold,omitempty"`
+}
+
+// PIProtectionOverrideV1PiIndirectMode defines model for PIProtectionOverrideV1.PiIndirectMode.
+type PIProtectionOverrideV1PiIndirectMode string
+
+// PIProtectionOverrideV1PiMode defines model for PIProtectionOverrideV1.PiMode.
+type PIProtectionOverrideV1PiMode string
+
+// PIProtectionOverrideV1PiOutputAction defines model for PIProtectionOverrideV1.PiOutputAction.
+type PIProtectionOverrideV1PiOutputAction string
+
+// PIProtectionSettings Per-org PI Protection settings.
+//
+// Mirrors merge_gateway.policy.pi_protection.config.PIProtectionSettings
+// field-for-field. Defaults match the dataclass on the data-plane side.
+//
+// `pi_mode` is the master switch + mode selector:
+// - "off": pi_protection module bypassed entirely
+// - "alert": score for telemetry, never block
+// - "block": block when Tier 1 score >= pi_block_threshold
+//
+// History: replaces `pi_enabled: bool` + `pi_mode: shadow|enforce` +
+// `pi_universal_floor` shape. Universal floor's block behavior was
+// removed 2026-05-11 to fully respect customer enforcement choice.
+type PIProtectionSettings struct {
+	PiAllowlistPatterns    *[]string                 `json:"pi_allowlist_patterns,omitempty"`
+	PiBlockThreshold       *float64                  `json:"pi_block_threshold,omitempty"`
+	PiFailClosed           *bool                     `json:"pi_fail_closed,omitempty"`
+	PiIndirectMode         *string                   `json:"pi_indirect_mode,omitempty"`
+	PiInputAction          *string                   `json:"pi_input_action,omitempty"`
+	PiLogFullTextOnBlock   *bool                     `json:"pi_log_full_text_on_block,omitempty"`
+	PiMode                 *string                   `json:"pi_mode,omitempty"`
+	PiOutputAction         *string                   `json:"pi_output_action,omitempty"`
+	PiPassThreshold        *float64                  `json:"pi_pass_threshold,omitempty"`
+	PiSaferVendorRoute     nullable.Nullable[string] `json:"pi_safer_vendor_route,omitempty"`
+	PiTier2aBlockThreshold *float64                  `json:"pi_tier2a_block_threshold,omitempty"`
+	PiTier2bBlockThreshold *float64                  `json:"pi_tier2b_block_threshold,omitempty"`
+}
+
+// PolicyV2Response The v2 policy shape built by “policy_to_v2_response“, minus
+// “is_default“ (the org surface adds it; a project's single scoped policy
+// has no default semantics).
+type PolicyV2Response struct {
+	// AllowedModels INTELLIGENT only. In the order they were sent.
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models"`
+
+	// AllowedProviders INTELLIGENT only. The providers of allowed_models, sorted. Always rebuilt from allowed_models; never stored.
+	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers"`
+
+	// Axis INTELLIGENT only. The optimization axis.
+	Axis        nullable.Nullable[PolicyV2ResponseAxis] `json:"axis"`
+	CreatedAt   time.Time                               `json:"created_at"`
+	Description nullable.Nullable[string]               `json:"description"`
+	Id          string                                  `json:"id"`
+
+	// Model Ready-to-send model-field string (`@alias/<slug>`).
+	Model      nullable.Nullable[string] `json:"model"`
+	ModifiedAt time.Time                 `json:"modified_at"`
+	Name       string                    `json:"name"`
+
+	// PriorityOrder PRIORITY only. Sorted by priority.
+	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order"`
+
+	// Slug The policy's model-field handle, when it has one.
+	Slug     nullable.Nullable[string] `json:"slug"`
+	Strategy PolicyV2ResponseStrategy  `json:"strategy"`
+}
+
+// PolicyV2ResponseAxis defines model for PolicyV2Response.Axis.
+type PolicyV2ResponseAxis string
+
+// PolicyV2ResponseStrategy defines model for PolicyV2Response.Strategy.
+type PolicyV2ResponseStrategy string
+
+// PriorityModel defines model for PriorityModel.
+type PriorityModel struct {
+	Model    string `json:"model"`
+	Priority int    `json:"priority"`
+}
+
+// ProjectBudgetConfigSchema Project budgets add alert recipients on top of the shared budget shape.
+//
+// extra="forbid" matches ProjectV1Create/Update one level up: an IaC caller
+// that typos “notification_email“ should get a 422, not a config that
+// silently drops the field it cared about.
+//
+// Customer budgets reuse “BudgetConfigSchema“ and have no notification
+// routing of their own, so these fields stay on the project subclass rather
+// than the base — a field the customer API accepts but never reads would be
+// a silent no-op for callers.
+type ProjectBudgetConfigSchema struct {
+	// AlertThresholds Percentage thresholds for alerts (e.g., [50, 80, 90])
+	AlertThresholds *[]int `json:"alert_thresholds,omitempty"`
+
+	// Amount Budget amount in USD
+	Amount          float64                                  `json:"amount"`
+	EnforcementMode ProjectBudgetConfigSchemaEnforcementMode `json:"enforcement_mode"`
+
+	// NotificationEmails Addresses emailed when an alert threshold is crossed
+	NotificationEmails *[]openapi_types.Email `json:"notification_emails,omitempty"`
+
+	// NotifyOrgAdmins Also email every organization admin on threshold crossings. Adding recipients augments the audience rather than replacing it; set false to email only the named recipients
+	NotifyOrgAdmins *bool                           `json:"notify_org_admins,omitempty"`
+	Period          ProjectBudgetConfigSchemaPeriod `json:"period"`
+}
+
+// ProjectBudgetConfigSchemaEnforcementMode defines model for ProjectBudgetConfigSchema.EnforcementMode.
+type ProjectBudgetConfigSchemaEnforcementMode string
+
+// ProjectBudgetConfigSchemaPeriod defines model for ProjectBudgetConfigSchema.Period.
+type ProjectBudgetConfigSchemaPeriod string
+
+// ProjectBudgetConfigV1Response A stored budget as read back. Same fields as ProjectBudgetConfigSchema,
+// without its write-time rules, so tightening a rule later cannot turn reads
+// of budgets saved under the old rule into 500s.
+type ProjectBudgetConfigV1Response struct {
+	// AlertThresholds Sorted ascending, without duplicates.
+	AlertThresholds *[]int `json:"alert_thresholds,omitempty"`
+
+	// Amount Budget amount in USD
+	Amount          float64                                      `json:"amount"`
+	EnforcementMode ProjectBudgetConfigV1ResponseEnforcementMode `json:"enforcement_mode"`
+
+	// NotificationEmails In the order sent, with duplicates (ignoring case) dropped.
+	NotificationEmails *[]string                           `json:"notification_emails,omitempty"`
+	NotifyOrgAdmins    *bool                               `json:"notify_org_admins,omitempty"`
+	Period             ProjectBudgetConfigV1ResponsePeriod `json:"period"`
+}
+
+// ProjectBudgetConfigV1ResponseEnforcementMode defines model for ProjectBudgetConfigV1Response.EnforcementMode.
+type ProjectBudgetConfigV1ResponseEnforcementMode string
+
+// ProjectBudgetConfigV1ResponsePeriod defines model for ProjectBudgetConfigV1Response.Period.
+type ProjectBudgetConfigV1ResponsePeriod string
+
+// ProjectControlsEffectiveV1 The controls in force: the organization's, with the project's units
+// applied.
+type ProjectControlsEffectiveV1 struct {
+	AllowedRegions          []string `json:"allowed_regions"`
+	AllowedVendors          []string `json:"allowed_vendors"`
+	IgnoredRegions          []string `json:"ignored_regions"`
+	IgnoredVendors          []string `json:"ignored_vendors"`
+	VendorRoutingPreference []string `json:"vendor_routing_preference"`
+	ZeroDataRetention       bool     `json:"zero_data_retention"`
+}
+
+// ProjectControlsOverrideV1 What the project overrides, one key per unit. A unit the project
+// inherits is absent, never null.
+type ProjectControlsOverrideV1 struct {
+	// Regions Present when the last PUT sent ignored_regions or allowed_regions. A field it didn't send is [].
+	Regions *RegionControlsV1 `json:"regions,omitempty"`
+
+	// Vendors Present when the last PUT sent any of ignored_vendors, allowed_vendors or vendor_routing_preference. Fields it didn't send are [].
+	Vendors           *VendorControlsV1 `json:"vendors,omitempty"`
+	ZeroDataRetention *bool             `json:"zero_data_retention,omitempty"`
+}
+
+// ProjectControlsSourcesV1 Per unit, whether the effective value comes from the org or the project.
+type ProjectControlsSourcesV1 struct {
+	Regions           ProjectControlsSourcesV1Regions           `json:"regions"`
+	Vendors           ProjectControlsSourcesV1Vendors           `json:"vendors"`
+	ZeroDataRetention ProjectControlsSourcesV1ZeroDataRetention `json:"zero_data_retention"`
+}
+
+// ProjectControlsSourcesV1Regions defines model for ProjectControlsSourcesV1.Regions.
+type ProjectControlsSourcesV1Regions string
+
+// ProjectControlsSourcesV1Vendors defines model for ProjectControlsSourcesV1.Vendors.
+type ProjectControlsSourcesV1Vendors string
+
+// ProjectControlsSourcesV1ZeroDataRetention defines model for ProjectControlsSourcesV1.ZeroDataRetention.
+type ProjectControlsSourcesV1ZeroDataRetention string
+
+// ProjectControlsV1Response The ScopedControlsResponse shape, with the project's maps typed.
+type ProjectControlsV1Response struct {
+	// Effective The controls in force: the organization's, with the project's units
+	// applied.
+	Effective ProjectControlsEffectiveV1 `json:"effective"`
+
+	// Override What the project overrides, one key per unit. A unit the project
+	// inherits is absent, never null.
+	Override ProjectControlsOverrideV1 `json:"override"`
+
+	// Scope Always "project" here.
+	Scope   string             `json:"scope"`
+	ScopeId openapi_types.UUID `json:"scope_id"`
+
+	// Sources Per unit, whether the effective value comes from the org or the project.
+	Sources ProjectControlsSourcesV1 `json:"sources"`
+}
+
+// ProjectControlsV1Update Replaces the project's whole override. The flat fields map onto the
+// units of the response's “override“:
+//
+//   - “zero_data_retention“ → “override.zero_data_retention“
+//   - “ignored_vendors“, “allowed_vendors“, “vendor_routing_preference“ →
+//     “override.vendors“
+//   - “ignored_regions“, “allowed_regions“ → “override.regions“
+//
+// Sending any field of a unit overrides the whole unit: the unit's fields you
+// leave out become “[]“, not the organization's values. A unit with no field
+// sent inherits from the organization. A list sent as “null“ counts as sent,
+// the same as “[]“. “zero_data_retention: null“ is the same as omitting it.
+type ProjectControlsV1Update struct {
+	// AllowedRegions Regions unit (override.regions).
+	AllowedRegions nullable.Nullable[[]string] `json:"allowed_regions,omitempty"`
+
+	// AllowedVendors Vendors unit (override.vendors).
+	AllowedVendors nullable.Nullable[[]string] `json:"allowed_vendors,omitempty"`
+
+	// IgnoredRegions Regions unit (override.regions).
+	IgnoredRegions nullable.Nullable[[]string] `json:"ignored_regions,omitempty"`
+
+	// IgnoredVendors Vendors unit (override.vendors).
+	IgnoredVendors nullable.Nullable[[]string] `json:"ignored_vendors,omitempty"`
+
+	// VendorRoutingPreference Vendors unit (override.vendors).
+	VendorRoutingPreference nullable.Nullable[[]string] `json:"vendor_routing_preference,omitempty"`
+
+	// ZeroDataRetention Omitted or null inherits the organization's value.
+	ZeroDataRetention nullable.Nullable[bool] `json:"zero_data_retention,omitempty"`
+}
+
+// ProjectDLPEntityState How one entity type resolves for a project.
+type ProjectDLPEntityState struct {
+	Category        string                    `json:"category"`
+	DisplayName     nullable.Nullable[string] `json:"display_name,omitempty"`
+	EffectiveAction nullable.Nullable[string] `json:"effective_action,omitempty"`
+	EntityType      string                    `json:"entity_type"`
+	IsSeeded        bool                      `json:"is_seeded"`
+	OrgAction       nullable.Nullable[string] `json:"org_action,omitempty"`
+	Overridden      bool                      `json:"overridden"`
+}
+
+// ProjectDLPOverrideV1 Wholesale replacement of a project's DLP override, keyed by entity type.
+//
+// Enveloped rather than a bare map (which is what the dashboard route takes) so
+// the request can grow a sibling field later without a breaking change. The
+// field name matches “override“ in the response.
+type ProjectDLPOverrideV1 struct {
+	Override *map[string]DLPEntityOverrideV1 `json:"override,omitempty"`
+}
+
+// ProjectDLPSettingsV1Response The dashboard's project DLP response, with “override“ typed like the request.
+type ProjectDLPSettingsV1Response struct {
+	Entities []ProjectDLPEntityState        `json:"entities"`
+	Override map[string]DLPEntityOverrideV1 `json:"override"`
+}
+
+// ProjectPISettingsV1Response The dashboard's project PI response, with “override“ typed like the request.
+type ProjectPISettingsV1Response struct {
+	// Effective Per-org PI Protection settings.
+	//
+	// Mirrors merge_gateway.policy.pi_protection.config.PIProtectionSettings
+	// field-for-field. Defaults match the dataclass on the data-plane side.
+	//
+	// `pi_mode` is the master switch + mode selector:
+	// - "off": pi_protection module bypassed entirely
+	// - "alert": score for telemetry, never block
+	// - "block": block when Tier 1 score >= pi_block_threshold
+	//
+	// History: replaces `pi_enabled: bool` + `pi_mode: shadow|enforce` +
+	// `pi_universal_floor` shape. Universal floor's block behavior was
+	// removed 2026-05-11 to fully respect customer enforcement choice.
+	Effective       PIProtectionSettings `json:"effective"`
+	InheritedFields []string             `json:"inherited_fields"`
+
+	// Override The dashboard's PI override, with its fixed-value fields typed. Same
+	// values and validation: the dashboard model's validators still run.
+	Override PIProtectionOverrideV1 `json:"override"`
+}
+
+// ProjectPolicyV1 Project-scoped routing policy, in the shared v2 shape (same fields and
+// validation as the ERS customer policy surface). “name“ is optional here
+// and defaults to "<project name> routing policy".
+type ProjectPolicyV1 struct {
+	// AllowedModels INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer.
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// AllowedProviders INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422.
+	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers,omitempty"`
+
+	// Axis INTELLIGENT only. Omitted or null means COST.
+	Axis nullable.Nullable[ProjectPolicyV1Axis] `json:"axis,omitempty"`
+
+	// Description Omitted or null keeps the current description when replacing a policy. Send "" to clear it.
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+
+	// Name Omitted or null: "<project name> routing policy" for a new policy, and the current name when replacing one.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// PriorityOrder PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422.
+	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order,omitempty"`
+	Strategy      ProjectPolicyV1Strategy            `json:"strategy"`
+}
+
+// ProjectPolicyV1Axis defines model for ProjectPolicyV1.Axis.
+type ProjectPolicyV1Axis string
+
+// ProjectPolicyV1Strategy defines model for ProjectPolicyV1.Strategy.
+type ProjectPolicyV1Strategy string
+
+// ProjectSpendV1 defines model for ProjectSpendV1.
+type ProjectSpendV1 struct {
+	// ByokSpend BYOK spend at list price.
+	ByokSpend float64 `json:"byok_spend"`
+
+	// MergeHostedSpend Spend on Merge-managed credentials.
+	MergeHostedSpend float64 `json:"merge_hosted_spend"`
+	ProjectId        string  `json:"project_id"`
+	RequestCount     int     `json:"request_count"`
+	TotalSpend       float64 `json:"total_spend"`
+
+	// WebSearchSpend Server-tool (web search) cost.
+	WebSearchSpend float64 `json:"web_search_spend"`
+}
+
+// ProjectUsageV1Response defines model for ProjectUsageV1Response.
+type ProjectUsageV1Response struct {
+	// ByokSpend BYOK spend at list price.
+	ByokSpend float64 `json:"byok_spend"`
+	End       string  `json:"end"`
+
+	// MergeHostedSpend Spend on Merge-managed credentials.
+	MergeHostedSpend float64 `json:"merge_hosted_spend"`
+
+	// ModelSpend Spend per `provider/model`.
+	ModelSpend map[string]float64 `json:"model_spend"`
+
+	// ModelSpendGranularity model_spend covers the whole months overlapping [start, end].
+	ModelSpendGranularity ProjectUsageV1ResponseModelSpendGranularity `json:"model_spend_granularity"`
+	ProjectId             openapi_types.UUID                          `json:"project_id"`
+	RequestCount          int                                         `json:"request_count"`
+	Start                 string                                      `json:"start"`
+	TotalSpend            float64                                     `json:"total_spend"`
+
+	// WebSearchSpend Server-tool (web search) cost.
+	WebSearchSpend float64 `json:"web_search_spend"`
+}
+
+// ProjectUsageV1ResponseModelSpendGranularity model_spend covers the whole months overlapping [start, end].
+type ProjectUsageV1ResponseModelSpendGranularity string
+
+// ProjectV1Create defines model for ProjectV1Create.
+type ProjectV1Create struct {
+	BudgetConfig                   nullable.Nullable[ProjectBudgetConfigSchema] `json:"budget_config,omitempty"`
+	Description                    nullable.Nullable[string]                    `json:"description,omitempty"`
+	Name                           string                                       `json:"name"`
+	RoutingPolicy                  nullable.Nullable[ProjectPolicyV1]           `json:"routing_policy,omitempty"`
+	UsesOrganizationDefaultRouting *bool                                        `json:"uses_organization_default_routing,omitempty"`
+}
+
+// ProjectV1List List envelope for “GET /v1/projects“. Pass “next“ as “cursor“.
+type ProjectV1List struct {
+	Next     nullable.Nullable[string] `json:"next"`
+	Previous nullable.Nullable[string] `json:"previous"`
+	Results  []ProjectV1Response       `json:"results"`
+}
+
+// ProjectV1Response defines model for ProjectV1Response.
+type ProjectV1Response struct {
+	BudgetConfig   nullable.Nullable[ProjectBudgetConfigV1Response] `json:"budget_config"`
+	CreatedAt      time.Time                                        `json:"created_at"`
+	Description    nullable.Nullable[string]                        `json:"description"`
+	Id             openapi_types.UUID                               `json:"id"`
+	IsActive       bool                                             `json:"is_active"`
+	Name           string                                           `json:"name"`
+	OrganizationId openapi_types.UUID                               `json:"organization_id"`
+
+	// RoutingPolicy The project's scoped policy; null when it uses the org default.
+	RoutingPolicy nullable.Nullable[PolicyV2Response] `json:"routing_policy"`
+
+	// Slug Derived from the name at creation. It does not change when the project is renamed.
+	Slug                           string    `json:"slug"`
+	UpdatedAt                      time.Time `json:"updated_at"`
+	UsesOrganizationDefaultRouting bool      `json:"uses_organization_default_routing"`
+}
+
+// ProjectV1Update Only the fields sent change.
+type ProjectV1Update struct {
+	// BudgetConfig Replaces the whole budget. null removes it.
+	BudgetConfig nullable.Nullable[ProjectBudgetConfigSchema] `json:"budget_config,omitempty"`
+
+	// Description null clears it.
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+
+	// IsActive Omit to keep the current value. Don't send null: the request fails.
+	IsActive nullable.Nullable[bool] `json:"is_active,omitempty"`
+
+	// Name Omit to keep the current value. Don't send null: the request fails.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// RoutingPolicy Replaces the project's routing policy, or creates one. null is the same as omitting it.
+	RoutingPolicy nullable.Nullable[ProjectPolicyV1] `json:"routing_policy,omitempty"`
+
+	// UsesOrganizationDefaultRouting true deletes the project's routing policy, so it routes with the organization default. false needs routing_policy. null is the same as omitting it.
+	UsesOrganizationDefaultRouting nullable.Nullable[bool] `json:"uses_organization_default_routing,omitempty"`
+}
+
+// RegionControlsV1 defines model for RegionControlsV1.
+type RegionControlsV1 struct {
+	AllowedRegions []string `json:"allowed_regions"`
+	IgnoredRegions []string `json:"ignored_regions"`
+}
+
+// RoutingPolicyV1Create defines model for RoutingPolicyV1Create.
+type RoutingPolicyV1Create struct {
+	// AllowedModels INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer.
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// AllowedProviders INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422.
+	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers,omitempty"`
+
+	// Axis INTELLIGENT only. Omitted or null means COST.
+	Axis        nullable.Nullable[RoutingPolicyV1CreateAxis] `json:"axis,omitempty"`
+	Description nullable.Nullable[string]                    `json:"description,omitempty"`
+	IsDefault   nullable.Nullable[bool]                      `json:"is_default,omitempty"`
+	Name        string                                       `json:"name"`
+
+	// PriorityOrder PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422.
+	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order,omitempty"`
+	Slug          nullable.Nullable[string]          `json:"slug,omitempty"`
+	Strategy      RoutingPolicyV1CreateStrategy      `json:"strategy"`
+}
+
+// RoutingPolicyV1CreateAxis defines model for RoutingPolicyV1Create.Axis.
+type RoutingPolicyV1CreateAxis string
+
+// RoutingPolicyV1CreateStrategy defines model for RoutingPolicyV1Create.Strategy.
+type RoutingPolicyV1CreateStrategy string
+
+// RoutingPolicyV1List List envelope for “GET /v1/routing-policies“ (never paginated).
+type RoutingPolicyV1List struct {
+	Next     nullable.Nullable[string] `json:"next"`
+	Previous nullable.Nullable[string] `json:"previous"`
+	Results  []RoutingPolicyV1Response `json:"results"`
+}
+
+// RoutingPolicyV1Response defines model for RoutingPolicyV1Response.
+type RoutingPolicyV1Response struct {
+	// AllowedModels INTELLIGENT only. In the order they were sent.
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models"`
+
+	// AllowedProviders INTELLIGENT only. The providers of allowed_models, sorted. Always rebuilt from allowed_models; never stored.
+	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers"`
+
+	// Axis INTELLIGENT only. The optimization axis.
+	Axis        nullable.Nullable[RoutingPolicyV1ResponseAxis] `json:"axis"`
+	CreatedAt   time.Time                                      `json:"created_at"`
+	Description nullable.Nullable[string]                      `json:"description"`
+	Id          string                                         `json:"id"`
+
+	// IsDefault Whether this is the org's default policy.
+	IsDefault bool `json:"is_default"`
+
+	// Model Ready-to-send model-field string (`@alias/<slug>`).
+	Model      nullable.Nullable[string] `json:"model"`
+	ModifiedAt time.Time                 `json:"modified_at"`
+	Name       string                    `json:"name"`
+
+	// PriorityOrder PRIORITY only. Sorted by priority.
+	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order"`
+
+	// Slug The policy's model-field handle, when it has one.
+	Slug     nullable.Nullable[string]       `json:"slug"`
+	Strategy RoutingPolicyV1ResponseStrategy `json:"strategy"`
+}
+
+// RoutingPolicyV1ResponseAxis defines model for RoutingPolicyV1Response.Axis.
+type RoutingPolicyV1ResponseAxis string
+
+// RoutingPolicyV1ResponseStrategy defines model for RoutingPolicyV1Response.Strategy.
+type RoutingPolicyV1ResponseStrategy string
+
+// RoutingPolicyV1Update Only the fields sent change. null is the same as omitting a field.
+type RoutingPolicyV1Update struct {
+	// AllowedModels INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer. Used only when strategy is sent.
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// AllowedProviders INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422. Checked only when strategy is sent.
+	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers,omitempty"`
+
+	// Axis INTELLIGENT only. Omitted or null means COST. Used only when strategy is sent.
+	Axis nullable.Nullable[RoutingPolicyV1UpdateAxis] `json:"axis,omitempty"`
+
+	// Description null keeps the current description. Send "" to clear it.
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+
+	// IsDefault null keeps the current value.
+	IsDefault nullable.Nullable[bool] `json:"is_default,omitempty"`
+
+	// Name null keeps the current name.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// PriorityOrder PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422. Used only when strategy is sent.
+	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order,omitempty"`
+
+	// Slug Renames the slug. null keeps the current one.
+	Slug nullable.Nullable[string] `json:"slug,omitempty"`
+
+	// Strategy Send with its fields to replace the routing. Omitted or null leaves the routing as it is, and allowed_providers, allowed_models, priority_order and axis are ignored.
+	Strategy nullable.Nullable[RoutingPolicyV1UpdateStrategy] `json:"strategy,omitempty"`
+}
+
+// RoutingPolicyV1UpdateAxis defines model for RoutingPolicyV1Update.Axis.
+type RoutingPolicyV1UpdateAxis string
+
+// RoutingPolicyV1UpdateStrategy defines model for RoutingPolicyV1Update.Strategy.
+type RoutingPolicyV1UpdateStrategy string
+
+// ScopeModelsResponse defines model for ScopeModelsResponse.
+type ScopeModelsResponse struct {
+	GatedModelIds      *[]string                 `json:"gated_model_ids,omitempty"`
+	KeyUsageMode       nullable.Nullable[string] `json:"key_usage_mode,omitempty"`
+	Models             []ScopeRoutableModel      `json:"models"`
+	RestrictionsActive bool                      `json:"restrictions_active"`
+
+	// Scope "project" or "customer"
+	Scope   string             `json:"scope"`
+	ScopeId openapi_types.UUID `json:"scope_id"`
+}
+
+// ScopeRoutableModel defines model for ScopeRoutableModel.
+type ScopeRoutableModel struct {
+	// Model Canonical model id, `provider/model`
+	Model string `json:"model"`
+
+	// Provider The model's author (provider slug)
+	Provider string `json:"provider"`
+
+	// Vendors Execution hosts that can serve this model for the scope, after its vendor / region / ZDR controls and key-usage mode. Sorted.
+	Vendors []string `json:"vendors"`
+}
+
+// ValidationError defines model for ValidationError.
+type ValidationError struct {
+	Ctx   *map[string]interface{}    `json:"ctx,omitempty"`
+	Input interface{}                `json:"input,omitempty"`
+	Loc   []ValidationError_Loc_Item `json:"loc"`
+	Msg   string                     `json:"msg"`
+	Type  string                     `json:"type"`
+}
+
+// ValidationErrorLoc0 defines model for ValidationError.Loc.0.
+type ValidationErrorLoc0 = string
+
+// ValidationErrorLoc1 defines model for ValidationError.Loc.1.
+type ValidationErrorLoc1 = int
+
+// ValidationError_Loc_Item defines model for ValidationError.loc.Item.
+type ValidationError_Loc_Item struct {
+	union json.RawMessage
+}
+
+// VendorControlsV1 defines model for VendorControlsV1.
+type VendorControlsV1 struct {
+	AllowedVendors          []string `json:"allowed_vendors"`
+	IgnoredVendors          []string `json:"ignored_vendors"`
+	VendorRoutingPreference []string `json:"vendor_routing_preference"`
+}
+
+// ListKeysParams defines parameters for ListKeys.
+type ListKeysParams struct {
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Limit  *int `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// GetOrganizationUsageParams defines parameters for GetOrganizationUsage.
+type GetOrganizationUsageParams struct {
+	// Start YYYY-MM-DD (default: month start)
+	Start *string `form:"start,omitempty" json:"start,omitempty"`
+
+	// End YYYY-MM-DD (default: today)
+	End     *string                            `form:"end,omitempty" json:"end,omitempty"`
+	GroupBy *GetOrganizationUsageParamsGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+}
+
+// GetOrganizationUsageParamsGroupBy defines parameters for GetOrganizationUsage.
+type GetOrganizationUsageParamsGroupBy string
+
+// ListProjectsParams defines parameters for ListProjects.
+type ListProjectsParams struct {
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// UpdateProjectControls422JSONResponseBody defines parameters for UpdateProjectControls.
+type UpdateProjectControls422JSONResponseBody struct {
+	union json.RawMessage
+}
+
+// UpdateProjectDlpSettings422JSONResponseBody defines parameters for UpdateProjectDlpSettings.
+type UpdateProjectDlpSettings422JSONResponseBody struct {
+	union json.RawMessage
+}
+
+// UpdateProjectPiSettings422JSONResponseBody defines parameters for UpdateProjectPiSettings.
+type UpdateProjectPiSettings422JSONResponseBody struct {
+	union json.RawMessage
+}
+
+// GetProjectUsageParams defines parameters for GetProjectUsage.
+type GetProjectUsageParams struct {
+	// Start YYYY-MM-DD (default: month start)
+	Start *string `form:"start,omitempty" json:"start,omitempty"`
+
+	// End YYYY-MM-DD (default: today)
+	End *string `form:"end,omitempty" json:"end,omitempty"`
+}
+
+// ListRoutingPoliciesParams defines parameters for ListRoutingPolicies.
+type ListRoutingPoliciesParams struct {
+	// IncludeInline Also list policies the gateway materialised from requests' priority_order lists. Hidden by default.
+	IncludeInline *bool `form:"include_inline,omitempty" json:"include_inline,omitempty"`
+}
+
+// UpdateRoutingPolicy422JSONResponseBody defines parameters for UpdateRoutingPolicy.
+type UpdateRoutingPolicy422JSONResponseBody struct {
+	union json.RawMessage
+}
+
+// CreateKeyJSONRequestBody defines body for CreateKey for application/json ContentType.
+type CreateKeyJSONRequestBody = KeyCreateRequest
+
+// UpdateKeyJSONRequestBody defines body for UpdateKey for application/json ContentType.
+type UpdateKeyJSONRequestBody = KeyUpdateRequest
+
+// CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
+type CreateProjectJSONRequestBody = ProjectV1Create
+
+// UpdateProjectJSONRequestBody defines body for UpdateProject for application/json ContentType.
+type UpdateProjectJSONRequestBody = ProjectV1Update
+
+// UpdateProjectControlsJSONRequestBody defines body for UpdateProjectControls for application/json ContentType.
+type UpdateProjectControlsJSONRequestBody = ProjectControlsV1Update
+
+// UpdateProjectDlpSettingsJSONRequestBody defines body for UpdateProjectDlpSettings for application/json ContentType.
+type UpdateProjectDlpSettingsJSONRequestBody = ProjectDLPOverrideV1
+
+// UpdateProjectPiSettingsJSONRequestBody defines body for UpdateProjectPiSettings for application/json ContentType.
+type UpdateProjectPiSettingsJSONRequestBody = PIProtectionOverrideV1
+
+// CreateRoutingPolicyJSONRequestBody defines body for CreateRoutingPolicy for application/json ContentType.
+type CreateRoutingPolicyJSONRequestBody = RoutingPolicyV1Create
+
+// UpdateRoutingPolicyJSONRequestBody defines body for UpdateRoutingPolicy for application/json ContentType.
+type UpdateRoutingPolicyJSONRequestBody = RoutingPolicyV1Update
+
+// Getter for additional properties for ErrorDetail. Returns the specified
+// element and whether it was found
+func (a ErrorDetail) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ErrorDetail
+func (a *ErrorDetail) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ErrorDetail to handle AdditionalProperties
+func (a *ErrorDetail) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["code"]; found {
+		err = json.Unmarshal(raw, &a.Code)
+		if err != nil {
+			return fmt.Errorf("error reading 'code': %w", err)
+		}
+		delete(object, "code")
+	}
+
+	if raw, found := object["message"]; found {
+		err = json.Unmarshal(raw, &a.Message)
+		if err != nil {
+			return fmt.Errorf("error reading 'message': %w", err)
+		}
+		delete(object, "message")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ErrorDetail to handle AdditionalProperties
+func (a ErrorDetail) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["code"], err = json.Marshal(a.Code)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'code': %w", err)
+	}
+
+	object["message"], err = json.Marshal(a.Message)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'message': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// AsErrorResponseDetail0 returns the union data inside the ErrorResponse_Detail as a ErrorResponseDetail0
+func (t ErrorResponse_Detail) AsErrorResponseDetail0() (ErrorResponseDetail0, error) {
+	var body ErrorResponseDetail0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorResponseDetail0 overwrites any union data inside the ErrorResponse_Detail as the provided ErrorResponseDetail0
+func (t *ErrorResponse_Detail) FromErrorResponseDetail0(v ErrorResponseDetail0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorResponseDetail0 performs a merge with any union data inside the ErrorResponse_Detail, using the provided ErrorResponseDetail0
+func (t *ErrorResponse_Detail) MergeErrorResponseDetail0(v ErrorResponseDetail0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsErrorDetail returns the union data inside the ErrorResponse_Detail as a ErrorDetail
+func (t ErrorResponse_Detail) AsErrorDetail() (ErrorDetail, error) {
+	var body ErrorDetail
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorDetail overwrites any union data inside the ErrorResponse_Detail as the provided ErrorDetail
+func (t *ErrorResponse_Detail) FromErrorDetail(v ErrorDetail) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorDetail performs a merge with any union data inside the ErrorResponse_Detail, using the provided ErrorDetail
+func (t *ErrorResponse_Detail) MergeErrorDetail(v ErrorDetail) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ErrorResponse_Detail) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ErrorResponse_Detail) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsValidationErrorLoc0 returns the union data inside the ValidationError_Loc_Item as a ValidationErrorLoc0
+func (t ValidationError_Loc_Item) AsValidationErrorLoc0() (ValidationErrorLoc0, error) {
+	var body ValidationErrorLoc0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromValidationErrorLoc0 overwrites any union data inside the ValidationError_Loc_Item as the provided ValidationErrorLoc0
+func (t *ValidationError_Loc_Item) FromValidationErrorLoc0(v ValidationErrorLoc0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeValidationErrorLoc0 performs a merge with any union data inside the ValidationError_Loc_Item, using the provided ValidationErrorLoc0
+func (t *ValidationError_Loc_Item) MergeValidationErrorLoc0(v ValidationErrorLoc0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsValidationErrorLoc1 returns the union data inside the ValidationError_Loc_Item as a ValidationErrorLoc1
+func (t ValidationError_Loc_Item) AsValidationErrorLoc1() (ValidationErrorLoc1, error) {
+	var body ValidationErrorLoc1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromValidationErrorLoc1 overwrites any union data inside the ValidationError_Loc_Item as the provided ValidationErrorLoc1
+func (t *ValidationError_Loc_Item) FromValidationErrorLoc1(v ValidationErrorLoc1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeValidationErrorLoc1 performs a merge with any union data inside the ValidationError_Loc_Item, using the provided ValidationErrorLoc1
+func (t *ValidationError_Loc_Item) MergeValidationErrorLoc1(v ValidationErrorLoc1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ValidationError_Loc_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ValidationError_Loc_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsHTTPValidationError returns the union data inside the UpdateProjectControls422JSONResponseBody as a HTTPValidationError
+func (t UpdateProjectControls422JSONResponseBody) AsHTTPValidationError() (HTTPValidationError, error) {
+	var body HTTPValidationError
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHTTPValidationError overwrites any union data inside the UpdateProjectControls422JSONResponseBody as the provided HTTPValidationError
+func (t *UpdateProjectControls422JSONResponseBody) FromHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHTTPValidationError performs a merge with any union data inside the UpdateProjectControls422JSONResponseBody, using the provided HTTPValidationError
+func (t *UpdateProjectControls422JSONResponseBody) MergeHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsErrorResponse returns the union data inside the UpdateProjectControls422JSONResponseBody as a ErrorResponse
+func (t UpdateProjectControls422JSONResponseBody) AsErrorResponse() (ErrorResponse, error) {
+	var body ErrorResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorResponse overwrites any union data inside the UpdateProjectControls422JSONResponseBody as the provided ErrorResponse
+func (t *UpdateProjectControls422JSONResponseBody) FromErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorResponse performs a merge with any union data inside the UpdateProjectControls422JSONResponseBody, using the provided ErrorResponse
+func (t *UpdateProjectControls422JSONResponseBody) MergeErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateProjectControls422JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateProjectControls422JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsHTTPValidationError returns the union data inside the UpdateProjectDlpSettings422JSONResponseBody as a HTTPValidationError
+func (t UpdateProjectDlpSettings422JSONResponseBody) AsHTTPValidationError() (HTTPValidationError, error) {
+	var body HTTPValidationError
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHTTPValidationError overwrites any union data inside the UpdateProjectDlpSettings422JSONResponseBody as the provided HTTPValidationError
+func (t *UpdateProjectDlpSettings422JSONResponseBody) FromHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHTTPValidationError performs a merge with any union data inside the UpdateProjectDlpSettings422JSONResponseBody, using the provided HTTPValidationError
+func (t *UpdateProjectDlpSettings422JSONResponseBody) MergeHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsErrorResponse returns the union data inside the UpdateProjectDlpSettings422JSONResponseBody as a ErrorResponse
+func (t UpdateProjectDlpSettings422JSONResponseBody) AsErrorResponse() (ErrorResponse, error) {
+	var body ErrorResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorResponse overwrites any union data inside the UpdateProjectDlpSettings422JSONResponseBody as the provided ErrorResponse
+func (t *UpdateProjectDlpSettings422JSONResponseBody) FromErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorResponse performs a merge with any union data inside the UpdateProjectDlpSettings422JSONResponseBody, using the provided ErrorResponse
+func (t *UpdateProjectDlpSettings422JSONResponseBody) MergeErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateProjectDlpSettings422JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateProjectDlpSettings422JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsHTTPValidationError returns the union data inside the UpdateProjectPiSettings422JSONResponseBody as a HTTPValidationError
+func (t UpdateProjectPiSettings422JSONResponseBody) AsHTTPValidationError() (HTTPValidationError, error) {
+	var body HTTPValidationError
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHTTPValidationError overwrites any union data inside the UpdateProjectPiSettings422JSONResponseBody as the provided HTTPValidationError
+func (t *UpdateProjectPiSettings422JSONResponseBody) FromHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHTTPValidationError performs a merge with any union data inside the UpdateProjectPiSettings422JSONResponseBody, using the provided HTTPValidationError
+func (t *UpdateProjectPiSettings422JSONResponseBody) MergeHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsErrorResponse returns the union data inside the UpdateProjectPiSettings422JSONResponseBody as a ErrorResponse
+func (t UpdateProjectPiSettings422JSONResponseBody) AsErrorResponse() (ErrorResponse, error) {
+	var body ErrorResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorResponse overwrites any union data inside the UpdateProjectPiSettings422JSONResponseBody as the provided ErrorResponse
+func (t *UpdateProjectPiSettings422JSONResponseBody) FromErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorResponse performs a merge with any union data inside the UpdateProjectPiSettings422JSONResponseBody, using the provided ErrorResponse
+func (t *UpdateProjectPiSettings422JSONResponseBody) MergeErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateProjectPiSettings422JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateProjectPiSettings422JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsHTTPValidationError returns the union data inside the UpdateRoutingPolicy422JSONResponseBody as a HTTPValidationError
+func (t UpdateRoutingPolicy422JSONResponseBody) AsHTTPValidationError() (HTTPValidationError, error) {
+	var body HTTPValidationError
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHTTPValidationError overwrites any union data inside the UpdateRoutingPolicy422JSONResponseBody as the provided HTTPValidationError
+func (t *UpdateRoutingPolicy422JSONResponseBody) FromHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHTTPValidationError performs a merge with any union data inside the UpdateRoutingPolicy422JSONResponseBody, using the provided HTTPValidationError
+func (t *UpdateRoutingPolicy422JSONResponseBody) MergeHTTPValidationError(v HTTPValidationError) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsErrorResponse returns the union data inside the UpdateRoutingPolicy422JSONResponseBody as a ErrorResponse
+func (t UpdateRoutingPolicy422JSONResponseBody) AsErrorResponse() (ErrorResponse, error) {
+	var body ErrorResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorResponse overwrites any union data inside the UpdateRoutingPolicy422JSONResponseBody as the provided ErrorResponse
+func (t *UpdateRoutingPolicy422JSONResponseBody) FromErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorResponse performs a merge with any union data inside the UpdateRoutingPolicy422JSONResponseBody, using the provided ErrorResponse
+func (t *UpdateRoutingPolicy422JSONResponseBody) MergeErrorResponse(v ErrorResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateRoutingPolicy422JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateRoutingPolicy422JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
 }
 
 // RequestEditorFn is the function signature for the RequestEditor callback function
@@ -93,17 +1846,333 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 
-	// ListProjects List projects
+	// ListKeys List Keys
+	//
+	// List the org's regular API keys (excludes the internal tester key).
+	//
+	// Page through with ``offset``/``limit`` while ``has_more`` is true.
+	//
+	// Corresponds with GET /v1/keys (the `ListKeys` operationId).
+	ListKeys(ctx context.Context, params *ListKeysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateKeyWithBody Create Key
+	//
+	// Create a regular API key. The raw key is returned only here.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+	CreateKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateKey Create Key
+	//
+	// Create a regular API key. The raw key is returned only here.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+	CreateKey(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteKey Delete Key
+	//
+	// Delete a key.
+	//
+	// Corresponds with DELETE /v1/keys/{key_hash} (the `DeleteKey` operationId).
+	DeleteKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetKey Get Key
+	//
+	// Get a single key with usage.
+	//
+	// Corresponds with GET /v1/keys/{key_hash} (the `GetKey` operationId).
+	GetKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateKeyWithBody Update Key
+	//
+	// Update a key's name / disabled state / spend limit.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+	UpdateKeyWithBody(ctx context.Context, keyHash string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateKey Update Key
+	//
+	// Update a key's name / disabled state / spend limit.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+	UpdateKey(ctx context.Context, keyHash string, body UpdateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationUsage Get Organization Usage
+	//
+	// Org spend rollup for the range, with optional per-dimension breakdown.
+	//
+	// Corresponds with GET /v1/organization/usage (the `GetOrganizationUsage` operationId).
+	GetOrganizationUsage(ctx context.Context, params *GetOrganizationUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListProjects List Projects
+	//
+	// List projects (keyset-paginated by created_at, id).
 	//
 	// Corresponds with GET /v1/projects (the `ListProjects` operationId).
-	ListProjects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListProjects(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProjectWithBody Create Project
+	//
+	// Create a project.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+	CreateProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProject Create Project
+	//
+	// Create a project.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+	CreateProject(ctx context.Context, body CreateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProject Delete Project
+	//
+	// Delete a project. Blocked (409) while active project-scoped API keys
+	// exist; fails closed (503) if the data plane is unreachable.
+	//
+	// Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
+	DeleteProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProject Get Project
+	//
+	// Get a single project.
+	//
+	// Corresponds with GET /v1/projects/{project_id} (the `GetProject` operationId).
+	GetProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectWithBody Update Project
+	//
+	// Update a project.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+	UpdateProjectWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProject Update Project
+	//
+	// Update a project.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+	UpdateProject(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProjectControls Delete Project Controls
+	//
+	// Clear the override so the project inherits the organization's controls.
+	//
+	// Corresponds with DELETE /v1/projects/{project_id}/controls (the `DeleteProjectControls` operationId).
+	DeleteProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectControls Get Project Controls
+	//
+	// Return the project's control override and the resulting effective controls.
+	//
+	// Corresponds with GET /v1/projects/{project_id}/controls (the `GetProjectControls` operationId).
+	GetProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectControlsWithBody Update Project Controls
+	//
+	// Replace the project's control override with exactly the fields sent.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+	UpdateProjectControlsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectControls Update Project Controls
+	//
+	// Replace the project's control override with exactly the fields sent.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+	UpdateProjectControls(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProjectDlpSettings Delete Project Dlp Settings
+	//
+	// Clear the override so the project inherits the org's DLP rules.
+	//
+	// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
+	DeleteProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectDlpSettings Get Project Dlp Settings
+	//
+	// Return the project's DLP override plus the resolved per-entity outcome.
+	//
+	// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
+	GetProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectDlpSettingsWithBody Update Project Dlp Settings
+	//
+	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+	UpdateProjectDlpSettingsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectDlpSettings Update Project Dlp Settings
+	//
+	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+	UpdateProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectDlpSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListProjectModels List Project Models
+	//
+	// Models this project can route to under its effective controls.
+	//
+	// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
+	ListProjectModels(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProjectPiSettings Delete Project Pi Settings
+	//
+	// Clear the override so the project inherits the org PI policy wholesale.
+	//
+	// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
+	DeleteProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectPiSettings Get Project Pi Settings
+	//
+	// Return the project's PI override, the effective policy, and what it inherits.
+	//
+	// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
+	GetProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectPiSettingsWithBody Update Project Pi Settings
+	//
+	// Replace the project's PI override wholesale + sync to the data plane.
+	//
+	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
+	// field back to inheritance. An empty body therefore means "inherit
+	// everything", the same as DELETE.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+	UpdateProjectPiSettingsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectPiSettings Update Project Pi Settings
+	//
+	// Replace the project's PI override wholesale + sync to the data plane.
+	//
+	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
+	// field back to inheritance. An empty body therefore means "inherit
+	// everything", the same as DELETE.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+	UpdateProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectPiSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectUsage Get Project Usage
+	//
+	// Project spend totals (day-granular) plus a per-model breakdown.
+	//
+	// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
+	// so like the org endpoint it is month-granular over the months the range
+	// overlaps. The monthly project rows only accrue from when the data plane
+	// started writing them — earlier months report totals but an empty map.
+	//
+	// Corresponds with GET /v1/projects/{project_id}/usage (the `GetProjectUsage` operationId).
+	GetProjectUsage(ctx context.Context, projectId openapi_types.UUID, params *GetProjectUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListRoutingPolicies List Routing Policies
+	//
+	// List the org's standalone routing policies.
+	//
+	// Returns all of them (an org has a handful, like the ERS customer surface),
+	// so no cursor pagination.
+	//
+	// Corresponds with GET /v1/routing-policies (the `ListRoutingPolicies` operationId).
+	ListRoutingPolicies(ctx context.Context, params *ListRoutingPoliciesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRoutingPolicyWithBody Create Routing Policy
+	//
+	// Create an org routing policy. The org's first policy becomes the default
+	// automatically; otherwise pass is_default=true to make it the default.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+	CreateRoutingPolicyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRoutingPolicy Create Routing Policy
+	//
+	// Create an org routing policy. The org's first policy becomes the default
+	// automatically; otherwise pass is_default=true to make it the default.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+	CreateRoutingPolicy(ctx context.Context, body CreateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRoutingPolicy Delete Routing Policy
+	//
+	// Delete an org routing policy. Deleting the default leaves the org with no
+	// default until another is set (requests fall back to per-request model pins).
+	//
+	// Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
+	DeleteRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRoutingPolicy Get Routing Policy
+	//
+	// Get one org routing policy.
+	//
+	// Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
+	GetRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRoutingPolicyWithBody Update Routing Policy
+	//
+	// Update an org routing policy in place (stable id for IaC diffs).
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+	UpdateRoutingPolicyWithBody(ctx context.Context, policyId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRoutingPolicy Update Routing Policy
+	//
+	// Update an org routing policy in place (stable id for IaC diffs).
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+	UpdateRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, body UpdateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetDefaultRoutingPolicy Set Default Routing Policy
+	//
+	// Make this policy the org's default (unsets the previous default).
+	//
+	// Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
+	SetDefaultRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-// ListProjects List projects
+// ListKeys List Keys
 //
-// Corresponds with GET /v1/projects (the `ListProjects` operationId).
-func (c *Client) ListProjects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListProjectsRequest(c.Server)
+// List the org's regular API keys (excludes the internal tester key).
+//
+// Page through with “offset“/“limit“ while “has_more“ is true.
+//
+// Corresponds with GET /v1/keys (the `ListKeys` operationId).
+func (c *Client) ListKeys(ctx context.Context, params *ListKeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListKeysRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +2183,975 @@ func (c *Client) ListProjects(ctx context.Context, reqEditors ...RequestEditorFn
 	return c.Client.Do(req)
 }
 
+// CreateKeyWithBody Create Key
+//
+// Create a regular API key. The raw key is returned only here.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+func (c *Client) CreateKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateKey Create Key
+//
+// Create a regular API key. The raw key is returned only here.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+func (c *Client) CreateKey(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteKey Delete Key
+//
+// Delete a key.
+//
+// Corresponds with DELETE /v1/keys/{key_hash} (the `DeleteKey` operationId).
+func (c *Client) DeleteKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteKeyRequest(c.Server, keyHash)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetKey Get Key
+//
+// Get a single key with usage.
+//
+// Corresponds with GET /v1/keys/{key_hash} (the `GetKey` operationId).
+func (c *Client) GetKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetKeyRequest(c.Server, keyHash)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateKeyWithBody Update Key
+//
+// Update a key's name / disabled state / spend limit.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+func (c *Client) UpdateKeyWithBody(ctx context.Context, keyHash string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateKeyRequestWithBody(c.Server, keyHash, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateKey Update Key
+//
+// Update a key's name / disabled state / spend limit.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+func (c *Client) UpdateKey(ctx context.Context, keyHash string, body UpdateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateKeyRequest(c.Server, keyHash, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetOrganizationUsage Get Organization Usage
+//
+// Org spend rollup for the range, with optional per-dimension breakdown.
+//
+// Corresponds with GET /v1/organization/usage (the `GetOrganizationUsage` operationId).
+func (c *Client) GetOrganizationUsage(ctx context.Context, params *GetOrganizationUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationUsageRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListProjects List Projects
+//
+// List projects (keyset-paginated by created_at, id).
+//
+// Corresponds with GET /v1/projects (the `ListProjects` operationId).
+func (c *Client) ListProjects(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProjectsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateProjectWithBody Create Project
+//
+// Create a project.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+func (c *Client) CreateProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateProject Create Project
+//
+// Create a project.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+func (c *Client) CreateProject(ctx context.Context, body CreateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteProject Delete Project
+//
+// Delete a project. Blocked (409) while active project-scoped API keys
+// exist; fails closed (503) if the data plane is unreachable.
+//
+// Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
+func (c *Client) DeleteProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetProject Get Project
+//
+// Get a single project.
+//
+// Corresponds with GET /v1/projects/{project_id} (the `GetProject` operationId).
+func (c *Client) GetProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectWithBody Update Project
+//
+// Update a project.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+func (c *Client) UpdateProjectWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectRequestWithBody(c.Server, projectId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProject Update Project
+//
+// Update a project.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+func (c *Client) UpdateProject(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectRequest(c.Server, projectId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteProjectControls Delete Project Controls
+//
+// Clear the override so the project inherits the organization's controls.
+//
+// Corresponds with DELETE /v1/projects/{project_id}/controls (the `DeleteProjectControls` operationId).
+func (c *Client) DeleteProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectControlsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetProjectControls Get Project Controls
+//
+// Return the project's control override and the resulting effective controls.
+//
+// Corresponds with GET /v1/projects/{project_id}/controls (the `GetProjectControls` operationId).
+func (c *Client) GetProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectControlsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectControlsWithBody Update Project Controls
+//
+// Replace the project's control override with exactly the fields sent.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+func (c *Client) UpdateProjectControlsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectControlsRequestWithBody(c.Server, projectId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectControls Update Project Controls
+//
+// Replace the project's control override with exactly the fields sent.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+func (c *Client) UpdateProjectControls(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectControlsRequest(c.Server, projectId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteProjectDlpSettings Delete Project Dlp Settings
+//
+// Clear the override so the project inherits the org's DLP rules.
+//
+// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
+func (c *Client) DeleteProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectDlpSettingsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetProjectDlpSettings Get Project Dlp Settings
+//
+// Return the project's DLP override plus the resolved per-entity outcome.
+//
+// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
+func (c *Client) GetProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectDlpSettingsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectDlpSettingsWithBody Update Project Dlp Settings
+//
+// Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+func (c *Client) UpdateProjectDlpSettingsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectDlpSettingsRequestWithBody(c.Server, projectId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectDlpSettings Update Project Dlp Settings
+//
+// Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+func (c *Client) UpdateProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectDlpSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectDlpSettingsRequest(c.Server, projectId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListProjectModels List Project Models
+//
+// Models this project can route to under its effective controls.
+//
+// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
+func (c *Client) ListProjectModels(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProjectModelsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteProjectPiSettings Delete Project Pi Settings
+//
+// Clear the override so the project inherits the org PI policy wholesale.
+//
+// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
+func (c *Client) DeleteProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectPiSettingsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetProjectPiSettings Get Project Pi Settings
+//
+// Return the project's PI override, the effective policy, and what it inherits.
+//
+// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
+func (c *Client) GetProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectPiSettingsRequest(c.Server, projectId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectPiSettingsWithBody Update Project Pi Settings
+//
+// Replace the project's PI override wholesale + sync to the data plane.
+//
+// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
+// field back to inheritance. An empty body therefore means "inherit
+// everything", the same as DELETE.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+func (c *Client) UpdateProjectPiSettingsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectPiSettingsRequestWithBody(c.Server, projectId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectPiSettings Update Project Pi Settings
+//
+// Replace the project's PI override wholesale + sync to the data plane.
+//
+// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
+// field back to inheritance. An empty body therefore means "inherit
+// everything", the same as DELETE.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+func (c *Client) UpdateProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectPiSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectPiSettingsRequest(c.Server, projectId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetProjectUsage Get Project Usage
+//
+// Project spend totals (day-granular) plus a per-model breakdown.
+//
+// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
+// so like the org endpoint it is month-granular over the months the range
+// overlaps. The monthly project rows only accrue from when the data plane
+// started writing them — earlier months report totals but an empty map.
+//
+// Corresponds with GET /v1/projects/{project_id}/usage (the `GetProjectUsage` operationId).
+func (c *Client) GetProjectUsage(ctx context.Context, projectId openapi_types.UUID, params *GetProjectUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectUsageRequest(c.Server, projectId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListRoutingPolicies List Routing Policies
+//
+// List the org's standalone routing policies.
+//
+// Returns all of them (an org has a handful, like the ERS customer surface),
+// so no cursor pagination.
+//
+// Corresponds with GET /v1/routing-policies (the `ListRoutingPolicies` operationId).
+func (c *Client) ListRoutingPolicies(ctx context.Context, params *ListRoutingPoliciesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRoutingPoliciesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRoutingPolicyWithBody Create Routing Policy
+//
+// Create an org routing policy. The org's first policy becomes the default
+// automatically; otherwise pass is_default=true to make it the default.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+func (c *Client) CreateRoutingPolicyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRoutingPolicyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRoutingPolicy Create Routing Policy
+//
+// Create an org routing policy. The org's first policy becomes the default
+// automatically; otherwise pass is_default=true to make it the default.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+func (c *Client) CreateRoutingPolicy(ctx context.Context, body CreateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRoutingPolicyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRoutingPolicy Delete Routing Policy
+//
+// Delete an org routing policy. Deleting the default leaves the org with no
+// default until another is set (requests fall back to per-request model pins).
+//
+// Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
+func (c *Client) DeleteRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRoutingPolicyRequest(c.Server, policyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetRoutingPolicy Get Routing Policy
+//
+// Get one org routing policy.
+//
+// Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
+func (c *Client) GetRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRoutingPolicyRequest(c.Server, policyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateRoutingPolicyWithBody Update Routing Policy
+//
+// Update an org routing policy in place (stable id for IaC diffs).
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+func (c *Client) UpdateRoutingPolicyWithBody(ctx context.Context, policyId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoutingPolicyRequestWithBody(c.Server, policyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateRoutingPolicy Update Routing Policy
+//
+// Update an org routing policy in place (stable id for IaC diffs).
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+func (c *Client) UpdateRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, body UpdateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoutingPolicyRequest(c.Server, policyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetDefaultRoutingPolicy Set Default Routing Policy
+//
+// Make this policy the org's default (unsets the previous default).
+//
+// Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
+func (c *Client) SetDefaultRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetDefaultRoutingPolicyRequest(c.Server, policyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NewListKeysRequest constructs an http.Request for the ListKeys method
+func NewListKeysRequest(server string, params *ListKeysParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/keys")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateKeyRequest calls the generic CreateKey builder with application/json body
+func NewCreateKeyRequest(server string, body CreateKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateKeyRequestWithBody constructs an http.Request for the CreateKey method, with any body, and a specified content type
+func NewCreateKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/keys")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteKeyRequest constructs an http.Request for the DeleteKey method
+func NewDeleteKeyRequest(server string, keyHash string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "key_hash", keyHash, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/keys/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetKeyRequest constructs an http.Request for the GetKey method
+func NewGetKeyRequest(server string, keyHash string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "key_hash", keyHash, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/keys/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateKeyRequest calls the generic UpdateKey builder with application/json body
+func NewUpdateKeyRequest(server string, keyHash string, body UpdateKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateKeyRequestWithBody(server, keyHash, "application/json", bodyReader)
+}
+
+// NewUpdateKeyRequestWithBody constructs an http.Request for the UpdateKey method, with any body, and a specified content type
+func NewUpdateKeyRequestWithBody(server string, keyHash string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "key_hash", keyHash, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/keys/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetOrganizationUsageRequest constructs an http.Request for the GetOrganizationUsage method
+func NewGetOrganizationUsageRequest(server string, params *GetOrganizationUsageParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/organization/usage")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Start != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start", *params.Start, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.End != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end", *params.End, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.GroupBy != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "group_by", *params.GroupBy, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListProjectsRequest constructs an http.Request for the ListProjects method
-func NewListProjectsRequest(server string) (*http.Request, error) {
+func NewListProjectsRequest(server string, params *ListProjectsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -133,7 +3169,896 @@ func NewListProjectsRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateProjectRequest calls the generic CreateProject builder with application/json body
+func NewCreateProjectRequest(server string, body CreateProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateProjectRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateProjectRequestWithBody constructs an http.Request for the CreateProject method, with any body, and a specified content type
+func NewCreateProjectRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteProjectRequest constructs an http.Request for the DeleteProject method
+func NewDeleteProjectRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectRequest constructs an http.Request for the GetProject method
+func NewGetProjectRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectRequest calls the generic UpdateProject builder with application/json body
+func NewUpdateProjectRequest(server string, projectId openapi_types.UUID, body UpdateProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectRequestWithBody(server, projectId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectRequestWithBody constructs an http.Request for the UpdateProject method, with any body, and a specified content type
+func NewUpdateProjectRequestWithBody(server string, projectId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteProjectControlsRequest constructs an http.Request for the DeleteProjectControls method
+func NewDeleteProjectControlsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/controls", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectControlsRequest constructs an http.Request for the GetProjectControls method
+func NewGetProjectControlsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/controls", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectControlsRequest calls the generic UpdateProjectControls builder with application/json body
+func NewUpdateProjectControlsRequest(server string, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectControlsRequestWithBody(server, projectId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectControlsRequestWithBody constructs an http.Request for the UpdateProjectControls method, with any body, and a specified content type
+func NewUpdateProjectControlsRequestWithBody(server string, projectId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/controls", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteProjectDlpSettingsRequest constructs an http.Request for the DeleteProjectDlpSettings method
+func NewDeleteProjectDlpSettingsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/dlp-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectDlpSettingsRequest constructs an http.Request for the GetProjectDlpSettings method
+func NewGetProjectDlpSettingsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/dlp-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectDlpSettingsRequest calls the generic UpdateProjectDlpSettings builder with application/json body
+func NewUpdateProjectDlpSettingsRequest(server string, projectId openapi_types.UUID, body UpdateProjectDlpSettingsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectDlpSettingsRequestWithBody(server, projectId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectDlpSettingsRequestWithBody constructs an http.Request for the UpdateProjectDlpSettings method, with any body, and a specified content type
+func NewUpdateProjectDlpSettingsRequestWithBody(server string, projectId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/dlp-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListProjectModelsRequest constructs an http.Request for the ListProjectModels method
+func NewListProjectModelsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/models", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteProjectPiSettingsRequest constructs an http.Request for the DeleteProjectPiSettings method
+func NewDeleteProjectPiSettingsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/pi-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectPiSettingsRequest constructs an http.Request for the GetProjectPiSettings method
+func NewGetProjectPiSettingsRequest(server string, projectId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/pi-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectPiSettingsRequest calls the generic UpdateProjectPiSettings builder with application/json body
+func NewUpdateProjectPiSettingsRequest(server string, projectId openapi_types.UUID, body UpdateProjectPiSettingsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectPiSettingsRequestWithBody(server, projectId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectPiSettingsRequestWithBody constructs an http.Request for the UpdateProjectPiSettings method, with any body, and a specified content type
+func NewUpdateProjectPiSettingsRequestWithBody(server string, projectId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/pi-settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetProjectUsageRequest constructs an http.Request for the GetProjectUsage method
+func NewGetProjectUsageRequest(server string, projectId openapi_types.UUID, params *GetProjectUsageParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "project_id", projectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/usage", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Start != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start", *params.Start, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.End != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end", *params.End, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListRoutingPoliciesRequest constructs an http.Request for the ListRoutingPolicies method
+func NewListRoutingPoliciesRequest(server string, params *ListRoutingPoliciesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/routing-policies")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.IncludeInline != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_inline", *params.IncludeInline, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateRoutingPolicyRequest calls the generic CreateRoutingPolicy builder with application/json body
+func NewCreateRoutingPolicyRequest(server string, body CreateRoutingPolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRoutingPolicyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateRoutingPolicyRequestWithBody constructs an http.Request for the CreateRoutingPolicy method, with any body, and a specified content type
+func NewCreateRoutingPolicyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/routing-policies")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRoutingPolicyRequest constructs an http.Request for the DeleteRoutingPolicy method
+func NewDeleteRoutingPolicyRequest(server string, policyId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "policy_id", policyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/routing-policies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRoutingPolicyRequest constructs an http.Request for the GetRoutingPolicy method
+func NewGetRoutingPolicyRequest(server string, policyId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "policy_id", policyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/routing-policies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRoutingPolicyRequest calls the generic UpdateRoutingPolicy builder with application/json body
+func NewUpdateRoutingPolicyRequest(server string, policyId openapi_types.UUID, body UpdateRoutingPolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRoutingPolicyRequestWithBody(server, policyId, "application/json", bodyReader)
+}
+
+// NewUpdateRoutingPolicyRequestWithBody constructs an http.Request for the UpdateRoutingPolicy method, with any body, and a specified content type
+func NewUpdateRoutingPolicyRequestWithBody(server string, policyId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "policy_id", policyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/routing-policies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSetDefaultRoutingPolicyRequest constructs an http.Request for the SetDefaultRoutingPolicy method
+func NewSetDefaultRoutingPolicyRequest(server string, policyId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "policy_id", policyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/routing-policies/%s/set-default", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -185,24 +4110,688 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 
-	// ListProjectsWithResponse List projects
+	// ListKeysWithResponse List Keys
+	//
+	// List the org's regular API keys (excludes the internal tester key).
+	//
+	// Page through with ``offset``/``limit`` while ``has_more`` is true.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/keys (the `ListKeys` operationId).
+	ListKeysWithResponse(ctx context.Context, params *ListKeysParams, reqEditors ...RequestEditorFn) (*ListKeysResponse, error)
+
+	// CreateKeyWithBodyWithResponse Create Key
+	//
+	// Create a regular API key. The raw key is returned only here.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+	CreateKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateKeyResponse, error)
+
+	// CreateKeyWithResponse Create Key
+	//
+	// Create a regular API key. The raw key is returned only here.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+	CreateKeyWithResponse(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateKeyResponse, error)
+
+	// DeleteKeyWithResponse Delete Key
+	//
+	// Delete a key.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/keys/{key_hash} (the `DeleteKey` operationId).
+	DeleteKeyWithResponse(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*DeleteKeyResponse, error)
+
+	// GetKeyWithResponse Get Key
+	//
+	// Get a single key with usage.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/keys/{key_hash} (the `GetKey` operationId).
+	GetKeyWithResponse(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*GetKeyResponse, error)
+
+	// UpdateKeyWithBodyWithResponse Update Key
+	//
+	// Update a key's name / disabled state / spend limit.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+	UpdateKeyWithBodyWithResponse(ctx context.Context, keyHash string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateKeyResponse, error)
+
+	// UpdateKeyWithResponse Update Key
+	//
+	// Update a key's name / disabled state / spend limit.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+	UpdateKeyWithResponse(ctx context.Context, keyHash string, body UpdateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateKeyResponse, error)
+
+	// GetOrganizationUsageWithResponse Get Organization Usage
+	//
+	// Org spend rollup for the range, with optional per-dimension breakdown.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/organization/usage (the `GetOrganizationUsage` operationId).
+	GetOrganizationUsageWithResponse(ctx context.Context, params *GetOrganizationUsageParams, reqEditors ...RequestEditorFn) (*GetOrganizationUsageResponse, error)
+
+	// ListProjectsWithResponse List Projects
+	//
+	// List projects (keyset-paginated by created_at, id).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/projects (the `ListProjects` operationId).
-	ListProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListProjectsResponse, error)
+	ListProjectsWithResponse(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*ListProjectsResponse, error)
+
+	// CreateProjectWithBodyWithResponse Create Project
+	//
+	// Create a project.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+	CreateProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectResponse, error)
+
+	// CreateProjectWithResponse Create Project
+	//
+	// Create a project.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+	CreateProjectWithResponse(ctx context.Context, body CreateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectResponse, error)
+
+	// DeleteProjectWithResponse Delete Project
+	//
+	// Delete a project. Blocked (409) while active project-scoped API keys
+	// exist; fails closed (503) if the data plane is unreachable.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
+	DeleteProjectWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectResponse, error)
+
+	// GetProjectWithResponse Get Project
+	//
+	// Get a single project.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/projects/{project_id} (the `GetProject` operationId).
+	GetProjectWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectResponse, error)
+
+	// UpdateProjectWithBodyWithResponse Update Project
+	//
+	// Update a project.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+	UpdateProjectWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectResponse, error)
+
+	// UpdateProjectWithResponse Update Project
+	//
+	// Update a project.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+	UpdateProjectWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectResponse, error)
+
+	// DeleteProjectControlsWithResponse Delete Project Controls
+	//
+	// Clear the override so the project inherits the organization's controls.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/projects/{project_id}/controls (the `DeleteProjectControls` operationId).
+	DeleteProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectControlsResponse, error)
+
+	// GetProjectControlsWithResponse Get Project Controls
+	//
+	// Return the project's control override and the resulting effective controls.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/projects/{project_id}/controls (the `GetProjectControls` operationId).
+	GetProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectControlsResponse, error)
+
+	// UpdateProjectControlsWithBodyWithResponse Update Project Controls
+	//
+	// Replace the project's control override with exactly the fields sent.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+	UpdateProjectControlsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectControlsResponse, error)
+
+	// UpdateProjectControlsWithResponse Update Project Controls
+	//
+	// Replace the project's control override with exactly the fields sent.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+	UpdateProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectControlsResponse, error)
+
+	// DeleteProjectDlpSettingsWithResponse Delete Project Dlp Settings
+	//
+	// Clear the override so the project inherits the org's DLP rules.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
+	DeleteProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectDlpSettingsResponse, error)
+
+	// GetProjectDlpSettingsWithResponse Get Project Dlp Settings
+	//
+	// Return the project's DLP override plus the resolved per-entity outcome.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
+	GetProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectDlpSettingsResponse, error)
+
+	// UpdateProjectDlpSettingsWithBodyWithResponse Update Project Dlp Settings
+	//
+	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+	UpdateProjectDlpSettingsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectDlpSettingsResponse, error)
+
+	// UpdateProjectDlpSettingsWithResponse Update Project Dlp Settings
+	//
+	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+	UpdateProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectDlpSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectDlpSettingsResponse, error)
+
+	// ListProjectModelsWithResponse List Project Models
+	//
+	// Models this project can route to under its effective controls.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
+	ListProjectModelsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ListProjectModelsResponse, error)
+
+	// DeleteProjectPiSettingsWithResponse Delete Project Pi Settings
+	//
+	// Clear the override so the project inherits the org PI policy wholesale.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
+	DeleteProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectPiSettingsResponse, error)
+
+	// GetProjectPiSettingsWithResponse Get Project Pi Settings
+	//
+	// Return the project's PI override, the effective policy, and what it inherits.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
+	GetProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectPiSettingsResponse, error)
+
+	// UpdateProjectPiSettingsWithBodyWithResponse Update Project Pi Settings
+	//
+	// Replace the project's PI override wholesale + sync to the data plane.
+	//
+	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
+	// field back to inheritance. An empty body therefore means "inherit
+	// everything", the same as DELETE.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+	UpdateProjectPiSettingsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectPiSettingsResponse, error)
+
+	// UpdateProjectPiSettingsWithResponse Update Project Pi Settings
+	//
+	// Replace the project's PI override wholesale + sync to the data plane.
+	//
+	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
+	// field back to inheritance. An empty body therefore means "inherit
+	// everything", the same as DELETE.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+	UpdateProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectPiSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectPiSettingsResponse, error)
+
+	// GetProjectUsageWithResponse Get Project Usage
+	//
+	// Project spend totals (day-granular) plus a per-model breakdown.
+	//
+	// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
+	// so like the org endpoint it is month-granular over the months the range
+	// overlaps. The monthly project rows only accrue from when the data plane
+	// started writing them — earlier months report totals but an empty map.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/projects/{project_id}/usage (the `GetProjectUsage` operationId).
+	GetProjectUsageWithResponse(ctx context.Context, projectId openapi_types.UUID, params *GetProjectUsageParams, reqEditors ...RequestEditorFn) (*GetProjectUsageResponse, error)
+
+	// ListRoutingPoliciesWithResponse List Routing Policies
+	//
+	// List the org's standalone routing policies.
+	//
+	// Returns all of them (an org has a handful, like the ERS customer surface),
+	// so no cursor pagination.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/routing-policies (the `ListRoutingPolicies` operationId).
+	ListRoutingPoliciesWithResponse(ctx context.Context, params *ListRoutingPoliciesParams, reqEditors ...RequestEditorFn) (*ListRoutingPoliciesResponse, error)
+
+	// CreateRoutingPolicyWithBodyWithResponse Create Routing Policy
+	//
+	// Create an org routing policy. The org's first policy becomes the default
+	// automatically; otherwise pass is_default=true to make it the default.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+	CreateRoutingPolicyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoutingPolicyResponse, error)
+
+	// CreateRoutingPolicyWithResponse Create Routing Policy
+	//
+	// Create an org routing policy. The org's first policy becomes the default
+	// automatically; otherwise pass is_default=true to make it the default.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+	CreateRoutingPolicyWithResponse(ctx context.Context, body CreateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRoutingPolicyResponse, error)
+
+	// DeleteRoutingPolicyWithResponse Delete Routing Policy
+	//
+	// Delete an org routing policy. Deleting the default leaves the org with no
+	// default until another is set (requests fall back to per-request model pins).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
+	DeleteRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteRoutingPolicyResponse, error)
+
+	// GetRoutingPolicyWithResponse Get Routing Policy
+	//
+	// Get one org routing policy.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
+	GetRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetRoutingPolicyResponse, error)
+
+	// UpdateRoutingPolicyWithBodyWithResponse Update Routing Policy
+	//
+	// Update an org routing policy in place (stable id for IaC diffs).
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+	UpdateRoutingPolicyWithBodyWithResponse(ctx context.Context, policyId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoutingPolicyResponse, error)
+
+	// UpdateRoutingPolicyWithResponse Update Routing Policy
+	//
+	// Update an org routing policy in place (stable id for IaC diffs).
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+	UpdateRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, body UpdateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoutingPolicyResponse, error)
+
+	// SetDefaultRoutingPolicyWithResponse Set Default Routing Policy
+	//
+	// Make this policy the org's default (unsets the previous default).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
+	SetDefaultRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*SetDefaultRoutingPolicyResponse, error)
+}
+
+type ListKeysResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *KeyListResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListKeysResponse) GetJSON200() *KeyListResponse {
+	return r.JSON200
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListKeysResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r ListKeysResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListKeysResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListKeysResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListKeysResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *KeyCreateResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateKeyResponse) GetJSON201() *KeyCreateResponse {
+	return r.JSON201
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateKeyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateKeyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateKeyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteKeyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteKeyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteKeyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *KeyObject
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetKeyResponse) GetJSON200() *KeyObject {
+	return r.JSON200
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetKeyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetKeyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetKeyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *KeyObject
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateKeyResponse) GetJSON200() *KeyObject {
+	return r.JSON200
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateKeyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateKeyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateKeyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetOrganizationUsageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *OrganizationUsageV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetOrganizationUsageResponse) GetJSON200() *OrganizationUsageV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetOrganizationUsageResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetOrganizationUsageResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetOrganizationUsageResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetOrganizationUsageResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationUsageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationUsageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetOrganizationUsageResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
 }
 
 type ListProjectsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *[]Project
+	JSON200 *ProjectV1List
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ListProjectsResponse) GetJSON200() *[]Project {
+func (r ListProjectsResponse) GetJSON200() *ProjectV1List {
 	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListProjectsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListProjectsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListProjectsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
 }
 
 // GetBody returns the raw response body bytes
@@ -234,17 +4823,2245 @@ func (r ListProjectsResponse) ContentType() string {
 	return ""
 }
 
-// ListProjectsWithResponse List projects
+type CreateProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *ProjectV1Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateProjectResponse) GetJSON201() *ProjectV1Response {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateProjectResponse) GetJSON400() *ErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateProjectResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateProjectResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateProjectResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateProjectResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteProjectResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteProjectResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteProjectResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteProjectResponse) GetJSON409() *ErrorResponse {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteProjectResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteProjectResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetProjectResponse) GetJSON200() *ProjectV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetProjectResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetProjectResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetProjectResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetProjectResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetProjectResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectV1Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateProjectResponse) GetJSON200() *ProjectV1Response {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateProjectResponse) GetJSON400() *ErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateProjectResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateProjectResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateProjectResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateProjectResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateProjectResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteProjectControlsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectControlsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteProjectControlsResponse) GetJSON200() *ProjectControlsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteProjectControlsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteProjectControlsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteProjectControlsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteProjectControlsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteProjectControlsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectControlsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectControlsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteProjectControlsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectControlsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectControlsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetProjectControlsResponse) GetJSON200() *ProjectControlsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetProjectControlsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetProjectControlsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetProjectControlsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetProjectControlsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetProjectControlsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectControlsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectControlsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectControlsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateProjectControlsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectControlsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UpdateProjectControls422JSONResponseBody
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateProjectControlsResponse) GetJSON200() *ProjectControlsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateProjectControlsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateProjectControlsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateProjectControlsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateProjectControlsResponse) GetJSON422() *UpdateProjectControls422JSONResponseBody {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateProjectControlsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectControlsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectControlsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateProjectControlsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteProjectDlpSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectDLPSettingsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteProjectDlpSettingsResponse) GetJSON200() *ProjectDLPSettingsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteProjectDlpSettingsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteProjectDlpSettingsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteProjectDlpSettingsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteProjectDlpSettingsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteProjectDlpSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectDlpSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectDlpSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteProjectDlpSettingsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectDlpSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectDLPSettingsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetProjectDlpSettingsResponse) GetJSON200() *ProjectDLPSettingsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetProjectDlpSettingsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetProjectDlpSettingsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetProjectDlpSettingsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetProjectDlpSettingsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetProjectDlpSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectDlpSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectDlpSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectDlpSettingsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateProjectDlpSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectDLPSettingsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UpdateProjectDlpSettings422JSONResponseBody
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateProjectDlpSettingsResponse) GetJSON200() *ProjectDLPSettingsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateProjectDlpSettingsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateProjectDlpSettingsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateProjectDlpSettingsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateProjectDlpSettingsResponse) GetJSON422() *UpdateProjectDlpSettings422JSONResponseBody {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateProjectDlpSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectDlpSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectDlpSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateProjectDlpSettingsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListProjectModelsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ScopeModelsResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListProjectModelsResponse) GetJSON200() *ScopeModelsResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListProjectModelsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListProjectModelsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListProjectModelsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListProjectModelsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r ListProjectModelsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListProjectModelsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListProjectModelsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListProjectModelsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteProjectPiSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectPISettingsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteProjectPiSettingsResponse) GetJSON200() *ProjectPISettingsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteProjectPiSettingsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteProjectPiSettingsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteProjectPiSettingsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteProjectPiSettingsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteProjectPiSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectPiSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectPiSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteProjectPiSettingsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectPiSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectPISettingsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetProjectPiSettingsResponse) GetJSON200() *ProjectPISettingsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetProjectPiSettingsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetProjectPiSettingsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetProjectPiSettingsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetProjectPiSettingsResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetProjectPiSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectPiSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectPiSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectPiSettingsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateProjectPiSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectPISettingsV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UpdateProjectPiSettings422JSONResponseBody
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateProjectPiSettingsResponse) GetJSON200() *ProjectPISettingsV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateProjectPiSettingsResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateProjectPiSettingsResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateProjectPiSettingsResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateProjectPiSettingsResponse) GetJSON422() *UpdateProjectPiSettings422JSONResponseBody {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateProjectPiSettingsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectPiSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectPiSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateProjectPiSettingsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectUsageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectUsageV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetProjectUsageResponse) GetJSON200() *ProjectUsageV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetProjectUsageResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetProjectUsageResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetProjectUsageResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetProjectUsageResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetProjectUsageResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectUsageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectUsageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectUsageResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListRoutingPoliciesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RoutingPolicyV1List
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListRoutingPoliciesResponse) GetJSON200() *RoutingPolicyV1List {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListRoutingPoliciesResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListRoutingPoliciesResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListRoutingPoliciesResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r ListRoutingPoliciesResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRoutingPoliciesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRoutingPoliciesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListRoutingPoliciesResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateRoutingPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *RoutingPolicyV1Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON201() *RoutingPolicyV1Response {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON400() *ErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateRoutingPolicyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRoutingPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRoutingPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateRoutingPolicyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteRoutingPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteRoutingPolicyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRoutingPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRoutingPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteRoutingPolicyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetRoutingPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RoutingPolicyV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetRoutingPolicyResponse) GetJSON200() *RoutingPolicyV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetRoutingPolicyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetRoutingPolicyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetRoutingPolicyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetRoutingPolicyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRoutingPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRoutingPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetRoutingPolicyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateRoutingPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RoutingPolicyV1Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UpdateRoutingPolicy422JSONResponseBody
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON200() *RoutingPolicyV1Response {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON400() *ErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON409() *ErrorResponse {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON422() *UpdateRoutingPolicy422JSONResponseBody {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateRoutingPolicyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRoutingPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRoutingPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateRoutingPolicyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SetDefaultRoutingPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RoutingPolicyV1Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *HTTPValidationError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON200() *RoutingPolicyV1Response {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r SetDefaultRoutingPolicyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SetDefaultRoutingPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetDefaultRoutingPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SetDefaultRoutingPolicyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+// ListKeysWithResponse List Keys
+//
+// List the org's regular API keys (excludes the internal tester key).
+//
+// Page through with “offset“/“limit“ while “has_more“ is true.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/keys (the `ListKeys` operationId).
+func (c *ClientWithResponses) ListKeysWithResponse(ctx context.Context, params *ListKeysParams, reqEditors ...RequestEditorFn) (*ListKeysResponse, error) {
+	rsp, err := c.ListKeys(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListKeysResponse(rsp)
+}
+
+// CreateKeyWithBodyWithResponse Create Key
+//
+// Create a regular API key. The raw key is returned only here.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+func (c *ClientWithResponses) CreateKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateKeyResponse, error) {
+	rsp, err := c.CreateKeyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateKeyResponse(rsp)
+}
+
+// CreateKeyWithResponse Create Key
+//
+// Create a regular API key. The raw key is returned only here.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/keys (the `CreateKey` operationId).
+func (c *ClientWithResponses) CreateKeyWithResponse(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateKeyResponse, error) {
+	rsp, err := c.CreateKey(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateKeyResponse(rsp)
+}
+
+// DeleteKeyWithResponse Delete Key
+//
+// Delete a key.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/keys/{key_hash} (the `DeleteKey` operationId).
+func (c *ClientWithResponses) DeleteKeyWithResponse(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*DeleteKeyResponse, error) {
+	rsp, err := c.DeleteKey(ctx, keyHash, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteKeyResponse(rsp)
+}
+
+// GetKeyWithResponse Get Key
+//
+// Get a single key with usage.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/keys/{key_hash} (the `GetKey` operationId).
+func (c *ClientWithResponses) GetKeyWithResponse(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*GetKeyResponse, error) {
+	rsp, err := c.GetKey(ctx, keyHash, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetKeyResponse(rsp)
+}
+
+// UpdateKeyWithBodyWithResponse Update Key
+//
+// Update a key's name / disabled state / spend limit.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+func (c *ClientWithResponses) UpdateKeyWithBodyWithResponse(ctx context.Context, keyHash string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateKeyResponse, error) {
+	rsp, err := c.UpdateKeyWithBody(ctx, keyHash, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateKeyResponse(rsp)
+}
+
+// UpdateKeyWithResponse Update Key
+//
+// Update a key's name / disabled state / spend limit.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/keys/{key_hash} (the `UpdateKey` operationId).
+func (c *ClientWithResponses) UpdateKeyWithResponse(ctx context.Context, keyHash string, body UpdateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateKeyResponse, error) {
+	rsp, err := c.UpdateKey(ctx, keyHash, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateKeyResponse(rsp)
+}
+
+// GetOrganizationUsageWithResponse Get Organization Usage
+//
+// Org spend rollup for the range, with optional per-dimension breakdown.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/organization/usage (the `GetOrganizationUsage` operationId).
+func (c *ClientWithResponses) GetOrganizationUsageWithResponse(ctx context.Context, params *GetOrganizationUsageParams, reqEditors ...RequestEditorFn) (*GetOrganizationUsageResponse, error) {
+	rsp, err := c.GetOrganizationUsage(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationUsageResponse(rsp)
+}
+
+// ListProjectsWithResponse List Projects
+//
+// List projects (keyset-paginated by created_at, id).
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/projects (the `ListProjects` operationId).
-func (c *ClientWithResponses) ListProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListProjectsResponse, error) {
-	rsp, err := c.ListProjects(ctx, reqEditors...)
+func (c *ClientWithResponses) ListProjectsWithResponse(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*ListProjectsResponse, error) {
+	rsp, err := c.ListProjects(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseListProjectsResponse(rsp)
+}
+
+// CreateProjectWithBodyWithResponse Create Project
+//
+// Create a project.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+func (c *ClientWithResponses) CreateProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectResponse, error) {
+	rsp, err := c.CreateProjectWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectResponse(rsp)
+}
+
+// CreateProjectWithResponse Create Project
+//
+// Create a project.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/projects (the `CreateProject` operationId).
+func (c *ClientWithResponses) CreateProjectWithResponse(ctx context.Context, body CreateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectResponse, error) {
+	rsp, err := c.CreateProject(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectResponse(rsp)
+}
+
+// DeleteProjectWithResponse Delete Project
+//
+// Delete a project. Blocked (409) while active project-scoped API keys
+// exist; fails closed (503) if the data plane is unreachable.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
+func (c *ClientWithResponses) DeleteProjectWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectResponse, error) {
+	rsp, err := c.DeleteProject(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectResponse(rsp)
+}
+
+// GetProjectWithResponse Get Project
+//
+// Get a single project.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/projects/{project_id} (the `GetProject` operationId).
+func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectResponse, error) {
+	rsp, err := c.GetProject(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectResponse(rsp)
+}
+
+// UpdateProjectWithBodyWithResponse Update Project
+//
+// Update a project.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+func (c *ClientWithResponses) UpdateProjectWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectResponse, error) {
+	rsp, err := c.UpdateProjectWithBody(ctx, projectId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectResponse(rsp)
+}
+
+// UpdateProjectWithResponse Update Project
+//
+// Update a project.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/projects/{project_id} (the `UpdateProject` operationId).
+func (c *ClientWithResponses) UpdateProjectWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectResponse, error) {
+	rsp, err := c.UpdateProject(ctx, projectId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectResponse(rsp)
+}
+
+// DeleteProjectControlsWithResponse Delete Project Controls
+//
+// Clear the override so the project inherits the organization's controls.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/projects/{project_id}/controls (the `DeleteProjectControls` operationId).
+func (c *ClientWithResponses) DeleteProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectControlsResponse, error) {
+	rsp, err := c.DeleteProjectControls(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectControlsResponse(rsp)
+}
+
+// GetProjectControlsWithResponse Get Project Controls
+//
+// Return the project's control override and the resulting effective controls.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/projects/{project_id}/controls (the `GetProjectControls` operationId).
+func (c *ClientWithResponses) GetProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectControlsResponse, error) {
+	rsp, err := c.GetProjectControls(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectControlsResponse(rsp)
+}
+
+// UpdateProjectControlsWithBodyWithResponse Update Project Controls
+//
+// Replace the project's control override with exactly the fields sent.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+func (c *ClientWithResponses) UpdateProjectControlsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectControlsResponse, error) {
+	rsp, err := c.UpdateProjectControlsWithBody(ctx, projectId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectControlsResponse(rsp)
+}
+
+// UpdateProjectControlsWithResponse Update Project Controls
+//
+// Replace the project's control override with exactly the fields sent.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
+func (c *ClientWithResponses) UpdateProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectControlsResponse, error) {
+	rsp, err := c.UpdateProjectControls(ctx, projectId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectControlsResponse(rsp)
+}
+
+// DeleteProjectDlpSettingsWithResponse Delete Project Dlp Settings
+//
+// Clear the override so the project inherits the org's DLP rules.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
+func (c *ClientWithResponses) DeleteProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectDlpSettingsResponse, error) {
+	rsp, err := c.DeleteProjectDlpSettings(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectDlpSettingsResponse(rsp)
+}
+
+// GetProjectDlpSettingsWithResponse Get Project Dlp Settings
+//
+// Return the project's DLP override plus the resolved per-entity outcome.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
+func (c *ClientWithResponses) GetProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectDlpSettingsResponse, error) {
+	rsp, err := c.GetProjectDlpSettings(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectDlpSettingsResponse(rsp)
+}
+
+// UpdateProjectDlpSettingsWithBodyWithResponse Update Project Dlp Settings
+//
+// Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+func (c *ClientWithResponses) UpdateProjectDlpSettingsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectDlpSettingsResponse, error) {
+	rsp, err := c.UpdateProjectDlpSettingsWithBody(ctx, projectId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectDlpSettingsResponse(rsp)
+}
+
+// UpdateProjectDlpSettingsWithResponse Update Project Dlp Settings
+//
+// Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
+func (c *ClientWithResponses) UpdateProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectDlpSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectDlpSettingsResponse, error) {
+	rsp, err := c.UpdateProjectDlpSettings(ctx, projectId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectDlpSettingsResponse(rsp)
+}
+
+// ListProjectModelsWithResponse List Project Models
+//
+// Models this project can route to under its effective controls.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
+func (c *ClientWithResponses) ListProjectModelsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ListProjectModelsResponse, error) {
+	rsp, err := c.ListProjectModels(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListProjectModelsResponse(rsp)
+}
+
+// DeleteProjectPiSettingsWithResponse Delete Project Pi Settings
+//
+// Clear the override so the project inherits the org PI policy wholesale.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
+func (c *ClientWithResponses) DeleteProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectPiSettingsResponse, error) {
+	rsp, err := c.DeleteProjectPiSettings(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectPiSettingsResponse(rsp)
+}
+
+// GetProjectPiSettingsWithResponse Get Project Pi Settings
+//
+// Return the project's PI override, the effective policy, and what it inherits.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
+func (c *ClientWithResponses) GetProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectPiSettingsResponse, error) {
+	rsp, err := c.GetProjectPiSettings(ctx, projectId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectPiSettingsResponse(rsp)
+}
+
+// UpdateProjectPiSettingsWithBodyWithResponse Update Project Pi Settings
+//
+// Replace the project's PI override wholesale + sync to the data plane.
+//
+// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
+// field back to inheritance. An empty body therefore means "inherit
+// everything", the same as DELETE.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+func (c *ClientWithResponses) UpdateProjectPiSettingsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectPiSettingsResponse, error) {
+	rsp, err := c.UpdateProjectPiSettingsWithBody(ctx, projectId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectPiSettingsResponse(rsp)
+}
+
+// UpdateProjectPiSettingsWithResponse Update Project Pi Settings
+//
+// Replace the project's PI override wholesale + sync to the data plane.
+//
+// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
+// field back to inheritance. An empty body therefore means "inherit
+// everything", the same as DELETE.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
+func (c *ClientWithResponses) UpdateProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectPiSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectPiSettingsResponse, error) {
+	rsp, err := c.UpdateProjectPiSettings(ctx, projectId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectPiSettingsResponse(rsp)
+}
+
+// GetProjectUsageWithResponse Get Project Usage
+//
+// Project spend totals (day-granular) plus a per-model breakdown.
+//
+// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
+// so like the org endpoint it is month-granular over the months the range
+// overlaps. The monthly project rows only accrue from when the data plane
+// started writing them — earlier months report totals but an empty map.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/projects/{project_id}/usage (the `GetProjectUsage` operationId).
+func (c *ClientWithResponses) GetProjectUsageWithResponse(ctx context.Context, projectId openapi_types.UUID, params *GetProjectUsageParams, reqEditors ...RequestEditorFn) (*GetProjectUsageResponse, error) {
+	rsp, err := c.GetProjectUsage(ctx, projectId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectUsageResponse(rsp)
+}
+
+// ListRoutingPoliciesWithResponse List Routing Policies
+//
+// List the org's standalone routing policies.
+//
+// Returns all of them (an org has a handful, like the ERS customer surface),
+// so no cursor pagination.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/routing-policies (the `ListRoutingPolicies` operationId).
+func (c *ClientWithResponses) ListRoutingPoliciesWithResponse(ctx context.Context, params *ListRoutingPoliciesParams, reqEditors ...RequestEditorFn) (*ListRoutingPoliciesResponse, error) {
+	rsp, err := c.ListRoutingPolicies(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRoutingPoliciesResponse(rsp)
+}
+
+// CreateRoutingPolicyWithBodyWithResponse Create Routing Policy
+//
+// Create an org routing policy. The org's first policy becomes the default
+// automatically; otherwise pass is_default=true to make it the default.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+func (c *ClientWithResponses) CreateRoutingPolicyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoutingPolicyResponse, error) {
+	rsp, err := c.CreateRoutingPolicyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRoutingPolicyResponse(rsp)
+}
+
+// CreateRoutingPolicyWithResponse Create Routing Policy
+//
+// Create an org routing policy. The org's first policy becomes the default
+// automatically; otherwise pass is_default=true to make it the default.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/routing-policies (the `CreateRoutingPolicy` operationId).
+func (c *ClientWithResponses) CreateRoutingPolicyWithResponse(ctx context.Context, body CreateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRoutingPolicyResponse, error) {
+	rsp, err := c.CreateRoutingPolicy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRoutingPolicyResponse(rsp)
+}
+
+// DeleteRoutingPolicyWithResponse Delete Routing Policy
+//
+// Delete an org routing policy. Deleting the default leaves the org with no
+// default until another is set (requests fall back to per-request model pins).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
+func (c *ClientWithResponses) DeleteRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteRoutingPolicyResponse, error) {
+	rsp, err := c.DeleteRoutingPolicy(ctx, policyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRoutingPolicyResponse(rsp)
+}
+
+// GetRoutingPolicyWithResponse Get Routing Policy
+//
+// Get one org routing policy.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
+func (c *ClientWithResponses) GetRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetRoutingPolicyResponse, error) {
+	rsp, err := c.GetRoutingPolicy(ctx, policyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRoutingPolicyResponse(rsp)
+}
+
+// UpdateRoutingPolicyWithBodyWithResponse Update Routing Policy
+//
+// Update an org routing policy in place (stable id for IaC diffs).
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+func (c *ClientWithResponses) UpdateRoutingPolicyWithBodyWithResponse(ctx context.Context, policyId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoutingPolicyResponse, error) {
+	rsp, err := c.UpdateRoutingPolicyWithBody(ctx, policyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoutingPolicyResponse(rsp)
+}
+
+// UpdateRoutingPolicyWithResponse Update Routing Policy
+//
+// Update an org routing policy in place (stable id for IaC diffs).
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/routing-policies/{policy_id} (the `UpdateRoutingPolicy` operationId).
+func (c *ClientWithResponses) UpdateRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, body UpdateRoutingPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoutingPolicyResponse, error) {
+	rsp, err := c.UpdateRoutingPolicy(ctx, policyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoutingPolicyResponse(rsp)
+}
+
+// SetDefaultRoutingPolicyWithResponse Set Default Routing Policy
+//
+// Make this policy the org's default (unsets the previous default).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
+func (c *ClientWithResponses) SetDefaultRoutingPolicyWithResponse(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*SetDefaultRoutingPolicyResponse, error) {
+	rsp, err := c.SetDefaultRoutingPolicy(ctx, policyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetDefaultRoutingPolicyResponse(rsp)
+}
+
+// ParseListKeysResponse parses an HTTP response from a ListKeysWithResponse call
+func ParseListKeysResponse(rsp *http.Response) (*ListKeysResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListKeysResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest KeyListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateKeyResponse parses an HTTP response from a CreateKeyWithResponse call
+func ParseCreateKeyResponse(rsp *http.Response) (*CreateKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest KeyCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteKeyResponse parses an HTTP response from a DeleteKeyWithResponse call
+func ParseDeleteKeyResponse(rsp *http.Response) (*DeleteKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetKeyResponse parses an HTTP response from a GetKeyWithResponse call
+func ParseGetKeyResponse(rsp *http.Response) (*GetKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest KeyObject
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateKeyResponse parses an HTTP response from a UpdateKeyWithResponse call
+func ParseUpdateKeyResponse(rsp *http.Response) (*UpdateKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest KeyObject
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationUsageResponse parses an HTTP response from a GetOrganizationUsageWithResponse call
+func ParseGetOrganizationUsageResponse(rsp *http.Response) (*GetOrganizationUsageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationUsageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OrganizationUsageV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListProjectsResponse parses an HTTP response from a ListProjectsWithResponse call
@@ -262,11 +7079,1179 @@ func ParseListProjectsResponse(rsp *http.Response) (*ListProjectsResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []Project
+		var dest ProjectV1List
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateProjectResponse parses an HTTP response from a CreateProjectWithResponse call
+func ParseCreateProjectResponse(rsp *http.Response) (*CreateProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectResponse parses an HTTP response from a DeleteProjectWithResponse call
+func ParseDeleteProjectResponse(rsp *http.Response) (*DeleteProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectResponse parses an HTTP response from a GetProjectWithResponse call
+func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectResponse parses an HTTP response from a UpdateProjectWithResponse call
+func ParseUpdateProjectResponse(rsp *http.Response) (*UpdateProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectControlsResponse parses an HTTP response from a DeleteProjectControlsWithResponse call
+func ParseDeleteProjectControlsResponse(rsp *http.Response) (*DeleteProjectControlsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectControlsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectControlsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectControlsResponse parses an HTTP response from a GetProjectControlsWithResponse call
+func ParseGetProjectControlsResponse(rsp *http.Response) (*GetProjectControlsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectControlsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectControlsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectControlsResponse parses an HTTP response from a UpdateProjectControlsWithResponse call
+func ParseUpdateProjectControlsResponse(rsp *http.Response) (*UpdateProjectControlsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectControlsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectControlsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UpdateProjectControls422JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectDlpSettingsResponse parses an HTTP response from a DeleteProjectDlpSettingsWithResponse call
+func ParseDeleteProjectDlpSettingsResponse(rsp *http.Response) (*DeleteProjectDlpSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectDlpSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectDLPSettingsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectDlpSettingsResponse parses an HTTP response from a GetProjectDlpSettingsWithResponse call
+func ParseGetProjectDlpSettingsResponse(rsp *http.Response) (*GetProjectDlpSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectDlpSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectDLPSettingsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectDlpSettingsResponse parses an HTTP response from a UpdateProjectDlpSettingsWithResponse call
+func ParseUpdateProjectDlpSettingsResponse(rsp *http.Response) (*UpdateProjectDlpSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectDlpSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectDLPSettingsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UpdateProjectDlpSettings422JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListProjectModelsResponse parses an HTTP response from a ListProjectModelsWithResponse call
+func ParseListProjectModelsResponse(rsp *http.Response) (*ListProjectModelsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListProjectModelsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ScopeModelsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectPiSettingsResponse parses an HTTP response from a DeleteProjectPiSettingsWithResponse call
+func ParseDeleteProjectPiSettingsResponse(rsp *http.Response) (*DeleteProjectPiSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectPiSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectPISettingsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectPiSettingsResponse parses an HTTP response from a GetProjectPiSettingsWithResponse call
+func ParseGetProjectPiSettingsResponse(rsp *http.Response) (*GetProjectPiSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectPiSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectPISettingsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectPiSettingsResponse parses an HTTP response from a UpdateProjectPiSettingsWithResponse call
+func ParseUpdateProjectPiSettingsResponse(rsp *http.Response) (*UpdateProjectPiSettingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectPiSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectPISettingsV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UpdateProjectPiSettings422JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectUsageResponse parses an HTTP response from a GetProjectUsageWithResponse call
+func ParseGetProjectUsageResponse(rsp *http.Response) (*GetProjectUsageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectUsageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectUsageV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRoutingPoliciesResponse parses an HTTP response from a ListRoutingPoliciesWithResponse call
+func ParseListRoutingPoliciesResponse(rsp *http.Response) (*ListRoutingPoliciesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRoutingPoliciesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RoutingPolicyV1List
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRoutingPolicyResponse parses an HTTP response from a CreateRoutingPolicyWithResponse call
+func ParseCreateRoutingPolicyResponse(rsp *http.Response) (*CreateRoutingPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRoutingPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest RoutingPolicyV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRoutingPolicyResponse parses an HTTP response from a DeleteRoutingPolicyWithResponse call
+func ParseDeleteRoutingPolicyResponse(rsp *http.Response) (*DeleteRoutingPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRoutingPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRoutingPolicyResponse parses an HTTP response from a GetRoutingPolicyWithResponse call
+func ParseGetRoutingPolicyResponse(rsp *http.Response) (*GetRoutingPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRoutingPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RoutingPolicyV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRoutingPolicyResponse parses an HTTP response from a UpdateRoutingPolicyWithResponse call
+func ParseUpdateRoutingPolicyResponse(rsp *http.Response) (*UpdateRoutingPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRoutingPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RoutingPolicyV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UpdateRoutingPolicy422JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetDefaultRoutingPolicyResponse parses an HTTP response from a SetDefaultRoutingPolicyWithResponse call
+func ParseSetDefaultRoutingPolicyResponse(rsp *http.Response) (*SetDefaultRoutingPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetDefaultRoutingPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RoutingPolicyV1Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest HTTPValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 

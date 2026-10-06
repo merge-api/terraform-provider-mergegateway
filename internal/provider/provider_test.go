@@ -129,7 +129,7 @@ func TestProviderClientSendsAPIKey(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotAuth = r.Header.Get("Authorization")
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte("[]"))
+		_, _ = w.Write([]byte(`{"results": [], "next": null, "previous": null}`))
 	}))
 	defer server.Close()
 
@@ -143,7 +143,7 @@ func TestProviderClientSendsAPIKey(t *testing.T) {
 	if !ok {
 		t.Fatalf("ResourceData is %T, want *client.ClientWithResponses", resp.ResourceData)
 	}
-	if _, err := c.ListProjectsWithResponse(t.Context()); err != nil {
+	if _, err := c.ListProjectsWithResponse(t.Context(), nil); err != nil {
 		t.Fatalf("request failed: %v", err)
 	}
 	if gotAuth != "Bearer env-key" {

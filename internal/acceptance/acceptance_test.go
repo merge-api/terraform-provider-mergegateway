@@ -16,6 +16,7 @@
 package acceptance
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -75,8 +76,6 @@ provider "mergegateway" {
 }
 
 // randomName returns a unique name such as "tf-acc-4823094712" for a test resource.
-//
-//nolint:unused // Used by the acceptance tests that come with each resource.
 func randomName() string {
 	return acctest.RandomWithPrefix(namePrefix)
 }
@@ -84,8 +83,6 @@ func randomName() string {
 // checkDestroy verifies against the API that every resourceType in state is
 // really gone after destroy: GET <path>/<id> must return 404. Response bodies
 // are never read or logged, since some resources echo secrets.
-//
-//nolint:unused // Used by the acceptance tests that come with each resource.
 func checkDestroy(resourceType, path string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
@@ -95,7 +92,7 @@ func checkDestroy(resourceType, path string) resource.TestCheckFunc {
 			if rs.Type != resourceType {
 				continue
 			}
-			status, _, err := apiRequest(ctx, http.MethodGet, path+"/"+rs.Primary.ID)
+			status, _, err := apiRequest(ctx, http.MethodGet, path+"/"+rs.Primary.ID, nil)
 			if err != nil {
 				return fmt.Errorf("checking %s %s was destroyed: %w", resourceType, rs.Primary.ID, err)
 			}
@@ -111,13 +108,17 @@ func checkDestroy(resourceType, path string) resource.TestCheckFunc {
 var httpClient = &http.Client{Timeout: 60 * time.Second}
 
 // apiRequest calls the Merge Gateway API directly with the test management key,
-// for checks and cleanup that must not go through the provider.
-func apiRequest(ctx context.Context, method, path string) (int, []byte, error) {
-	req, err := http.NewRequestWithContext(ctx, method, baseURL()+path, nil)
+// for checks, cleanup and drift that must not go through the provider. body,
+// if not nil, is sent as JSON.
+func apiRequest(ctx context.Context, method, path string, body []byte) (int, []byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, baseURL()+path, bytes.NewReader(body))
 	if err != nil {
 		return 0, nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv(apiKeyEnvVar))
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -125,9 +126,9 @@ func apiRequest(ctx context.Context, method, path string) (int, []byte, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0, nil, err
 	}
-	return resp.StatusCode, body, nil
+	return resp.StatusCode, respBody, nil
 }

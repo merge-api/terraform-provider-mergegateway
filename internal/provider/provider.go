@@ -148,7 +148,9 @@ func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.Confi
 }
 
 func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewProjectResource,
+	}
 }
 
 func (p *MergeGatewayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {

@@ -53,7 +53,7 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
-To regenerate the API client after `openapi.json` changes, run `make client`. Never edit `internal/client/client.gen.go` by hand.
+To update `openapi.json` from the backend's develop branch, run `make spec` (needs `gh`), then regenerate the API client with `make client`. Never edit `internal/client/client.gen.go` by hand.
 
 To generate or update documentation (and the client), run `make generate`.
 
