@@ -3,12 +3,12 @@
 page_title: "mergegateway_project_pi_settings Resource - mergegateway"
 subcategory: ""
 description: |-
-  Manages a project's prompt-injection (PI) protection overrides. Each setting left out inherits the organization's value. There is one per project: destroying it resets the project to inherit everything.
+  Manages a project's prompt-injection (PI) protection overrides. Each setting left out inherits the organization's value. There is one per project: creating it replaces any overrides the project already has, and destroying it resets the project to inherit everything.
 ---
 
 # mergegateway_project_pi_settings (Resource)
 
-Manages a project's prompt-injection (PI) protection overrides. Each setting left out inherits the organization's value. There is one per project: destroying it resets the project to inherit everything.
+Manages a project's prompt-injection (PI) protection overrides. Each setting left out inherits the organization's value. There is one per project: creating it replaces any overrides the project already has, and destroying it resets the project to inherit everything.
 
 ## Example Usage
 
@@ -73,6 +73,7 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# Import a project's PI settings by the project's ID.
+# Import a project's PI settings by the project's ID. The project must have at
+# least one override; one that inherits everything has nothing to import.
 terraform import mergegateway_project_pi_settings.support_bot 6f1c1f5e-8a8b-4c43-9a0e-3f0f6d0c8b11
 ```

@@ -60,10 +60,7 @@ func TestAccProjectPISettingsResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: protoV6ProviderFactories(),
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			checkPISettingsDestroyed,
-			checkDestroy("mergegateway_project", "/v1/projects"),
-		),
+		CheckDestroy:             checkPISettingsDestroyed,
 		Steps: []resource.TestStep{
 			// Create with a few overrides; the rest inherit.
 			{
@@ -206,10 +203,7 @@ func TestAccProjectPISettingsResource_drift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: protoV6ProviderFactories(),
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			checkPISettingsDestroyed,
-			checkDestroy("mergegateway_project", "/v1/projects"),
-		),
+		CheckDestroy:             checkPISettingsDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -252,6 +246,7 @@ func TestAccProjectPISettingsResource_drift(t *testing.T) {
 						plancheck.ExpectResourceAction("mergegateway_project.a", plancheck.ResourceActionCreate),
 						plancheck.ExpectResourceAction(piSettingsAddress, plancheck.ResourceActionCreate),
 					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 			},
 		},

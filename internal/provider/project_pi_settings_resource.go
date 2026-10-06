@@ -93,7 +93,8 @@ func (r *ProjectPISettingsResource) Schema(ctx context.Context, req resource.Sch
 
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a project's prompt-injection (PI) protection overrides. Each setting left out inherits " +
-			"the organization's value. There is one per project: destroying it resets the project to inherit everything.",
+			"the organization's value. There is one per project: creating it replaces any overrides the project already has, " +
+			"and destroying it resets the project to inherit everything.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The project's ID, the same as `project_id`.",
@@ -211,6 +212,10 @@ func (r *ProjectPISettingsResource) Create(ctx context.Context, req resource.Cre
 	resp.Diagnostics.Append(diags...)
 	body, diags := projectPISettingsRequest(ctx, plan)
 	resp.Diagnostics.Append(diags...)
+	if !plan.hasOverride() {
+		// Unknown at plan time and null now: an empty PUT would reset the project.
+		resp.Diagnostics.AddError("No PI settings overrides", "Every pi_* attribute is null. Set at least one.")
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -226,7 +231,7 @@ func (r *ProjectPISettingsResource) Create(ctx context.Context, req resource.Cre
 	}
 	tflog.Trace(ctx, "set project PI settings", map[string]any{"project_id": id.String()})
 
-	state, diags := projectPISettingsFromAPI(ctx, id.String(), updated.JSON200)
+	state, diags := projectPISettingsFromAPI(ctx, plan.ProjectID.ValueString(), updated.JSON200)
 	resp.Diagnostics.Append(diags...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -260,7 +265,7 @@ func (r *ProjectPISettingsResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	state, diags = projectPISettingsFromAPI(ctx, id.String(), got.JSON200)
+	state, diags = projectPISettingsFromAPI(ctx, state.ProjectID.ValueString(), got.JSON200)
 	resp.Diagnostics.Append(diags...)
 	// No overrides means they were reset outside Terraform (the config always
 	// has at least one): drop it from state so the next plan sets them again.
@@ -283,6 +288,10 @@ func (r *ProjectPISettingsResource) Update(ctx context.Context, req resource.Upd
 	resp.Diagnostics.Append(diags...)
 	body, diags := projectPISettingsRequest(ctx, plan)
 	resp.Diagnostics.Append(diags...)
+	if !plan.hasOverride() {
+		// Unknown at plan time and null now: an empty PUT would reset the project.
+		resp.Diagnostics.AddError("No PI settings overrides", "Every pi_* attribute is null. Set at least one.")
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -297,7 +306,7 @@ func (r *ProjectPISettingsResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	state, diags := projectPISettingsFromAPI(ctx, id.String(), updated.JSON200)
+	state, diags := projectPISettingsFromAPI(ctx, plan.ProjectID.ValueString(), updated.JSON200)
 	resp.Diagnostics.Append(diags...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -378,6 +387,7 @@ func projectPISettingsRequest(ctx context.Context, plan projectPISettingsResourc
 }
 
 // projectPISettingsFromAPI maps an API response to the Terraform model.
+// projectID is kept as configured: the API accepts other spellings of a UUID.
 func projectPISettingsFromAPI(ctx context.Context, projectID string, r *client.ProjectPISettingsV1Response) (projectPISettingsResourceModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	o := r.Override
