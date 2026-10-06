@@ -152,6 +152,12 @@
             ],
             "title": "Allowed Models"
           },
+          "disabled": {
+            "default": false,
+            "description": "Create the key disabled.",
+            "title": "Disabled",
+            "type": "boolean"
+          },
           "limit": {
             "anyOf": [
               {
@@ -162,17 +168,24 @@
                 "type": "null"
               }
             ],
+            "description": "USD spend cap over the limit_reset window. Must be above 0.",
             "title": "Limit"
           },
           "limit_reset": {
             "anyOf": [
               {
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ],
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "The window `limit` applies to. Monthly when unset.",
             "title": "Limit Reset"
           },
           "name": {
@@ -196,7 +209,20 @@
                 "type": "null"
               }
             ],
+            "description": "The project the key is scoped to. Can't be changed after creation.",
             "title": "Project Id"
+          },
+          "routing_policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A routing policy to bind the key to: an org-level policy or one scoped to the key's project. Can be changed later.",
+            "title": "Routing Policy Id"
           }
         },
         "title": "KeyCreateRequest",
@@ -227,7 +253,37 @@
                 "type": "null"
               }
             ],
+            "description": "The Merge for Workforce budget group the key draws down.",
+            "readOnly": true,
             "title": "Budget Group Id"
+          },
+          "byok_usage": {
+            "description": "The part of usage from requests that ran on the organization's own provider credentials (BYOK).",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage",
+            "type": "number"
+          },
+          "byok_usage_daily": {
+            "description": "The BYOK part of usage_daily.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage Daily",
+            "type": "number"
+          },
+          "byok_usage_monthly": {
+            "description": "The BYOK part of usage_monthly.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage Monthly",
+            "type": "number"
+          },
+          "byok_usage_weekly": {
+            "description": "The BYOK part of usage_weekly.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage Weekly",
+            "type": "number"
           },
           "created_at": {
             "anyOf": [
@@ -239,21 +295,57 @@
                 "type": "null"
               }
             ],
+            "readOnly": true,
             "title": "Created At"
+          },
+          "creator_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The dashboard user who created the key. Null for keys created with a management key.",
+            "readOnly": true,
+            "title": "Creator User Id"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean"
           },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the key stops working. Null means it never expires. Not settable through this API yet.",
+            "readOnly": true,
+            "title": "Expires At"
+          },
           "hash": {
+            "description": "The key's id: the SHA-256 hash of the raw key.",
+            "readOnly": true,
             "title": "Hash",
             "type": "string"
           },
           "key": {
+            "description": "The raw API key. Returned only once, in this response; store it now.",
+            "format": "password",
+            "readOnly": true,
             "title": "Key",
             "type": "string"
           },
           "label": {
+            "description": "The key's first characters, for display.",
+            "readOnly": true,
             "title": "Label",
             "type": "string"
           },
@@ -279,17 +371,25 @@
                 "type": "null"
               }
             ],
+            "description": "limit minus usage, never below 0.",
+            "readOnly": true,
             "title": "Limit Remaining"
           },
           "limit_reset": {
             "anyOf": [
               {
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ],
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "The window `limit` applies to. Monthly when unset.",
             "title": "Limit Reset"
           },
           "name": {
@@ -306,12 +406,14 @@
           "project_id": {
             "anyOf": [
               {
+                "format": "uuid",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "The project the key is scoped to. Can't be changed after creation.",
             "title": "Project Id"
           },
           "routing_policy_id": {
@@ -326,8 +428,31 @@
             "title": "Routing Policy Id"
           },
           "usage": {
+            "description": "USD spend in the current limit_reset window.",
             "format": "double",
+            "readOnly": true,
             "title": "Usage",
+            "type": "number"
+          },
+          "usage_daily": {
+            "description": "USD spend today.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Usage Daily",
+            "type": "number"
+          },
+          "usage_monthly": {
+            "description": "USD spend since the 1st of the month.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Usage Monthly",
+            "type": "number"
+          },
+          "usage_weekly": {
+            "description": "USD spend since Monday.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Usage Weekly",
             "type": "number"
           }
         },
@@ -336,6 +461,14 @@
           "label",
           "disabled",
           "usage",
+          "creator_user_id",
+          "usage_daily",
+          "usage_weekly",
+          "usage_monthly",
+          "byok_usage",
+          "byok_usage_daily",
+          "byok_usage_weekly",
+          "byok_usage_monthly",
           "key"
         ],
         "title": "KeyCreateResponse",
@@ -395,7 +528,37 @@
                 "type": "null"
               }
             ],
+            "description": "The Merge for Workforce budget group the key draws down.",
+            "readOnly": true,
             "title": "Budget Group Id"
+          },
+          "byok_usage": {
+            "description": "The part of usage from requests that ran on the organization's own provider credentials (BYOK).",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage",
+            "type": "number"
+          },
+          "byok_usage_daily": {
+            "description": "The BYOK part of usage_daily.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage Daily",
+            "type": "number"
+          },
+          "byok_usage_monthly": {
+            "description": "The BYOK part of usage_monthly.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage Monthly",
+            "type": "number"
+          },
+          "byok_usage_weekly": {
+            "description": "The BYOK part of usage_weekly.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Byok Usage Weekly",
+            "type": "number"
           },
           "created_at": {
             "anyOf": [
@@ -407,17 +570,50 @@
                 "type": "null"
               }
             ],
+            "readOnly": true,
             "title": "Created At"
+          },
+          "creator_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The dashboard user who created the key. Null for keys created with a management key.",
+            "readOnly": true,
+            "title": "Creator User Id"
           },
           "disabled": {
             "title": "Disabled",
             "type": "boolean"
           },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the key stops working. Null means it never expires. Not settable through this API yet.",
+            "readOnly": true,
+            "title": "Expires At"
+          },
           "hash": {
+            "description": "The key's id: the SHA-256 hash of the raw key.",
+            "readOnly": true,
             "title": "Hash",
             "type": "string"
           },
           "label": {
+            "description": "The key's first characters, for display.",
+            "readOnly": true,
             "title": "Label",
             "type": "string"
           },
@@ -443,17 +639,25 @@
                 "type": "null"
               }
             ],
+            "description": "limit minus usage, never below 0.",
+            "readOnly": true,
             "title": "Limit Remaining"
           },
           "limit_reset": {
             "anyOf": [
               {
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ],
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "The window `limit` applies to. Monthly when unset.",
             "title": "Limit Reset"
           },
           "name": {
@@ -470,12 +674,14 @@
           "project_id": {
             "anyOf": [
               {
+                "format": "uuid",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "The project the key is scoped to. Can't be changed after creation.",
             "title": "Project Id"
           },
           "routing_policy_id": {
@@ -490,8 +696,31 @@
             "title": "Routing Policy Id"
           },
           "usage": {
+            "description": "USD spend in the current limit_reset window.",
             "format": "double",
+            "readOnly": true,
             "title": "Usage",
+            "type": "number"
+          },
+          "usage_daily": {
+            "description": "USD spend today.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Usage Daily",
+            "type": "number"
+          },
+          "usage_monthly": {
+            "description": "USD spend since the 1st of the month.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Usage Monthly",
+            "type": "number"
+          },
+          "usage_weekly": {
+            "description": "USD spend since Monday.",
+            "format": "double",
+            "readOnly": true,
+            "title": "Usage Weekly",
             "type": "number"
           }
         },
@@ -499,7 +728,15 @@
           "hash",
           "label",
           "disabled",
-          "usage"
+          "usage",
+          "creator_user_id",
+          "usage_daily",
+          "usage_weekly",
+          "usage_monthly",
+          "byok_usage",
+          "byok_usage_daily",
+          "byok_usage_weekly",
+          "byok_usage_monthly"
         ],
         "title": "KeyObject",
         "type": "object"
@@ -529,6 +766,7 @@
                 "type": "null"
               }
             ],
+            "description": "Managed by Merge for Workforce; sending this field is a 400.",
             "title": "Budget Group Id"
           },
           "disabled": {
@@ -557,12 +795,18 @@
           "limit_reset": {
             "anyOf": [
               {
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ],
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "The window `limit` applies to. Monthly when unset.",
             "title": "Limit Reset"
           },
           "name": {
@@ -586,6 +830,7 @@
                 "type": "null"
               }
             ],
+            "description": "Can't be changed after creation; sending a value is a 400.",
             "title": "Project Id"
           },
           "routing_policy_id": {
@@ -2722,6 +2967,43 @@
               "title": "Limit",
               "type": "integer"
             }
+          },
+          {
+            "description": "Only keys scoped to this project.",
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only keys scoped to this project.",
+              "title": "Project Id"
+            }
+          },
+          {
+            "description": "Only disabled keys (true) or only enabled keys (false).",
+            "in": "query",
+            "name": "disabled",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only disabled keys (true) or only enabled keys (false).",
+              "title": "Disabled"
+            }
           }
         ],
         "responses": {
@@ -2735,6 +3017,26 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2746,6 +3048,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
         "summary": "List Keys",
         "tags": [
           "management-api"
@@ -2775,6 +3082,46 @@
             },
             "description": "Successful Response"
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request breaks a rule: an unknown limit_reset, a limit that isn't positive, a model the key can't be limited to, an inactive project or routing policy, or a field that can't be changed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2786,6 +3133,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
         "summary": "Create Key",
         "tags": [
           "management-api"
@@ -2811,6 +3163,36 @@
           "204": {
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2822,6 +3204,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
         "summary": "Delete Key",
         "tags": [
           "management-api"
@@ -2852,6 +3239,36 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2863,6 +3280,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
         "summary": "Get Key",
         "tags": [
           "management-api"
@@ -2903,6 +3325,46 @@
             },
             "description": "Successful Response"
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request breaks a rule: an unknown limit_reset, a limit that isn't positive, a model the key can't be limited to, an inactive project or routing policy, or a field that can't be changed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2914,6 +3376,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
         "summary": "Update Key",
         "tags": [
           "management-api"
