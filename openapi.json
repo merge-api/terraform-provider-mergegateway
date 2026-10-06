@@ -1,65 +1,4889 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "Merge Gateway Management API",
-    "version": "0.0.0-placeholder",
-    "description": "Placeholder spec until the backend publishes openapi.json. Replace this file with the real spec and run `make client`."
-  },
-  "servers": [
-    {
-      "url": "https://api-gateway.merge.dev"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "paths": {
-    "/v1/projects": {
-      "get": {
-        "operationId": "listProjects",
-        "summary": "List projects",
-        "responses": {
-          "200": {
-            "description": "The organization's projects.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Project"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
   "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    },
     "schemas": {
-      "Project": {
-        "type": "object",
-        "required": [
-          "id",
-          "name"
-        ],
+      "APIKeySpendV1": {
         "properties": {
+          "api_key_id": {
+            "description": "The key's hash.",
+            "title": "Api Key Id",
+            "type": "string"
+          },
+          "byok_spend": {
+            "description": "BYOK spend at list price.",
+            "format": "double",
+            "title": "Byok Spend",
+            "type": "number"
+          },
+          "merge_hosted_spend": {
+            "description": "Spend on Merge-managed credentials.",
+            "format": "double",
+            "title": "Merge Hosted Spend",
+            "type": "number"
+          },
+          "request_count": {
+            "title": "Request Count",
+            "type": "integer"
+          },
+          "total_spend": {
+            "format": "double",
+            "title": "Total Spend",
+            "type": "number"
+          },
+          "web_search_spend": {
+            "description": "Server-tool (web search) cost.",
+            "format": "double",
+            "title": "Web Search Spend",
+            "type": "number"
+          }
+        },
+        "required": [
+          "merge_hosted_spend",
+          "byok_spend",
+          "web_search_spend",
+          "total_spend",
+          "request_count",
+          "api_key_id"
+        ],
+        "title": "APIKeySpendV1",
+        "type": "object"
+      },
+      "DLPEntityOverrideV1": {
+        "additionalProperties": false,
+        "description": "The dashboard's DLP entity override, with ``action`` typed.",
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "enum": [
+                  "log",
+                  "redact",
+                  "block"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          }
+        },
+        "title": "DLPEntityOverrideV1",
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": true,
+        "description": "A structured error. Some carry extra fields, like ``count``.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "description": "The body of an error response.",
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/ErrorDetail"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "KeyCreateRequest": {
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Models"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "limit_reset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Reset"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          }
+        },
+        "title": "KeyCreateRequest",
+        "type": "object"
+      },
+      "KeyCreateResponse": {
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Models"
+          },
+          "budget_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Group Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "limit_remaining": {
+            "anyOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Remaining"
+          },
+          "limit_reset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Reset"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "routing_policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Routing Policy Id"
+          },
+          "usage": {
+            "format": "double",
+            "title": "Usage",
+            "type": "number"
+          }
+        },
+        "required": [
+          "hash",
+          "label",
+          "disabled",
+          "usage",
+          "key"
+        ],
+        "title": "KeyCreateResponse",
+        "type": "object"
+      },
+      "KeyListResponse": {
+        "description": "List envelope for ``GET /v1/keys``.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/KeyObject"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "has_more": {
+            "default": false,
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "object": {
+            "const": "list",
+            "default": "list",
+            "title": "Object",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "KeyListResponse",
+        "type": "object"
+      },
+      "KeyObject": {
+        "description": "OpenRouter-shaped key object with usage + limit fields.",
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Models"
+          },
+          "budget_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Group Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "limit_remaining": {
+            "anyOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Remaining"
+          },
+          "limit_reset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Reset"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "routing_policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Routing Policy Id"
+          },
+          "usage": {
+            "format": "double",
+            "title": "Usage",
+            "type": "number"
+          }
+        },
+        "required": [
+          "hash",
+          "label",
+          "disabled",
+          "usage"
+        ],
+        "title": "KeyObject",
+        "type": "object"
+      },
+      "KeyUpdateRequest": {
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Models"
+          },
+          "budget_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Group Id"
+          },
+          "disabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "limit_reset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Reset"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "routing_policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Routing Policy Id"
+          }
+        },
+        "title": "KeyUpdateRequest",
+        "type": "object"
+      },
+      "OrganizationUsageV1Response": {
+        "description": "Org spend for the range. ``projects``, ``api_keys`` and ``vendors`` are\npresent only for the matching ``group_by``. They are never null, so the\nNone default is kept out of the schema.",
+        "properties": {
+          "api_keys": {
+            "items": {
+              "$ref": "#/components/schemas/APIKeySpendV1"
+            },
+            "title": "Api Keys",
+            "type": "array"
+          },
+          "byok_spend": {
+            "description": "BYOK spend at list price.",
+            "format": "double",
+            "title": "Byok Spend",
+            "type": "number"
+          },
+          "end": {
+            "title": "End",
+            "type": "string"
+          },
+          "merge_hosted_spend": {
+            "description": "Spend on Merge-managed credentials.",
+            "format": "double",
+            "title": "Merge Hosted Spend",
+            "type": "number"
+          },
+          "model_spend": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "description": "Spend per `provider/model`.",
+            "title": "Model Spend",
+            "type": "object"
+          },
+          "model_spend_granularity": {
+            "const": "month",
+            "description": "model_spend and vendors cover the whole months overlapping [start, end].",
+            "title": "Model Spend Granularity",
+            "type": "string"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectSpendV1"
+            },
+            "title": "Projects",
+            "type": "array"
+          },
+          "request_count": {
+            "title": "Request Count",
+            "type": "integer"
+          },
+          "start": {
+            "title": "Start",
+            "type": "string"
+          },
+          "total_spend": {
+            "format": "double",
+            "title": "Total Spend",
+            "type": "number"
+          },
+          "vendors": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "title": "Vendors",
+            "type": "object"
+          },
+          "web_search_spend": {
+            "description": "Server-tool (web search) cost.",
+            "format": "double",
+            "title": "Web Search Spend",
+            "type": "number"
+          }
+        },
+        "required": [
+          "merge_hosted_spend",
+          "byok_spend",
+          "web_search_spend",
+          "total_spend",
+          "request_count",
+          "model_spend",
+          "model_spend_granularity",
+          "start",
+          "end"
+        ],
+        "title": "OrganizationUsageV1Response",
+        "type": "object"
+      },
+      "PIProtectionOverrideV1": {
+        "additionalProperties": false,
+        "description": "The dashboard's PI override, with its fixed-value fields typed. Same\nvalues and validation: the dashboard model's validators still run.",
+        "properties": {
+          "pi_allowlist_patterns": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Allowlist Patterns"
+          },
+          "pi_block_threshold": {
+            "anyOf": [
+              {
+                "format": "double",
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Block Threshold"
+          },
+          "pi_fail_closed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Fail Closed"
+          },
+          "pi_indirect_mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "off",
+                  "alert",
+                  "block"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Indirect Mode"
+          },
+          "pi_mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "off",
+                  "alert",
+                  "block"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Mode"
+          },
+          "pi_output_action": {
+            "anyOf": [
+              {
+                "enum": [
+                  "observe",
+                  "redact",
+                  "route",
+                  "block",
+                  "escalate"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Output Action"
+          },
+          "pi_tier2a_block_threshold": {
+            "anyOf": [
+              {
+                "format": "double",
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Tier2A Block Threshold"
+          },
+          "pi_tier2b_block_threshold": {
+            "anyOf": [
+              {
+                "format": "double",
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Tier2B Block Threshold"
+          }
+        },
+        "title": "PIProtectionOverrideV1",
+        "type": "object"
+      },
+      "PIProtectionSettings": {
+        "description": "Per-org PI Protection settings.\n\nMirrors merge_gateway.policy.pi_protection.config.PIProtectionSettings\nfield-for-field. Defaults match the dataclass on the data-plane side.\n\n`pi_mode` is the master switch + mode selector:\n- \"off\": pi_protection module bypassed entirely\n- \"alert\": score for telemetry, never block\n- \"block\": block when Tier 1 score >= pi_block_threshold\n\nHistory: replaces `pi_enabled: bool` + `pi_mode: shadow|enforce` +\n`pi_universal_floor` shape. Universal floor's block behavior was\nremoved 2026-05-11 to fully respect customer enforcement choice.",
+        "properties": {
+          "pi_allowlist_patterns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pi Allowlist Patterns",
+            "type": "array"
+          },
+          "pi_block_threshold": {
+            "default": 0.57,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Block Threshold",
+            "type": "number"
+          },
+          "pi_fail_closed": {
+            "default": false,
+            "title": "Pi Fail Closed",
+            "type": "boolean"
+          },
+          "pi_indirect_mode": {
+            "default": "off",
+            "title": "Pi Indirect Mode",
+            "type": "string"
+          },
+          "pi_input_action": {
+            "default": "block",
+            "title": "Pi Input Action",
+            "type": "string"
+          },
+          "pi_log_full_text_on_block": {
+            "default": false,
+            "title": "Pi Log Full Text On Block",
+            "type": "boolean"
+          },
+          "pi_mode": {
+            "default": "off",
+            "title": "Pi Mode",
+            "type": "string"
+          },
+          "pi_output_action": {
+            "default": "redact",
+            "title": "Pi Output Action",
+            "type": "string"
+          },
+          "pi_pass_threshold": {
+            "default": 0.3,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Pass Threshold",
+            "type": "number"
+          },
+          "pi_safer_vendor_route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Safer Vendor Route"
+          },
+          "pi_tier2a_block_threshold": {
+            "default": 0.6,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Tier2A Block Threshold",
+            "type": "number"
+          },
+          "pi_tier2b_block_threshold": {
+            "default": 0.45,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Tier2B Block Threshold",
+            "type": "number"
+          }
+        },
+        "title": "PIProtectionSettings",
+        "type": "object"
+      },
+      "PolicyV2Response": {
+        "description": "The v2 policy shape built by ``policy_to_v2_response``, minus\n``is_default`` (the org surface adds it; a project's single scoped policy\nhas no default semantics).",
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. In the order they were sent.",
+            "title": "Allowed Models"
+          },
+          "allowed_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. The providers of allowed_models, sorted. Always rebuilt from allowed_models; never stored.",
+            "readOnly": true,
+            "title": "Allowed Providers"
+          },
+          "axis": {
+            "anyOf": [
+              {
+                "enum": [
+                  "COST",
+                  "PERFORMANCE",
+                  "CAPABILITY"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. The optimization axis.",
+            "title": "Axis"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
           "id": {
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ready-to-send model-field string (`@alias/<slug>`).",
+            "readOnly": true,
+            "title": "Model"
+          },
+          "modified_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Modified At",
             "type": "string"
           },
           "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "priority_order": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PriorityModel"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "PRIORITY only. Sorted by priority.",
+            "title": "Priority Order"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The policy's model-field handle, when it has one.",
+            "title": "Slug"
+          },
+          "strategy": {
+            "enum": [
+              "PRIORITY",
+              "INTELLIGENT"
+            ],
+            "title": "Strategy",
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "strategy",
+          "allowed_providers",
+          "allowed_models",
+          "priority_order",
+          "axis",
+          "slug",
+          "model",
+          "created_at",
+          "modified_at"
+        ],
+        "title": "PolicyV2Response",
+        "type": "object"
+      },
+      "PriorityModel": {
+        "additionalProperties": false,
+        "properties": {
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model",
+          "priority"
+        ],
+        "title": "PriorityModel",
+        "type": "object"
+      },
+      "ProjectBudgetConfigSchema": {
+        "additionalProperties": false,
+        "description": "Project budgets add alert recipients on top of the shared budget shape.\n\nextra=\"forbid\" matches ProjectV1Create/Update one level up: an IaC caller\nthat typos ``notification_email`` should get a 422, not a config that\nsilently drops the field it cared about.\n\nCustomer budgets reuse ``BudgetConfigSchema`` and have no notification\nrouting of their own, so these fields stay on the project subclass rather\nthan the base — a field the customer API accepts but never reads would be\na silent no-op for callers.",
+        "properties": {
+          "alert_thresholds": {
+            "description": "Percentage thresholds for alerts (e.g., [50, 80, 90])",
+            "items": {
+              "type": "integer"
+            },
+            "title": "Alert Thresholds",
+            "type": "array"
+          },
+          "amount": {
+            "description": "Budget amount in USD",
+            "exclusiveMinimum": 0.0,
+            "format": "double",
+            "title": "Amount",
+            "type": "number"
+          },
+          "enforcement_mode": {
+            "enum": [
+              "soft_limit",
+              "hard_limit"
+            ],
+            "title": "Enforcement Mode",
+            "type": "string"
+          },
+          "notification_emails": {
+            "description": "Addresses emailed when an alert threshold is crossed",
+            "items": {
+              "format": "email",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Notification Emails",
+            "type": "array"
+          },
+          "notify_org_admins": {
+            "default": true,
+            "description": "Also email every organization admin on threshold crossings. Adding recipients augments the audience rather than replacing it; set false to email only the named recipients",
+            "title": "Notify Org Admins",
+            "type": "boolean"
+          },
+          "period": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+              "quarterly",
+              "yearly"
+            ],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "period",
+          "enforcement_mode"
+        ],
+        "title": "ProjectBudgetConfigSchema",
+        "type": "object"
+      },
+      "ProjectBudgetConfigV1Response": {
+        "description": "A stored budget as read back. Same fields as ProjectBudgetConfigSchema,\nwithout its write-time rules, so tightening a rule later cannot turn reads\nof budgets saved under the old rule into 500s.",
+        "properties": {
+          "alert_thresholds": {
+            "description": "Sorted ascending, without duplicates.",
+            "items": {
+              "type": "integer"
+            },
+            "title": "Alert Thresholds",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "amount": {
+            "description": "Budget amount in USD",
+            "format": "double",
+            "title": "Amount",
+            "type": "number"
+          },
+          "enforcement_mode": {
+            "enum": [
+              "soft_limit",
+              "hard_limit"
+            ],
+            "title": "Enforcement Mode",
+            "type": "string"
+          },
+          "notification_emails": {
+            "description": "In the order sent, with duplicates (ignoring case) dropped.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Notification Emails",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "notify_org_admins": {
+            "default": true,
+            "title": "Notify Org Admins",
+            "type": "boolean"
+          },
+          "period": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+              "quarterly",
+              "yearly"
+            ],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "period",
+          "enforcement_mode"
+        ],
+        "title": "ProjectBudgetConfigV1Response",
+        "type": "object"
+      },
+      "ProjectControlsEffectiveV1": {
+        "description": "The controls in force: the organization's, with the project's units\napplied.",
+        "properties": {
+          "allowed_regions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Regions",
+            "type": "array"
+          },
+          "allowed_vendors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Vendors",
+            "type": "array"
+          },
+          "ignored_regions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Regions",
+            "type": "array"
+          },
+          "ignored_vendors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Vendors",
+            "type": "array"
+          },
+          "vendor_routing_preference": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Vendor Routing Preference",
+            "type": "array"
+          },
+          "zero_data_retention": {
+            "title": "Zero Data Retention",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "zero_data_retention",
+          "ignored_vendors",
+          "allowed_vendors",
+          "vendor_routing_preference",
+          "ignored_regions",
+          "allowed_regions"
+        ],
+        "title": "ProjectControlsEffectiveV1",
+        "type": "object"
+      },
+      "ProjectControlsOverrideV1": {
+        "description": "What the project overrides, one key per unit. A unit the project\ninherits is absent, never null.",
+        "properties": {
+          "regions": {
+            "$ref": "#/components/schemas/RegionControlsV1",
+            "description": "Present when the last PUT sent ignored_regions or allowed_regions. A field it didn't send is [].",
+            "title": "Regions"
+          },
+          "vendors": {
+            "$ref": "#/components/schemas/VendorControlsV1",
+            "description": "Present when the last PUT sent any of ignored_vendors, allowed_vendors or vendor_routing_preference. Fields it didn't send are [].",
+            "title": "Vendors"
+          },
+          "zero_data_retention": {
+            "title": "Zero Data Retention",
+            "type": "boolean"
+          }
+        },
+        "title": "ProjectControlsOverrideV1",
+        "type": "object"
+      },
+      "ProjectControlsSourcesV1": {
+        "description": "Per unit, whether the effective value comes from the org or the project.",
+        "properties": {
+          "regions": {
+            "enum": [
+              "org",
+              "project"
+            ],
+            "title": "Regions",
+            "type": "string"
+          },
+          "vendors": {
+            "enum": [
+              "org",
+              "project"
+            ],
+            "title": "Vendors",
+            "type": "string"
+          },
+          "zero_data_retention": {
+            "enum": [
+              "org",
+              "project"
+            ],
+            "title": "Zero Data Retention",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zero_data_retention",
+          "vendors",
+          "regions"
+        ],
+        "title": "ProjectControlsSourcesV1",
+        "type": "object"
+      },
+      "ProjectControlsV1Response": {
+        "description": "The ScopedControlsResponse shape, with the project's maps typed.",
+        "properties": {
+          "effective": {
+            "$ref": "#/components/schemas/ProjectControlsEffectiveV1"
+          },
+          "override": {
+            "$ref": "#/components/schemas/ProjectControlsOverrideV1"
+          },
+          "scope": {
+            "description": "Always \"project\" here.",
+            "title": "Scope",
+            "type": "string"
+          },
+          "scope_id": {
+            "format": "uuid",
+            "title": "Scope Id",
+            "type": "string"
+          },
+          "sources": {
+            "$ref": "#/components/schemas/ProjectControlsSourcesV1"
+          }
+        },
+        "required": [
+          "scope",
+          "scope_id",
+          "override",
+          "effective",
+          "sources"
+        ],
+        "title": "ProjectControlsV1Response",
+        "type": "object"
+      },
+      "ProjectControlsV1Update": {
+        "additionalProperties": false,
+        "description": "Replaces the project's whole override. The flat fields map onto the\nunits of the response's ``override``:\n\n- ``zero_data_retention`` → ``override.zero_data_retention``\n- ``ignored_vendors``, ``allowed_vendors``, ``vendor_routing_preference`` →\n  ``override.vendors``\n- ``ignored_regions``, ``allowed_regions`` → ``override.regions``\n\nSending any field of a unit overrides the whole unit: the unit's fields you\nleave out become ``[]``, not the organization's values. A unit with no field\nsent inherits from the organization. A list sent as ``null`` counts as sent,\nthe same as ``[]``. ``zero_data_retention: null`` is the same as omitting it.",
+        "properties": {
+          "allowed_regions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Regions unit (override.regions).",
+            "title": "Allowed Regions"
+          },
+          "allowed_vendors": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vendors unit (override.vendors).",
+            "title": "Allowed Vendors"
+          },
+          "ignored_regions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Regions unit (override.regions).",
+            "title": "Ignored Regions"
+          },
+          "ignored_vendors": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vendors unit (override.vendors).",
+            "title": "Ignored Vendors"
+          },
+          "vendor_routing_preference": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vendors unit (override.vendors).",
+            "title": "Vendor Routing Preference"
+          },
+          "zero_data_retention": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null inherits the organization's value.",
+            "title": "Zero Data Retention"
+          }
+        },
+        "title": "ProjectControlsV1Update",
+        "type": "object"
+      },
+      "ProjectDLPEntityState": {
+        "description": "How one entity type resolves for a project.",
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "effective_action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Action"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "is_seeded": {
+            "title": "Is Seeded",
+            "type": "boolean"
+          },
+          "org_action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Action"
+          },
+          "overridden": {
+            "title": "Overridden",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entity_type",
+          "category",
+          "is_seeded",
+          "overridden"
+        ],
+        "title": "ProjectDLPEntityState",
+        "type": "object"
+      },
+      "ProjectDLPOverrideV1": {
+        "additionalProperties": false,
+        "description": "Wholesale replacement of a project's DLP override, keyed by entity type.\n\nEnveloped rather than a bare map (which is what the dashboard route takes) so\nthe request can grow a sibling field later without a breaking change. The\nfield name matches ``override`` in the response.",
+        "properties": {
+          "override": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DLPEntityOverrideV1"
+            },
+            "title": "Override",
+            "type": "object"
+          }
+        },
+        "title": "ProjectDLPOverrideV1",
+        "type": "object"
+      },
+      "ProjectDLPSettingsV1Response": {
+        "description": "The dashboard's project DLP response, with ``override`` typed like the request.",
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectDLPEntityState"
+            },
+            "title": "Entities",
+            "type": "array"
+          },
+          "override": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DLPEntityOverrideV1"
+            },
+            "title": "Override",
+            "type": "object"
+          }
+        },
+        "required": [
+          "override",
+          "entities"
+        ],
+        "title": "ProjectDLPSettingsV1Response",
+        "type": "object"
+      },
+      "ProjectPISettingsV1Response": {
+        "description": "The dashboard's project PI response, with ``override`` typed like the request.",
+        "properties": {
+          "effective": {
+            "$ref": "#/components/schemas/PIProtectionSettings"
+          },
+          "inherited_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Inherited Fields",
+            "type": "array"
+          },
+          "override": {
+            "$ref": "#/components/schemas/PIProtectionOverrideV1"
+          }
+        },
+        "required": [
+          "override",
+          "effective",
+          "inherited_fields"
+        ],
+        "title": "ProjectPISettingsV1Response",
+        "type": "object"
+      },
+      "ProjectPolicyV1": {
+        "additionalProperties": false,
+        "description": "Project-scoped routing policy, in the shared v2 shape (same fields and\nvalidation as the ERS customer policy surface). ``name`` is optional here\nand defaults to \"<project name> routing policy\".",
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer.",
+            "title": "Allowed Models"
+          },
+          "allowed_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422.",
+            "title": "Allowed Providers"
+          },
+          "axis": {
+            "anyOf": [
+              {
+                "enum": [
+                  "COST",
+                  "PERFORMANCE",
+                  "CAPABILITY"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. Omitted or null means COST.",
+            "title": "Axis"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null keeps the current description when replacing a policy. Send \"\" to clear it.",
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null: \"<project name> routing policy\" for a new policy, and the current name when replacing one.",
+            "title": "Name"
+          },
+          "priority_order": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PriorityModel"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422.",
+            "title": "Priority Order"
+          },
+          "strategy": {
+            "enum": [
+              "PRIORITY",
+              "INTELLIGENT"
+            ],
+            "title": "Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "strategy"
+        ],
+        "title": "ProjectPolicyV1",
+        "type": "object"
+      },
+      "ProjectSpendV1": {
+        "properties": {
+          "byok_spend": {
+            "description": "BYOK spend at list price.",
+            "format": "double",
+            "title": "Byok Spend",
+            "type": "number"
+          },
+          "merge_hosted_spend": {
+            "description": "Spend on Merge-managed credentials.",
+            "format": "double",
+            "title": "Merge Hosted Spend",
+            "type": "number"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "request_count": {
+            "title": "Request Count",
+            "type": "integer"
+          },
+          "total_spend": {
+            "format": "double",
+            "title": "Total Spend",
+            "type": "number"
+          },
+          "web_search_spend": {
+            "description": "Server-tool (web search) cost.",
+            "format": "double",
+            "title": "Web Search Spend",
+            "type": "number"
+          }
+        },
+        "required": [
+          "merge_hosted_spend",
+          "byok_spend",
+          "web_search_spend",
+          "total_spend",
+          "request_count",
+          "project_id"
+        ],
+        "title": "ProjectSpendV1",
+        "type": "object"
+      },
+      "ProjectUsageV1Response": {
+        "properties": {
+          "byok_spend": {
+            "description": "BYOK spend at list price.",
+            "format": "double",
+            "title": "Byok Spend",
+            "type": "number"
+          },
+          "end": {
+            "title": "End",
+            "type": "string"
+          },
+          "merge_hosted_spend": {
+            "description": "Spend on Merge-managed credentials.",
+            "format": "double",
+            "title": "Merge Hosted Spend",
+            "type": "number"
+          },
+          "model_spend": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "description": "Spend per `provider/model`.",
+            "title": "Model Spend",
+            "type": "object"
+          },
+          "model_spend_granularity": {
+            "const": "month",
+            "description": "model_spend covers the whole months overlapping [start, end].",
+            "title": "Model Spend Granularity",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "request_count": {
+            "title": "Request Count",
+            "type": "integer"
+          },
+          "start": {
+            "title": "Start",
+            "type": "string"
+          },
+          "total_spend": {
+            "format": "double",
+            "title": "Total Spend",
+            "type": "number"
+          },
+          "web_search_spend": {
+            "description": "Server-tool (web search) cost.",
+            "format": "double",
+            "title": "Web Search Spend",
+            "type": "number"
+          }
+        },
+        "required": [
+          "merge_hosted_spend",
+          "byok_spend",
+          "web_search_spend",
+          "total_spend",
+          "request_count",
+          "project_id",
+          "model_spend",
+          "model_spend_granularity",
+          "start",
+          "end"
+        ],
+        "title": "ProjectUsageV1Response",
+        "type": "object"
+      },
+      "ProjectV1Create": {
+        "additionalProperties": false,
+        "properties": {
+          "budget_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectBudgetConfigSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 255,
+            "title": "Name",
+            "type": "string"
+          },
+          "routing_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectPolicyV1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "uses_organization_default_routing": {
+            "default": true,
+            "title": "Uses Organization Default Routing",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProjectV1Create",
+        "type": "object"
+      },
+      "ProjectV1List": {
+        "description": "List envelope for ``GET /v1/projects``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "ProjectV1List",
+        "type": "object"
+      },
+      "ProjectV1Response": {
+        "properties": {
+          "budget_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectBudgetConfigV1Response"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "routing_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyV2Response"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The project's scoped policy; null when it uses the org default."
+          },
+          "slug": {
+            "description": "Derived from the name at creation. It does not change when the project is renamed.",
+            "readOnly": true,
+            "title": "Slug",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Updated At",
+            "type": "string"
+          },
+          "uses_organization_default_routing": {
+            "title": "Uses Organization Default Routing",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "slug",
+          "description",
+          "is_active",
+          "budget_config",
+          "created_at",
+          "updated_at",
+          "uses_organization_default_routing",
+          "routing_policy"
+        ],
+        "title": "ProjectV1Response",
+        "type": "object"
+      },
+      "ProjectV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change.",
+        "properties": {
+          "budget_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectBudgetConfigSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the whole budget. null removes it."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null clears it.",
+            "title": "Description"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit to keep the current value. Don't send null: the request fails.",
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit to keep the current value. Don't send null: the request fails.",
+            "title": "Name"
+          },
+          "routing_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectPolicyV1"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the project's routing policy, or creates one. null is the same as omitting it."
+          },
+          "uses_organization_default_routing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "true deletes the project's routing policy, so it routes with the organization default. false needs routing_policy. null is the same as omitting it.",
+            "title": "Uses Organization Default Routing"
+          }
+        },
+        "title": "ProjectV1Update",
+        "type": "object"
+      },
+      "RegionControlsV1": {
+        "properties": {
+          "allowed_regions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Regions",
+            "type": "array"
+          },
+          "ignored_regions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Regions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ignored_regions",
+          "allowed_regions"
+        ],
+        "title": "RegionControlsV1",
+        "type": "object"
+      },
+      "RoutingPolicyV1Create": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer.",
+            "title": "Allowed Models"
+          },
+          "allowed_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422.",
+            "title": "Allowed Providers"
+          },
+          "axis": {
+            "anyOf": [
+              {
+                "enum": [
+                  "COST",
+                  "PERFORMANCE",
+                  "CAPABILITY"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. Omitted or null means COST.",
+            "title": "Axis"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_default": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Default"
+          },
+          "name": {
+            "maxLength": 255,
+            "title": "Name",
+            "type": "string"
+          },
+          "priority_order": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PriorityModel"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422.",
+            "title": "Priority Order"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "strategy": {
+            "enum": [
+              "PRIORITY",
+              "INTELLIGENT"
+            ],
+            "title": "Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "strategy"
+        ],
+        "title": "RoutingPolicyV1Create",
+        "type": "object"
+      },
+      "RoutingPolicyV1List": {
+        "description": "List envelope for ``GET /v1/routing-policies`` (never paginated).",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/RoutingPolicyV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "RoutingPolicyV1List",
+        "type": "object"
+      },
+      "RoutingPolicyV1Response": {
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. In the order they were sent.",
+            "title": "Allowed Models"
+          },
+          "allowed_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. The providers of allowed_models, sorted. Always rebuilt from allowed_models; never stored.",
+            "readOnly": true,
+            "title": "Allowed Providers"
+          },
+          "axis": {
+            "anyOf": [
+              {
+                "enum": [
+                  "COST",
+                  "PERFORMANCE",
+                  "CAPABILITY"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. The optimization axis.",
+            "title": "Axis"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "is_default": {
+            "description": "Whether this is the org's default policy.",
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ready-to-send model-field string (`@alias/<slug>`).",
+            "readOnly": true,
+            "title": "Model"
+          },
+          "modified_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Modified At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "priority_order": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PriorityModel"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "PRIORITY only. Sorted by priority.",
+            "title": "Priority Order"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The policy's model-field handle, when it has one.",
+            "title": "Slug"
+          },
+          "strategy": {
+            "enum": [
+              "PRIORITY",
+              "INTELLIGENT"
+            ],
+            "title": "Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "strategy",
+          "allowed_providers",
+          "allowed_models",
+          "priority_order",
+          "axis",
+          "slug",
+          "model",
+          "created_at",
+          "modified_at",
+          "is_default"
+        ],
+        "title": "RoutingPolicyV1Response",
+        "type": "object"
+      },
+      "RoutingPolicyV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change. null is the same as omitting a field.",
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer. Used only when strategy is sent.",
+            "title": "Allowed Models"
+          },
+          "allowed_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422. Checked only when strategy is sent.",
+            "title": "Allowed Providers"
+          },
+          "axis": {
+            "anyOf": [
+              {
+                "enum": [
+                  "COST",
+                  "PERFORMANCE",
+                  "CAPABILITY"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "INTELLIGENT only. Omitted or null means COST. Used only when strategy is sent.",
+            "title": "Axis"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null keeps the current description. Send \"\" to clear it.",
+            "title": "Description"
+          },
+          "is_default": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null keeps the current value.",
+            "title": "Is Default"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null keeps the current name.",
+            "title": "Name"
+          },
+          "priority_order": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PriorityModel"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422. Used only when strategy is sent.",
+            "title": "Priority Order"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Renames the slug. null keeps the current one.",
+            "title": "Slug"
+          },
+          "strategy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "PRIORITY",
+                  "INTELLIGENT"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Send with its fields to replace the routing. Omitted or null leaves the routing as it is, and allowed_providers, allowed_models, priority_order and axis are ignored.",
+            "title": "Strategy"
+          }
+        },
+        "title": "RoutingPolicyV1Update",
+        "type": "object"
+      },
+      "ScopeModelsResponse": {
+        "properties": {
+          "gated_model_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gated Model Ids",
+            "type": "array"
+          },
+          "key_usage_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Usage Mode"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ScopeRoutableModel"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "restrictions_active": {
+            "title": "Restrictions Active",
+            "type": "boolean"
+          },
+          "scope": {
+            "description": "\"project\" or \"customer\"",
+            "title": "Scope",
+            "type": "string"
+          },
+          "scope_id": {
+            "format": "uuid",
+            "title": "Scope Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "scope_id",
+          "restrictions_active",
+          "models"
+        ],
+        "title": "ScopeModelsResponse",
+        "type": "object"
+      },
+      "ScopeRoutableModel": {
+        "properties": {
+          "model": {
+            "description": "Canonical model id, `provider/model`",
+            "title": "Model",
+            "type": "string"
+          },
+          "provider": {
+            "description": "The model's author (provider slug)",
+            "title": "Provider",
+            "type": "string"
+          },
+          "vendors": {
+            "description": "Execution hosts that can serve this model for the scope, after its vendor / region / ZDR controls and key-usage mode. Sorted.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Vendors",
+            "type": "array"
+          }
+        },
+        "required": [
+          "model",
+          "provider",
+          "vendors"
+        ],
+        "title": "ScopeRoutableModel",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VendorControlsV1": {
+        "properties": {
+          "allowed_vendors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Vendors",
+            "type": "array"
+          },
+          "ignored_vendors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Vendors",
+            "type": "array"
+          },
+          "vendor_routing_preference": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Vendor Routing Preference",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ignored_vendors",
+          "allowed_vendors",
+          "vendor_routing_preference"
+        ],
+        "title": "VendorControlsV1",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "ManagementKey": {
+        "description": "A management key (`mgmt_...`), sent as `Authorization: Bearer <key>`. /v1/routing-policies also accepts the organization's gateway API keys.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Manage Merge Gateway API keys, projects and routing policies with a management key.",
+    "title": "Merge Gateway Management API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/keys": {
+      "get": {
+        "description": "List the org's regular API keys (excludes the internal tester key).\n\nPage through with ``offset``/``limit`` while ``has_more`` is true.",
+        "operationId": "list_keys",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Keys",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create a regular API key. The raw key is returned only here.",
+        "operationId": "create_key",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyCreateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Key",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/keys/{key_hash}": {
+      "delete": {
+        "description": "Delete a key.",
+        "operationId": "delete_key",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key_hash",
+            "required": true,
+            "schema": {
+              "title": "Key Hash",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Key",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get a single key with usage.",
+        "operationId": "get_key",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key_hash",
+            "required": true,
+            "schema": {
+              "title": "Key Hash",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyObject"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Key",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update a key's name / disabled state / spend limit.",
+        "operationId": "update_key",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key_hash",
+            "required": true,
+            "schema": {
+              "title": "Key Hash",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyObject"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Key",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/organization/usage": {
+      "get": {
+        "description": "Org spend rollup for the range, with optional per-dimension breakdown.",
+        "operationId": "get_organization_usage",
+        "parameters": [
+          {
+            "description": "YYYY-MM-DD (default: month start)",
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (default: month start)",
+              "title": "Start"
+            }
+          },
+          {
+            "description": "YYYY-MM-DD (default: today)",
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (default: today)",
+              "title": "End"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "project",
+                    "api_key",
+                    "vendor"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group By"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationUsageV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Organization Usage",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects": {
+      "get": {
+        "description": "List projects (keyset-paginated by created_at, id).",
+        "operationId": "list_projects",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Projects",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create a project.",
+        "operationId": "create_project",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectV1Create"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request names a model the organization can't use: restricted, vendor-gated, or another organization's self-hosted model."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Create Project",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}": {
+      "delete": {
+        "description": "Delete a project. Blocked (409) while active project-scoped API keys\nexist; fails closed (503) if the data plane is unreachable.",
+        "operationId": "delete_project",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Project",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get a single project.",
+        "operationId": "get_project",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Project",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update a project.",
+        "operationId": "update_project",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request names a model the organization can't use: restricted, vendor-gated, or another organization's self-hosted model."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Project",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/controls": {
+      "delete": {
+        "description": "Clear the override so the project inherits the organization's controls.",
+        "operationId": "delete_project_controls",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectControlsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Project Controls",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Return the project's control override and the resulting effective controls.",
+        "operationId": "get_project_controls",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectControlsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Project Controls",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "put": {
+        "description": "Replace the project's control override with exactly the fields sent.",
+        "operationId": "update_project_controls",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectControlsV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectControlsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Project Controls",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/dlp-settings": {
+      "delete": {
+        "description": "Clear the override so the project inherits the org's DLP rules.",
+        "operationId": "delete_project_dlp_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDLPSettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Project Dlp Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Return the project's DLP override plus the resolved per-entity outcome.",
+        "operationId": "get_project_dlp_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDLPSettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Project Dlp Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "put": {
+        "description": "Replace the project's DLP override wholesale + sync to the data plane.",
+        "operationId": "update_project_dlp_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectDLPOverrideV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDLPSettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Project Dlp Settings",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/models": {
+      "get": {
+        "description": "Models this project can route to under its effective controls.",
+        "operationId": "list_project_models",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeModelsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Project Models",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/pi-settings": {
+      "delete": {
+        "description": "Clear the override so the project inherits the org PI policy wholesale.",
+        "operationId": "delete_project_pi_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPISettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Project Pi Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Return the project's PI override, the effective policy, and what it inherits.",
+        "operationId": "get_project_pi_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPISettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Project Pi Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "put": {
+        "description": "Replace the project's PI override wholesale + sync to the data plane.\n\nSparse: unset fields inherit the org value, and an explicit ``null`` clears a\nfield back to inheritance. An empty body therefore means \"inherit\neverything\", the same as DELETE.",
+        "operationId": "update_project_pi_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PIProtectionOverrideV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPISettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Project Pi Settings",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/usage": {
+      "get": {
+        "description": "Project spend totals (day-granular) plus a per-model breakdown.\n\nmodel_spend aggregates the project's monthly ledger rows (BYOK-corrected),\nso like the org endpoint it is month-granular over the months the range\noverlaps. The monthly project rows only accrue from when the data plane\nstarted writing them — earlier months report totals but an empty map.",
+        "operationId": "get_project_usage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "YYYY-MM-DD (default: month start)",
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (default: month start)",
+              "title": "Start"
+            }
+          },
+          {
+            "description": "YYYY-MM-DD (default: today)",
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (default: today)",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectUsageV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Project Usage",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/routing-policies": {
+      "get": {
+        "description": "List the org's standalone routing policies.\n\nReturns all of them (an org has a handful, like the ERS customer surface),\nso no cursor pagination.",
+        "operationId": "list_routing_policies",
+        "parameters": [
+          {
+            "description": "Also list policies the gateway materialised from requests' priority_order lists. Hidden by default.",
+            "in": "query",
+            "name": "include_inline",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Also list policies the gateway materialised from requests' priority_order lists. Hidden by default.",
+              "title": "Include Inline",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutingPolicyV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Routing Policies",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create an org routing policy. The org's first policy becomes the default\nautomatically; otherwise pass is_default=true to make it the default.",
+        "operationId": "create_routing_policy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutingPolicyV1Create"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutingPolicyV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request names a model the organization can't use: restricted, vendor-gated, or another organization's self-hosted model."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Create Routing Policy",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/routing-policies/{policy_id}": {
+      "delete": {
+        "description": "Delete an org routing policy. Deleting the default leaves the org with no\ndefault until another is set (requests fall back to per-request model pins).",
+        "operationId": "delete_routing_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Routing Policy",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get one org routing policy.",
+        "operationId": "get_routing_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutingPolicyV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Routing Policy",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update an org routing policy in place (stable id for IaC diffs).",
+        "operationId": "update_routing_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutingPolicyV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutingPolicyV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request names a model the organization can't use: restricted, vendor-gated, or another organization's self-hosted model."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Routing Policy",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/routing-policies/{policy_id}/set-default": {
+      "post": {
+        "description": "Make this policy the org's default (unsets the previous default).",
+        "operationId": "set_default_routing_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutingPolicyV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Set Default Routing Policy",
+        "tags": [
+          "management-api"
+        ]
       }
     }
   }
