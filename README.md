@@ -57,15 +57,22 @@ To regenerate the API client after `openapi.json` changes, run `make client`. Ne
 
 To generate or update documentation (and the client), run `make generate`.
 
-Acceptance tests (`internal/acceptance/`) create real resources against the full Gateway stack in Docker. CI runs them on every pull request and nightly (`.github/workflows/acceptance.yml`). To run them locally:
+### Acceptance tests
+
+Acceptance tests (`internal/acceptance/`) create real resources, so they only run with `TF_ACC=1`. They need `MERGE_GATEWAY_MANAGEMENT_KEY`, a management key for a dedicated test org, and `MERGE_GATEWAY_BASE_URL` (default `http://localhost:8001`). Test resources are named `tf-acc-*`; leftovers are deleted at the start of each run.
+
+**In CI**, `.github/workflows/acceptance.yml` runs them against the deployed dev Gateway (`https://api-gateway-develop.merge.dev`) on pull requests from this repo, pushes to main, nightly and on demand. It uses the `MERGE_GATEWAY_MANAGEMENT_KEY` repo secret: a management key, created by an admin in the dev dashboard, for a separate "Terraform acceptance tests" org. Only one run uses the org at a time.
+
+**Locally**, run them against dev the same way with your own test-org key, or against the full Gateway stack in Docker:
 
 ```shell
 # In merge-gateway, with merge-gateway-control-backend checked out next to it:
 docker compose -f docker-compose.local.yml up -d --build --wait control-plane data-plane-grpc
 
 # Back in this repo:
+export MERGE_GATEWAY_BASE_URL=http://localhost:8001
 export MERGE_GATEWAY_MANAGEMENT_KEY="$(scripts/seed-acceptance.sh)"
 TF_ACC=1 go test -v ./internal/acceptance/...
 ```
 
-`MERGE_GATEWAY_BASE_URL` defaults to `http://localhost:8001`. Test resources are named `tf-acc-*`, and leftovers are deleted at the start of each run.
+`scripts/seed-acceptance.sh` registers a test org on the local stack and prints a management key with every scope. It only works against a local stack.
