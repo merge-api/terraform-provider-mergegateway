@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/merge-api/terraform-provider-merge-gateway/internal/client"
+	"github.com/merge-api/terraform-provider-mergegateway/internal/client"
 )
 
 const (

@@ -1,0 +1,66 @@
+# Acceptance tests against the deployed dev Gateway, with a management key for
+# a dedicated "Terraform acceptance tests" org on dev. The nightly run catches
+# dev deploys that break the provider. To run them against a local stack
+# instead, see the README.
+name: Acceptance Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: Acceptance Tests
+    # Pull requests from forks don't get secrets, so they skip.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Every run shares the test org, so runs take turns rather than sweeping
+    # each other's resources. A running one is never cancelled.
+    concurrency:
+      group: acceptance-dev
+      cancel-in-progress: false
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      TF_ACC: "1"
+      MERGE_GATEWAY_BASE_URL: https://api-gateway-develop.merge.dev
+      MERGE_GATEWAY_MANAGEMENT_KEY: ${{ secrets.MERGE_GATEWAY_MANAGEMENT_KEY }}
+    steps:
+      - name: Check the management key secret
+        run: |
+          if [ -z "$MERGE_GATEWAY_MANAGEMENT_KEY" ]; then
+            echo "::error::The MERGE_GATEWAY_MANAGEMENT_KEY repo secret is missing. Create a management key for the dev test org and run: gh secret set MERGE_GATEWAY_MANAGEMENT_KEY -R ${{ github.repository }}"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_wrapper: false
+
+      # TestMain sweeps leftover tf-acc- resources before any test runs, so a
+      # run that matches no tests is just a sweep. -count=1 skips Go's test
+      # cache, which setup-go restores between runs.
+      - name: Sweep leftover test resources
+        id: sweep
+        run: go test -count=1 -run '^$' ./internal/acceptance/...
+
+      - name: Run acceptance tests
+        run: go test -count=1 -v -timeout 30m ./internal/acceptance/...
+
+      # Also after a failed or cancelled run, once the key is known to work.
+      - name: Sweep test resources
+        if: always() && steps.sweep.outcome == 'success'
+        run: go test -count=1 -run '^$' ./internal/acceptance/...
