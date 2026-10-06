@@ -18,7 +18,8 @@ import (
 
 // sweepPaths lists the collections the sweeper cleans up. Each one lists as
 // {"results": [{"id": ..., "name": ...}], ...} and deletes at <path>/<id>.
-// Add a collection here when its resource gets acceptance tests.
+// Add a collection here when its resource gets acceptance tests. Project
+// settings (such as PI settings) need no entry: they go with their tf-acc- project.
 var sweepPaths = []string{
 	"/v1/projects",
 }
