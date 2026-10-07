@@ -8,7 +8,7 @@ The `mergegateway` provider manages [Merge Gateway](https://merge.dev) configura
 
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0, and >= 1.11 for `mergegateway_credential` and `mergegateway_export_destination`, whose secrets are write-only
 - [Go](https://golang.org/doc/install) >= 1.24
 
 ## Building the Provider

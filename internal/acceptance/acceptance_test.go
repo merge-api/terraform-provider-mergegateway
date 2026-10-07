@@ -22,6 +22,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 
 	"github.com/merge-api/terraform-provider-mergegateway/internal/provider"
 )
@@ -131,4 +133,46 @@ func apiRequest(ctx context.Context, method, path string, body []byte) (int, []b
 		return 0, nil, err
 	}
 	return resp.StatusCode, respBody, nil
+}
+
+// mustAPIRequest calls the API outside Terraform, as a step's PreConfig does
+// to cause drift, and fails the test unless the API answers wantStatus. body,
+// if not empty, is sent as JSON.
+func mustAPIRequest(t *testing.T, method, path, body string, wantStatus int) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	var data []byte
+	if body != "" {
+		data = []byte(body)
+	}
+	status, _, err := apiRequest(ctx, method, path, data)
+	if err != nil {
+		t.Fatalf("%s %s: %v", method, path, err)
+	}
+	if status != wantStatus {
+		t.Fatalf("%s %s: HTTP %d, want %d", method, path, status, wantStatus)
+	}
+}
+
+// writeOnlyVersions skips a test on Terraform before 1.11, which has no
+// write-only attributes.
+var writeOnlyVersions = []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_11_0)}
+
+// expectNoSecret checks that no attribute of address in state holds secret:
+// a write-only secret must never reach the state. It never prints the secret.
+func expectNoSecret(address, secret string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[address]
+		if !ok {
+			return fmt.Errorf("%s is not in state", address)
+		}
+		for name, value := range rs.Primary.Attributes {
+			if strings.Contains(value, secret) {
+				return fmt.Errorf("%s.%s holds a write-only secret", address, name)
+			}
+		}
+		return nil
+	}
 }

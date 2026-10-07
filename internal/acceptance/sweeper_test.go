@@ -26,6 +26,7 @@ var sweepPaths = []string{
 	"/v1/keys",
 	"/v1/projects",
 	"/v1/routing-policies",
+	"/v1/credentials",
 }
 
 // TestMain deletes tf-acc- resources left behind by crashed or cancelled
@@ -46,8 +47,9 @@ func sweep() error {
 	defer cancel()
 
 	var errs []string
-	for _, path := range sweepPaths {
-		if err := sweepCollection(ctx, path); err != nil {
+	for i, path := range sweepPaths {
+		// The first collection proves the key works, so the rest may skip.
+		if err := sweepCollection(ctx, path, i > 0); err != nil {
 			errs = append(errs, path+": "+err.Error())
 		}
 	}
@@ -60,10 +62,17 @@ func sweep() error {
 // sweepCollection deletes every item on the collection's first page whose name
 // starts with the tf-acc- prefix; each run sweeps again, so one page is enough.
 // Response bodies stay out of errors and logs, since some collections echo secrets.
-func sweepCollection(ctx context.Context, path string) error {
+// With mayBeMissing, a collection the API doesn't serve is skipped: one not
+// deployed yet (dev answers an unrouted path with 401) or a feature not
+// enabled for the test org (404).
+func sweepCollection(ctx context.Context, path string, mayBeMissing bool) error {
 	status, body, err := apiRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
+	}
+	if mayBeMissing && (status == http.StatusNotFound || status == http.StatusUnauthorized) {
+		fmt.Fprintf(os.Stderr, "sweeper: skipping %s: HTTP %d\n", path, status)
+		return nil
 	}
 	if status != http.StatusOK {
 		return fmt.Errorf("GET %s: HTTP %d", path, status)
