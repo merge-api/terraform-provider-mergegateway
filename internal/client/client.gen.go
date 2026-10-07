@@ -40,6 +40,48 @@ func (e DLPEntityOverrideV1Action) Valid() bool {
 	}
 }
 
+// Defines values for KeyCreateRequestLimitReset.
+const (
+	KeyCreateRequestLimitResetDaily   KeyCreateRequestLimitReset = "daily"
+	KeyCreateRequestLimitResetMonthly KeyCreateRequestLimitReset = "monthly"
+	KeyCreateRequestLimitResetWeekly  KeyCreateRequestLimitReset = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the KeyCreateRequestLimitReset enum.
+func (e KeyCreateRequestLimitReset) Valid() bool {
+	switch e {
+	case KeyCreateRequestLimitResetDaily:
+		return true
+	case KeyCreateRequestLimitResetMonthly:
+		return true
+	case KeyCreateRequestLimitResetWeekly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for KeyCreateResponseLimitReset.
+const (
+	KeyCreateResponseLimitResetDaily   KeyCreateResponseLimitReset = "daily"
+	KeyCreateResponseLimitResetMonthly KeyCreateResponseLimitReset = "monthly"
+	KeyCreateResponseLimitResetWeekly  KeyCreateResponseLimitReset = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the KeyCreateResponseLimitReset enum.
+func (e KeyCreateResponseLimitReset) Valid() bool {
+	switch e {
+	case KeyCreateResponseLimitResetDaily:
+		return true
+	case KeyCreateResponseLimitResetMonthly:
+		return true
+	case KeyCreateResponseLimitResetWeekly:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for KeyListResponseObject.
 const (
 	List KeyListResponseObject = "list"
@@ -49,6 +91,48 @@ const (
 func (e KeyListResponseObject) Valid() bool {
 	switch e {
 	case List:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for KeyObjectLimitReset.
+const (
+	KeyObjectLimitResetDaily   KeyObjectLimitReset = "daily"
+	KeyObjectLimitResetMonthly KeyObjectLimitReset = "monthly"
+	KeyObjectLimitResetWeekly  KeyObjectLimitReset = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the KeyObjectLimitReset enum.
+func (e KeyObjectLimitReset) Valid() bool {
+	switch e {
+	case KeyObjectLimitResetDaily:
+		return true
+	case KeyObjectLimitResetMonthly:
+		return true
+	case KeyObjectLimitResetWeekly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for KeyUpdateRequestLimitReset.
+const (
+	KeyUpdateRequestLimitResetDaily   KeyUpdateRequestLimitReset = "daily"
+	KeyUpdateRequestLimitResetMonthly KeyUpdateRequestLimitReset = "monthly"
+	KeyUpdateRequestLimitResetWeekly  KeyUpdateRequestLimitReset = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the KeyUpdateRequestLimitReset enum.
+func (e KeyUpdateRequestLimitReset) Valid() bool {
+	switch e {
+	case KeyUpdateRequestLimitResetDaily:
+		return true
+	case KeyUpdateRequestLimitResetMonthly:
+		return true
+	case KeyUpdateRequestLimitResetWeekly:
 		return true
 	default:
 		return false
@@ -567,30 +651,91 @@ type HTTPValidationError struct {
 
 // KeyCreateRequest defines model for KeyCreateRequest.
 type KeyCreateRequest struct {
-	AllowedModels nullable.Nullable[[]string]           `json:"allowed_models,omitempty"`
-	Limit         nullable.Nullable[float64]            `json:"limit,omitempty"`
-	LimitReset    nullable.Nullable[string]             `json:"limit_reset,omitempty"`
-	Name          nullable.Nullable[string]             `json:"name,omitempty"`
-	ProjectId     nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// Disabled Create the key disabled.
+	Disabled *bool `json:"disabled,omitempty"`
+
+	// Limit USD spend cap over the limit_reset window. Must be above 0.
+	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
+
+	// LimitReset The window `limit` applies to. Monthly when unset.
+	LimitReset nullable.Nullable[KeyCreateRequestLimitReset] `json:"limit_reset,omitempty"`
+	Name       nullable.Nullable[string]                     `json:"name,omitempty"`
+
+	// ProjectId The project the key is scoped to. Can't be changed after creation.
+	ProjectId nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+
+	// RoutingPolicyId A routing policy to bind the key to: an org-level policy or one scoped to the key's project. Can be changed later.
+	RoutingPolicyId nullable.Nullable[string] `json:"routing_policy_id,omitempty"`
 }
+
+// KeyCreateRequestLimitReset defines model for KeyCreateRequest.LimitReset.
+type KeyCreateRequestLimitReset string
 
 // KeyCreateResponse defines model for KeyCreateResponse.
 type KeyCreateResponse struct {
-	AllowedModels   nullable.Nullable[[]string]  `json:"allowed_models,omitempty"`
-	BudgetGroupId   nullable.Nullable[string]    `json:"budget_group_id,omitempty"`
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// BudgetGroupId The Merge for Workforce budget group the key draws down.
+	BudgetGroupId nullable.Nullable[string] `json:"budget_group_id,omitempty"`
+
+	// ByokUsage The part of usage from requests that ran on the organization's own provider credentials (BYOK).
+	ByokUsage float64 `json:"byok_usage"`
+
+	// ByokUsageDaily The BYOK part of usage_daily.
+	ByokUsageDaily float64 `json:"byok_usage_daily"`
+
+	// ByokUsageMonthly The BYOK part of usage_monthly.
+	ByokUsageMonthly float64 `json:"byok_usage_monthly"`
+
+	// ByokUsageWeekly The BYOK part of usage_weekly.
+	ByokUsageWeekly float64                      `json:"byok_usage_weekly"`
 	CreatedAt       nullable.Nullable[time.Time] `json:"created_at,omitempty"`
-	Disabled        bool                         `json:"disabled"`
-	Hash            string                       `json:"hash"`
-	Key             string                       `json:"key"`
-	Label           string                       `json:"label"`
-	Limit           nullable.Nullable[float64]   `json:"limit,omitempty"`
-	LimitRemaining  nullable.Nullable[float64]   `json:"limit_remaining,omitempty"`
-	LimitReset      nullable.Nullable[string]    `json:"limit_reset,omitempty"`
-	Name            nullable.Nullable[string]    `json:"name,omitempty"`
-	ProjectId       nullable.Nullable[string]    `json:"project_id,omitempty"`
-	RoutingPolicyId nullable.Nullable[string]    `json:"routing_policy_id,omitempty"`
-	Usage           float64                      `json:"usage"`
+
+	// CreatorUserId The dashboard user who created the key. Null for keys created with a management key.
+	CreatorUserId nullable.Nullable[openapi_types.UUID] `json:"creator_user_id"`
+	Disabled      bool                                  `json:"disabled"`
+
+	// ExpiresAt When the key stops working. Null means it never expires. Not settable through this API yet.
+	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
+
+	// Hash The key's id: the SHA-256 hash of the raw key.
+	Hash string `json:"hash"`
+
+	// Key The raw API key. Returned only once, in this response; store it now.
+	Key string `json:"key"`
+
+	// Label The key's first characters, for display.
+	Label string                     `json:"label"`
+	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
+
+	// LimitRemaining limit minus usage, never below 0.
+	LimitRemaining nullable.Nullable[float64] `json:"limit_remaining,omitempty"`
+
+	// LimitReset The window `limit` applies to. Monthly when unset.
+	LimitReset nullable.Nullable[KeyCreateResponseLimitReset] `json:"limit_reset,omitempty"`
+	Name       nullable.Nullable[string]                      `json:"name,omitempty"`
+
+	// ProjectId The project the key is scoped to. Can't be changed after creation.
+	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+
+	// Usage USD spend in the current limit_reset window.
+	Usage float64 `json:"usage"`
+
+	// UsageDaily USD spend today.
+	UsageDaily float64 `json:"usage_daily"`
+
+	// UsageMonthly USD spend since the 1st of the month.
+	UsageMonthly float64 `json:"usage_monthly"`
+
+	// UsageWeekly USD spend since Monday.
+	UsageWeekly float64 `json:"usage_weekly"`
 }
+
+// KeyCreateResponseLimitReset defines model for KeyCreateResponse.LimitReset.
+type KeyCreateResponseLimitReset string
 
 // KeyListResponse List envelope for “GET /v1/keys“.
 type KeyListResponse struct {
@@ -604,32 +749,85 @@ type KeyListResponseObject string
 
 // KeyObject OpenRouter-shaped key object with usage + limit fields.
 type KeyObject struct {
-	AllowedModels   nullable.Nullable[[]string]  `json:"allowed_models,omitempty"`
-	BudgetGroupId   nullable.Nullable[string]    `json:"budget_group_id,omitempty"`
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// BudgetGroupId The Merge for Workforce budget group the key draws down.
+	BudgetGroupId nullable.Nullable[string] `json:"budget_group_id,omitempty"`
+
+	// ByokUsage The part of usage from requests that ran on the organization's own provider credentials (BYOK).
+	ByokUsage float64 `json:"byok_usage"`
+
+	// ByokUsageDaily The BYOK part of usage_daily.
+	ByokUsageDaily float64 `json:"byok_usage_daily"`
+
+	// ByokUsageMonthly The BYOK part of usage_monthly.
+	ByokUsageMonthly float64 `json:"byok_usage_monthly"`
+
+	// ByokUsageWeekly The BYOK part of usage_weekly.
+	ByokUsageWeekly float64                      `json:"byok_usage_weekly"`
 	CreatedAt       nullable.Nullable[time.Time] `json:"created_at,omitempty"`
-	Disabled        bool                         `json:"disabled"`
-	Hash            string                       `json:"hash"`
-	Label           string                       `json:"label"`
-	Limit           nullable.Nullable[float64]   `json:"limit,omitempty"`
-	LimitRemaining  nullable.Nullable[float64]   `json:"limit_remaining,omitempty"`
-	LimitReset      nullable.Nullable[string]    `json:"limit_reset,omitempty"`
-	Name            nullable.Nullable[string]    `json:"name,omitempty"`
-	ProjectId       nullable.Nullable[string]    `json:"project_id,omitempty"`
-	RoutingPolicyId nullable.Nullable[string]    `json:"routing_policy_id,omitempty"`
-	Usage           float64                      `json:"usage"`
+
+	// CreatorUserId The dashboard user who created the key. Null for keys created with a management key.
+	CreatorUserId nullable.Nullable[openapi_types.UUID] `json:"creator_user_id"`
+	Disabled      bool                                  `json:"disabled"`
+
+	// ExpiresAt When the key stops working. Null means it never expires. Not settable through this API yet.
+	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
+
+	// Hash The key's id: the SHA-256 hash of the raw key.
+	Hash string `json:"hash"`
+
+	// Label The key's first characters, for display.
+	Label string                     `json:"label"`
+	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
+
+	// LimitRemaining limit minus usage, never below 0.
+	LimitRemaining nullable.Nullable[float64] `json:"limit_remaining,omitempty"`
+
+	// LimitReset The window `limit` applies to. Monthly when unset.
+	LimitReset nullable.Nullable[KeyObjectLimitReset] `json:"limit_reset,omitempty"`
+	Name       nullable.Nullable[string]              `json:"name,omitempty"`
+
+	// ProjectId The project the key is scoped to. Can't be changed after creation.
+	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+
+	// Usage USD spend in the current limit_reset window.
+	Usage float64 `json:"usage"`
+
+	// UsageDaily USD spend today.
+	UsageDaily float64 `json:"usage_daily"`
+
+	// UsageMonthly USD spend since the 1st of the month.
+	UsageMonthly float64 `json:"usage_monthly"`
+
+	// UsageWeekly USD spend since Monday.
+	UsageWeekly float64 `json:"usage_weekly"`
 }
+
+// KeyObjectLimitReset defines model for KeyObject.LimitReset.
+type KeyObjectLimitReset string
 
 // KeyUpdateRequest defines model for KeyUpdateRequest.
 type KeyUpdateRequest struct {
-	AllowedModels   nullable.Nullable[[]string]           `json:"allowed_models,omitempty"`
-	BudgetGroupId   nullable.Nullable[string]             `json:"budget_group_id,omitempty"`
-	Disabled        nullable.Nullable[bool]               `json:"disabled,omitempty"`
-	Limit           nullable.Nullable[float64]            `json:"limit,omitempty"`
-	LimitReset      nullable.Nullable[string]             `json:"limit_reset,omitempty"`
-	Name            nullable.Nullable[string]             `json:"name,omitempty"`
+	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
+
+	// BudgetGroupId Managed by Merge for Workforce; sending this field is a 400.
+	BudgetGroupId nullable.Nullable[string]  `json:"budget_group_id,omitempty"`
+	Disabled      nullable.Nullable[bool]    `json:"disabled,omitempty"`
+	Limit         nullable.Nullable[float64] `json:"limit,omitempty"`
+
+	// LimitReset The window `limit` applies to. Monthly when unset.
+	LimitReset nullable.Nullable[KeyUpdateRequestLimitReset] `json:"limit_reset,omitempty"`
+	Name       nullable.Nullable[string]                     `json:"name,omitempty"`
+
+	// ProjectId Can't be changed after creation; sending a value is a 400.
 	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
 	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
 }
+
+// KeyUpdateRequestLimitReset defines model for KeyUpdateRequest.LimitReset.
+type KeyUpdateRequestLimitReset string
 
 // OrganizationUsageV1Response Org spend for the range. “projects“, “api_keys“ and “vendors“ are
 // present only for the matching “group_by“. They are never null, so the
@@ -1238,6 +1436,12 @@ type VendorControlsV1 struct {
 type ListKeysParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit  *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// ProjectId Only keys scoped to this project.
+	ProjectId *openapi_types.UUID `form:"project_id,omitempty" json:"project_id,omitempty"`
+
+	// Disabled Only disabled keys (true) or only enabled keys (false).
+	Disabled *bool `form:"disabled,omitempty" json:"disabled,omitempty"`
 }
 
 // GetOrganizationUsageParams defines parameters for GetOrganizationUsage.
@@ -2903,6 +3107,30 @@ func NewListKeysRequest(server string, params *ListKeysParams) (*http.Request, e
 
 		}
 
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Disabled != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "disabled", *params.Disabled, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if encoded := queryValues.Encode(); encoded != "" {
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
@@ -4471,6 +4699,10 @@ type ListKeysResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *KeyListResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
 }
@@ -4478,6 +4710,16 @@ type ListKeysResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListKeysResponse) GetJSON200() *KeyListResponse {
 	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListKeysResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListKeysResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -4519,6 +4761,14 @@ type CreateKeyResponse struct {
 	HTTPResponse *http.Response
 	// JSON201 the response for an HTTP 201 `application/json` response
 	JSON201 *KeyCreateResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
 }
@@ -4526,6 +4776,26 @@ type CreateKeyResponse struct {
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
 func (r CreateKeyResponse) GetJSON201() *KeyCreateResponse {
 	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateKeyResponse) GetJSON400() *ErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateKeyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateKeyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateKeyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -4565,8 +4835,29 @@ func (r CreateKeyResponse) ContentType() string {
 type DeleteKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteKeyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteKeyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteKeyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -4608,6 +4899,12 @@ type GetKeyResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *KeyObject
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
 }
@@ -4615,6 +4912,21 @@ type GetKeyResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetKeyResponse) GetJSON200() *KeyObject {
 	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetKeyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetKeyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetKeyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -4656,6 +4968,14 @@ type UpdateKeyResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *KeyObject
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
 }
@@ -4663,6 +4983,26 @@ type UpdateKeyResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r UpdateKeyResponse) GetJSON200() *KeyObject {
 	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateKeyResponse) GetJSON400() *ErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateKeyResponse) GetJSON401() *ErrorResponse {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateKeyResponse) GetJSON403() *ErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateKeyResponse) GetJSON404() *ErrorResponse {
+	return r.JSON404
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -6877,6 +7217,20 @@ func ParseListKeysResponse(rsp *http.Response) (*ListKeysResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest HTTPValidationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6910,6 +7264,34 @@ func ParseCreateKeyResponse(rsp *http.Response) (*CreateKeyResponse, error) {
 		}
 		response.JSON201 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest HTTPValidationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6938,6 +7320,27 @@ func ParseDeleteKeyResponse(rsp *http.Response) (*DeleteKeyResponse, error) {
 	switch {
 	case rsp.StatusCode == 204:
 		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest HTTPValidationError
@@ -6972,6 +7375,27 @@ func ParseGetKeyResponse(rsp *http.Response) (*GetKeyResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest HTTPValidationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -7004,6 +7428,34 @@ func ParseUpdateKeyResponse(rsp *http.Response) (*UpdateKeyResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest HTTPValidationError

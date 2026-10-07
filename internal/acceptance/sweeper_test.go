@@ -16,11 +16,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// sweepPaths lists the collections the sweeper cleans up. Each one lists as
-// {"results": [{"id": ..., "name": ...}], ...} and deletes at <path>/<id>.
-// Add a collection here when its resource gets acceptance tests. Project
-// settings (such as PI settings) need no entry: they go with their tf-acc- project.
+// sweepPaths lists the collections the sweeper cleans up, in order. Each one
+// lists as {"results": [{"id": ..., "name": ...}], ...} (keys: {"data":
+// [{"hash": ..., "name": ...}]}) and deletes at <path>/<id>. Add a collection
+// here when its resource gets acceptance tests. Keys come before projects, since
+// a project with keys can't be deleted. Project settings (such as PI settings)
+// need no entry: they go with their tf-acc- project.
 var sweepPaths = []string{
+	"/v1/keys",
 	"/v1/projects",
 	"/v1/routing-policies",
 }
@@ -66,17 +69,23 @@ func sweepCollection(ctx context.Context, path string) error {
 		return fmt.Errorf("GET %s: HTTP %d", path, status)
 	}
 
+	type sweepItem struct {
+		ID   string `json:"id"`
+		Hash string `json:"hash"`
+		Name string `json:"name"`
+	}
 	var list struct {
-		Results []struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
-		} `json:"results"`
+		Results []sweepItem `json:"results"`
+		Data    []sweepItem `json:"data"`
 	}
 	if err := json.Unmarshal(body, &list); err != nil {
 		return fmt.Errorf("decode list: %w", err)
 	}
 
-	for _, item := range list.Results {
+	for _, item := range append(list.Results, list.Data...) {
+		if item.ID == "" {
+			item.ID = item.Hash
+		}
 		if !strings.HasPrefix(item.Name, namePrefix+"-") || item.ID == "" {
 			continue
 		}
