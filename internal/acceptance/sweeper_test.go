@@ -22,6 +22,7 @@ import (
 // settings (such as PI settings) need no entry: they go with their tf-acc- project.
 var sweepPaths = []string{
 	"/v1/projects",
+	"/v1/routing-policies",
 }
 
 // TestMain deletes tf-acc- resources left behind by crashed or cancelled

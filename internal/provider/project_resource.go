@@ -88,16 +88,6 @@ type projectRoutingPolicyModel struct {
 	ModifiedAt       types.String `tfsdk:"modified_at"`
 }
 
-type projectPriorityModel struct {
-	Model    types.String `tfsdk:"model"`
-	Priority types.Int64  `tfsdk:"priority"`
-}
-
-var projectPriorityAttrTypes = map[string]attr.Type{
-	"model":    types.StringType,
-	"priority": types.Int64Type,
-}
-
 // axisCost is the axis the API uses for an INTELLIGENT policy that doesn't set one.
 const axisCost = string(client.ProjectPolicyV1AxisCOST)
 
@@ -333,45 +323,7 @@ func (r *ProjectResource) ValidateConfig(ctx context.Context, req resource.Valid
 	if !policy.IsNull() && !policy.IsUnknown() {
 		var p projectRoutingPolicyModel
 		resp.Diagnostics.Append(policy.As(ctx, &p, basetypes.ObjectAsOptions{UnhandledNullAsEmpty: true, UnhandledUnknownAsEmpty: true})...)
-		policyPath := path.Root("routing_policy")
-
-		switch p.Strategy.ValueString() {
-		case string(client.ProjectPolicyV1StrategyPRIORITY):
-			if p.PriorityOrder.IsNull() {
-				resp.Diagnostics.AddAttributeError(policyPath.AtName("priority_order"), "Missing priority_order",
-					"A PRIORITY routing policy needs priority_order.")
-			}
-			if !p.AllowedModels.IsNull() {
-				resp.Diagnostics.AddAttributeError(policyPath.AtName("allowed_models"), "Invalid routing policy",
-					"allowed_models applies only to INTELLIGENT routing policies.")
-			}
-			if !p.Axis.IsNull() {
-				resp.Diagnostics.AddAttributeError(policyPath.AtName("axis"), "Invalid routing policy",
-					"axis applies only to INTELLIGENT routing policies.")
-			}
-		case string(client.ProjectPolicyV1StrategyINTELLIGENT):
-			if !p.PriorityOrder.IsNull() {
-				resp.Diagnostics.AddAttributeError(policyPath.AtName("priority_order"), "Invalid routing policy",
-					"priority_order applies only to PRIORITY routing policies.")
-			}
-		}
-
-		// Two entries for one model are distinct set elements when their priorities differ.
-		if !p.PriorityOrder.IsNull() && !p.PriorityOrder.IsUnknown() {
-			var entries []projectPriorityModel
-			resp.Diagnostics.Append(p.PriorityOrder.ElementsAs(ctx, &entries, true)...)
-			seen := map[string]bool{}
-			for _, e := range entries {
-				if e.Model.IsUnknown() {
-					continue
-				}
-				if seen[e.Model.ValueString()] {
-					resp.Diagnostics.AddAttributeError(policyPath.AtName("priority_order"), "Duplicate model in priority_order",
-						fmt.Sprintf("%q is listed more than once.", e.Model.ValueString()))
-				}
-				seen[e.Model.ValueString()] = true
-			}
-		}
+		resp.Diagnostics.Append(validateRoutingPolicy(ctx, path.Root("routing_policy"), p.Strategy, p.Axis, p.AllowedModels, p.PriorityOrder)...)
 	}
 }
 
@@ -666,7 +618,7 @@ func routingPolicyToAPI(ctx context.Context, p *projectRoutingPolicyModel) (clie
 		policy.AllowedModels = nullable.NewNullableWithValue(models)
 	}
 	if !p.PriorityOrder.IsNull() {
-		var entries []projectPriorityModel
+		var entries []priorityOrderModel
 		diags.Append(p.PriorityOrder.ElementsAs(ctx, &entries, false)...)
 		order := make([]client.PriorityModel, 0, len(entries))
 		for _, e := range entries {
@@ -788,45 +740,25 @@ func routingPolicyFromAPI(ctx context.Context, p client.PolicyV2Response, prior 
 		m.AllowedProviders, d = types.ListValueFrom(ctx, types.StringType, providers)
 		diags.Append(d...)
 	}
-	m.PriorityOrder = types.SetNull(types.ObjectType{AttrTypes: projectPriorityAttrTypes})
+	m.PriorityOrder = types.SetNull(types.ObjectType{AttrTypes: priorityOrderAttrTypes})
 	if order, err := p.PriorityOrder.Get(); err == nil && len(order) > 0 {
-		entries := make([]projectPriorityModel, 0, len(order))
+		entries := make([]priorityOrderModel, 0, len(order))
 		for _, e := range order {
-			entries = append(entries, projectPriorityModel{Model: types.StringValue(e.Model), Priority: types.Int64Value(int64(e.Priority))})
+			entries = append(entries, priorityOrderModel{Model: types.StringValue(e.Model), Priority: types.Int64Value(int64(e.Priority))})
 		}
-		m.PriorityOrder, d = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: projectPriorityAttrTypes}, entries)
+		m.PriorityOrder, d = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: priorityOrderAttrTypes}, entries)
 		diags.Append(d...)
 	}
 	return m, diags
 }
 
-// checkAllowedModels reports models the API dropped from an INTELLIGENT
-// policy's allowed_models (it drops models with no capability tier), instead
-// of letting Terraform fail with an inconsistent result.
+// checkAllowedModels reports models the API dropped from the routing policy's allowed_models.
 func checkAllowedModels(plan, state projectResourceModel) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if plan.RoutingPolicy == nil || state.RoutingPolicy == nil || plan.RoutingPolicy.AllowedModels.IsNull() ||
-		plan.RoutingPolicy.AllowedModels.Equal(state.RoutingPolicy.AllowedModels) {
-		return diags
+	if plan.RoutingPolicy == nil || state.RoutingPolicy == nil {
+		return nil
 	}
-
-	kept := map[string]bool{}
-	for _, v := range state.RoutingPolicy.AllowedModels.Elements() {
-		if s, ok := v.(types.String); ok {
-			kept[s.ValueString()] = true
-		}
-	}
-	var dropped []string
-	for _, v := range plan.RoutingPolicy.AllowedModels.Elements() {
-		if s, ok := v.(types.String); ok && !kept[s.ValueString()] {
-			dropped = append(dropped, s.ValueString())
-		}
-	}
-	diags.AddAttributeError(path.Root("routing_policy").AtName("allowed_models"),
-		"Models dropped from allowed_models",
-		fmt.Sprintf("Merge Gateway dropped these models from the routing policy because they have no capability tier: %s. "+
-			"Remove them from routing_policy.allowed_models.", strings.Join(dropped, ", ")))
-	return diags
+	return checkDroppedModels(path.Root("routing_policy").AtName("allowed_models"),
+		plan.RoutingPolicy.AllowedModels, state.RoutingPolicy.AllowedModels)
 }
 
 func nullableString(v nullable.Nullable[string]) types.String {
