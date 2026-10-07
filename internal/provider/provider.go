@@ -165,7 +165,11 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 }
 
 func (p *MergeGatewayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewModelsDataSource,
+		NewVendorsDataSource,
+		NewGuardrailsDataSource,
+	}
 }
 
 func New(version string) func() provider.Provider {
