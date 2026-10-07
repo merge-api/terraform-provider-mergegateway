@@ -151,6 +151,7 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewProjectPISettingsResource,
+		NewProjectDLPSettingsResource,
 	}
 }
 
