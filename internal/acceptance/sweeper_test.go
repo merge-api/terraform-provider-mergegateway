@@ -27,6 +27,7 @@ var sweepPaths = []string{
 	"/v1/projects",
 	"/v1/routing-policies",
 	"/v1/credentials",
+	"/v1/export-destinations",
 }
 
 // TestMain deletes tf-acc- resources left behind by crashed or cancelled
