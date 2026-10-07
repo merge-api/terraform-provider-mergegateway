@@ -160,6 +160,7 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 		NewOrganizationSettingsResource,
 		NewOrganizationPISettingsResource,
 		NewDLPRuleResource,
+		NewBlocklistRuleResource,
 	}
 }
 

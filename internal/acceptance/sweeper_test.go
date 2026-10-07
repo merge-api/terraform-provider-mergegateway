@@ -18,12 +18,12 @@ import (
 
 // sweepPaths lists the collections the sweeper cleans up, in order. Each one
 // lists as {"results": [{"id": ..., "name": ...}], ...} (keys: {"data":
-// [{"hash": ..., "name": ...}]}; DLP rules are named by entity_type) and
-// deletes at <path>/<id>. Add a collection here when its resource gets
-// acceptance tests. Keys come before projects, since a project with keys
-// can't be deleted. Project settings (such as PI settings) need no entry:
-// they go with their tf-acc- project. Organization settings need none either:
-// their tests restore them.
+// [{"hash": ..., "name": ...}]}; DLP rules are named by entity_type and
+// blocklist rules by reason) and deletes at <path>/<id>. Add a collection
+// here when its resource gets acceptance tests. Keys come before projects,
+// since a project with keys can't be deleted. Project settings (such as PI
+// settings) need no entry: they go with their tf-acc- project. Organization
+// settings need none either: their tests restore them.
 var sweepPaths = []string{
 	"/v1/keys",
 	"/v1/projects",
@@ -31,6 +31,7 @@ var sweepPaths = []string{
 	"/v1/credentials",
 	"/v1/export-destinations",
 	"/v1/dlp-rules",
+	"/v1/blocklist-rules",
 }
 
 // TestMain deletes tf-acc- resources left behind by crashed or cancelled
@@ -87,6 +88,7 @@ func sweepCollection(ctx context.Context, path string, mayBeMissing bool) error 
 		Hash       string `json:"hash"`
 		Name       string `json:"name"`
 		EntityType string `json:"entity_type"`
+		Reason     string `json:"reason"`
 	}
 	var list struct {
 		Results []sweepItem `json:"results"`
@@ -102,6 +104,9 @@ func sweepCollection(ctx context.Context, path string, mayBeMissing bool) error 
 		}
 		if item.Name == "" {
 			item.Name = item.EntityType
+		}
+		if item.Name == "" {
+			item.Name = item.Reason
 		}
 		if !strings.HasPrefix(item.Name, namePrefix+"-") || item.ID == "" {
 			continue
