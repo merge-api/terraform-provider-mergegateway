@@ -14,7 +14,8 @@ POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-merge-gateway-postgres}"
 
 # Every management API scope. New scopes aren't granted to keys automatically,
 # so add them here as the API gains them.
-SCOPES='["manage_keys", "read_usage", "manage_projects", "manage_routing"]'
+SCOPES='["manage_keys", "read_usage", "manage_projects", "manage_routing", "manage_credentials",
+  "manage_telemetry_export", "manage_org_settings", "manage_security_rules", "view_users"]'
 
 run_id="$(openssl rand -hex 6)"
 email="tf-acc-${run_id}@example.com"

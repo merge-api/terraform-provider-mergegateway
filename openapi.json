@@ -47,6 +47,780 @@
         "title": "APIKeySpendV1",
         "type": "object"
       },
+      "BlocklistRuleV1Create": {
+        "additionalProperties": false,
+        "properties": {
+          "customer_ids": {
+            "description": "Empty strings are dropped. A block rule needs at least one non-empty list.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Customer Ids",
+            "type": "array"
+          },
+          "models": {
+            "description": "Empty strings are dropped. A block rule needs at least one non-empty list.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "providers": {
+            "description": "Empty strings are dropped. A block rule needs at least one non-empty list.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "array"
+          },
+          "reason": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Reason",
+            "type": "string"
+          },
+          "rule_type": {
+            "default": "block",
+            "description": "block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models.",
+            "enum": [
+              "block",
+              "pin"
+            ],
+            "title": "Rule Type",
+            "type": "string"
+          }
+        },
+        "title": "BlocklistRuleV1Create",
+        "type": "object"
+      },
+      "BlocklistRuleV1List": {
+        "description": "Every rule, newest first. Not paginated: an organization has at most 100.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/BlocklistRuleV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "BlocklistRuleV1List",
+        "type": "object"
+      },
+      "BlocklistRuleV1Response": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "customer_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Customer Ids",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "rule_type": {
+            "description": "block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models.",
+            "enum": [
+              "block",
+              "pin"
+            ],
+            "title": "Rule Type",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "rule_type",
+          "customer_ids",
+          "providers",
+          "models",
+          "reason",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BlocklistRuleV1Response",
+        "type": "object"
+      },
+      "BlocklistRuleV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change. A list sent replaces the whole list.",
+        "properties": {
+          "customer_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Customer Ids"
+          },
+          "models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Models"
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Providers"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Reason"
+          },
+          "rule_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "block",
+                  "pin"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models. Omit, or send null, to keep the current value.",
+            "title": "Rule Type"
+          }
+        },
+        "title": "BlocklistRuleV1Update",
+        "type": "object"
+      },
+      "CredentialConfigV1": {
+        "description": "Vendor-specific settings. Each field applies to the vendors named in it.",
+        "properties": {
+          "api_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Azure OpenAI API version.",
+            "title": "Api Version"
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock access key id.",
+            "title": "Aws Access Key Id"
+          },
+          "aws_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock region, like `us-east-1`.",
+            "title": "Aws Region"
+          },
+          "aws_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock IAM role to assume.",
+            "title": "Aws Role Arn"
+          },
+          "azure_deployment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Azure OpenAI deployment name.",
+            "title": "Azure Deployment"
+          },
+          "vertex_location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vertex AI location.",
+            "title": "Vertex Location"
+          },
+          "vertex_project": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vertex AI project id.",
+            "title": "Vertex Project"
+          }
+        },
+        "title": "CredentialConfigV1",
+        "type": "object"
+      },
+      "CredentialConfigV1Request": {
+        "additionalProperties": false,
+        "description": "Vendor-specific settings, including secrets. Only the fields sent change;\na field can't be cleared once set.",
+        "properties": {
+          "api_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Azure OpenAI API version.",
+            "title": "Api Version"
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock access key id.",
+            "title": "Aws Access Key Id"
+          },
+          "aws_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock region, like `us-east-1`.",
+            "title": "Aws Region"
+          },
+          "aws_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock IAM role to assume.",
+            "title": "Aws Role Arn"
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "format": "password",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedrock secret access key, sent with aws_access_key_id. Never returned.",
+            "title": "Aws Secret Access Key",
+            "writeOnly": true
+          },
+          "azure_deployment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Azure OpenAI deployment name.",
+            "title": "Azure Deployment"
+          },
+          "service_account_json": {
+            "anyOf": [
+              {
+                "format": "password",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vertex AI service account key file, as a JSON string. Never returned.",
+            "title": "Service Account Json",
+            "writeOnly": true
+          },
+          "vertex_location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vertex AI location.",
+            "title": "Vertex Location"
+          },
+          "vertex_project": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vertex AI project id.",
+            "title": "Vertex Project"
+          }
+        },
+        "title": "CredentialConfigV1Request",
+        "type": "object"
+      },
+      "CredentialV1Create": {
+        "additionalProperties": false,
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Custom base URL for the vendor's API.",
+            "title": "Api Base"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "format": "password",
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The vendor API key. Required except for `vertexai` (uses config.service_account_json) and `bedrock` (can use AWS keys or a role in config instead). Never returned.",
+            "title": "Api Key",
+            "writeOnly": true
+          },
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CredentialConfigV1Request"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fallback_to_managed": {
+            "default": true,
+            "description": "When a request with this key fails, retry it once on Merge-managed access for the same vendor, if the organization has it.",
+            "title": "Fallback To Managed",
+            "type": "boolean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "vendor": {
+            "description": "The vendor's slug, like `openai`. Can't change after creation: delete the credential and create a new one to switch vendors. An organization has at most one credential per vendor.",
+            "maxLength": 100,
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendor"
+        ],
+        "title": "CredentialV1Create",
+        "type": "object"
+      },
+      "CredentialV1List": {
+        "description": "List envelope for ``GET /v1/credentials``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/CredentialV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "CredentialV1List",
+        "type": "object"
+      },
+      "CredentialV1Response": {
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Base"
+          },
+          "config": {
+            "$ref": "#/components/schemas/CredentialConfigV1",
+            "description": "The non-secret vendor settings. Settings that aren't set are null."
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "readOnly": true,
+            "title": "Created At"
+          },
+          "credential_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The last 4 characters of the stored API key, like `a1b2`, to tell keys apart. null when the credential has no API key, or the key is under 12 characters (4 would give away too much of it).",
+            "readOnly": true,
+            "title": "Credential Hint"
+          },
+          "fallback_to_managed": {
+            "description": "When a request with this key fails, retry it once on Merge-managed access for the same vendor, if the organization has it.",
+            "title": "Fallback To Managed",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "readOnly": true,
+            "title": "Updated At"
+          },
+          "vendor": {
+            "description": "The vendor's slug, like `openai`. Can't change after creation: delete the credential and create a new one to switch vendors. An organization has at most one credential per vendor.",
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vendor",
+          "name",
+          "api_base",
+          "fallback_to_managed",
+          "config",
+          "credential_hint",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CredentialV1Response",
+        "type": "object"
+      },
+      "CredentialV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change. null is the same as omitting a field.",
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null or \"\" keeps the current value: once set, it can't be cleared. Delete and create the credential to remove it.",
+            "title": "Api Base"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "format": "password",
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the vendor API key. Never returned.",
+            "title": "Api Key",
+            "writeOnly": true
+          },
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CredentialConfigV1Request"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only the config fields sent change; none can be cleared."
+          },
+          "fallback_to_managed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When a request with this key fails, retry it once on Merge-managed access for the same vendor, if the organization has it.",
+            "title": "Fallback To Managed"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null or \"\" keeps the current value: once set, it can't be cleared. Delete and create the credential to remove it.",
+            "title": "Name"
+          }
+        },
+        "title": "CredentialV1Update",
+        "type": "object"
+      },
+      "CreditsV1Response": {
+        "description": "The organization's credit balance, in USD.",
+        "properties": {
+          "balance_usd": {
+            "description": "Credit left. Only an enterprise contract balance can be negative.",
+            "format": "double",
+            "title": "Balance Usd",
+            "type": "number"
+          },
+          "credits_expired_usd": {
+            "description": "Credit that lapsed before it was used.",
+            "format": "double",
+            "title": "Credits Expired Usd",
+            "type": "number"
+          },
+          "credits_purchased_usd": {
+            "description": "Credit bought or added by coupon.",
+            "format": "double",
+            "title": "Credits Purchased Usd",
+            "type": "number"
+          },
+          "free_credits_usd": {
+            "description": "The free credit granted at signup.",
+            "format": "double",
+            "title": "Free Credits Usd",
+            "type": "number"
+          },
+          "total_spend_usd": {
+            "description": "Spend drawn from credit to date.",
+            "format": "double",
+            "title": "Total Spend Usd",
+            "type": "number"
+          }
+        },
+        "required": [
+          "balance_usd",
+          "free_credits_usd",
+          "credits_purchased_usd",
+          "credits_expired_usd",
+          "total_spend_usd"
+        ],
+        "title": "CreditsV1Response",
+        "type": "object"
+      },
       "DLPEntityOverrideV1": {
         "additionalProperties": false,
         "description": "The dashboard's DLP entity override, with ``action`` typed.",
@@ -80,6 +854,320 @@
           }
         },
         "title": "DLPEntityOverrideV1",
+        "type": "object"
+      },
+      "DLPRuleV1Create": {
+        "additionalProperties": false,
+        "description": "A custom rule. It needs a pattern, keywords, or both.",
+        "properties": {
+          "action": {
+            "default": "log",
+            "enum": [
+              "log",
+              "redact",
+              "block"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "enabled": {
+            "default": true,
+            "description": "false creates the rule switched off.",
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "entity_type": {
+            "description": "The rule's name. Unique among the organization's custom rules.",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Words the rule matches. At most 50, each up to 100 characters.",
+            "title": "Keywords"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A regular expression the rule matches.",
+            "title": "Pattern"
+          }
+        },
+        "required": [
+          "entity_type"
+        ],
+        "title": "DLPRuleV1Create",
+        "type": "object"
+      },
+      "DLPRuleV1List": {
+        "description": "Every rule: the seeded catalog, then the custom rules. Not paginated.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/DLPRuleV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "DLPRuleV1List",
+        "type": "object"
+      },
+      "DLPRuleV1Response": {
+        "properties": {
+          "action": {
+            "enum": [
+              "log",
+              "redact",
+              "block"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "category": {
+            "description": "custom for rules the organization creates; global and usa are seeded.",
+            "enum": [
+              "global",
+              "usa",
+              "custom"
+            ],
+            "readOnly": true,
+            "title": "Category",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "For a seeded rule never changed, the time of the request.",
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "detection_method": {
+            "readOnly": true,
+            "title": "Detection Method",
+            "type": "string"
+          },
+          "display_name": {
+            "readOnly": true,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "entity_type": {
+            "description": "The rule's name. Unique among the organization's custom rules.",
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "id": {
+            "description": "Stable for seeded rules, even before they are first changed.",
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "is_seeded": {
+            "description": "Seeded rules can't be created or deleted, only enabled and given an action.",
+            "readOnly": true,
+            "title": "Is Seeded",
+            "type": "boolean"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keywords"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "entity_type",
+          "display_name",
+          "description",
+          "detection_method",
+          "action",
+          "enabled",
+          "pattern",
+          "keywords",
+          "is_seeded",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DLPRuleV1Response",
+        "type": "object"
+      },
+      "DLPRuleV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change. Seeded rules accept only enabled and action.",
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "enum": [
+                  "log",
+                  "redact",
+                  "block"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Action"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Seeded rules accept only enabled and action. Omit, or send null, to keep the current value.",
+            "title": "Description"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Enabled"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The rule's name. Unique among the organization's custom rules. Seeded rules accept only enabled and action. Omit, or send null, to keep the current value. Renaming is refused (409) while project or customer overrides use the current name.",
+            "title": "Entity Type"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Seeded rules accept only enabled and action. Send [] to clear them. Omit, or send null, to keep the current value. A custom rule keeps at least one of pattern and keywords.",
+            "title": "Keywords"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Seeded rules accept only enabled and action. Send \"\" to clear it. Omit, or send null, to keep the current value. A custom rule keeps at least one of pattern and keywords.",
+            "title": "Pattern"
+          }
+        },
+        "title": "DLPRuleV1Update",
         "type": "object"
       },
       "ErrorDetail": {
@@ -121,6 +1209,537 @@
           "detail"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "ExportDestinationV1Create": {
+        "additionalProperties": false,
+        "properties": {
+          "credential_secret": {
+            "description": "The API key or token the destination authenticates with. Never returned; responses show credential_hint instead.",
+            "format": "password",
+            "title": "Credential Secret",
+            "type": "string",
+            "writeOnly": true
+          },
+          "credential_username": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "grafana only: the Grafana Cloud instance ID. Not a secret, so it is returned.",
+            "title": "Credential Username"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "kind": {
+            "const": "otlp",
+            "default": "otlp",
+            "description": "Can't be changed after creation.",
+            "title": "Kind",
+            "type": "string"
+          },
+          "metrics_enabled": {
+            "default": false,
+            "description": "Also export metrics. Datadog and Grafana Cloud bill these separately.",
+            "title": "Metrics Enabled",
+            "type": "boolean"
+          },
+          "ml_app": {
+            "anyOf": [
+              {
+                "maxLength": 193,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Datadog only: the ml_app tag on exported spans.",
+            "title": "Ml App"
+          },
+          "name": {
+            "description": "Unique in the organization.",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "otlp_endpoint": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "generic only: the https URL of your OTLP collector.",
+            "title": "Otlp Endpoint"
+          },
+          "otlp_preset": {
+            "default": "datadog",
+            "description": "Where spans go. generic sends to any OTLP collector and needs an enterprise plan. Can't be changed after creation.",
+            "enum": [
+              "datadog",
+              "grafana",
+              "generic"
+            ],
+            "title": "Otlp Preset",
+            "type": "string"
+          },
+          "privacy_mode": {
+            "default": true,
+            "description": "When true, prompts and completions are left out of exported spans.",
+            "title": "Privacy Mode",
+            "type": "boolean"
+          },
+          "sample_rate": {
+            "default": 1.0,
+            "description": "Fraction of requests exported, from 0.0001 to 1.",
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0001,
+            "title": "Sample Rate",
+            "type": "number"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "datadog: a Datadog site, like datadoghq.com. grafana: a Grafana Cloud zone, like prod-us-east-0. generic: not allowed; use otlp_endpoint.",
+            "title": "Site"
+          }
+        },
+        "required": [
+          "name",
+          "credential_secret"
+        ],
+        "title": "ExportDestinationV1Create",
+        "type": "object"
+      },
+      "ExportDestinationV1List": {
+        "description": "List envelope for ``GET /v1/export-destinations``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ExportDestinationV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "ExportDestinationV1List",
+        "type": "object"
+      },
+      "ExportDestinationV1Response": {
+        "description": "No secret field: only credential_hint.",
+        "properties": {
+          "consecutive_failures": {
+            "description": "Failed deliveries in a row.",
+            "readOnly": true,
+            "title": "Consecutive Failures",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "credential_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The last 4 characters of the stored secret.",
+            "readOnly": true,
+            "title": "Credential Hint"
+          },
+          "credential_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "grafana only: the Grafana Cloud instance ID. Not a secret, so it is returned.",
+            "title": "Credential Username"
+          },
+          "delivery_suspended_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set while delivery is paused after repeated failures.",
+            "readOnly": true,
+            "title": "Delivery Suspended Until"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "otlp",
+            "description": "Can't be changed after creation.",
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_error_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "readOnly": true,
+            "title": "Last Error At"
+          },
+          "last_error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "readOnly": true,
+            "title": "Last Error Message"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "readOnly": true,
+            "title": "Last Success At"
+          },
+          "metrics_enabled": {
+            "description": "Also export metrics. Datadog and Grafana Cloud bill these separately.",
+            "title": "Metrics Enabled",
+            "type": "boolean"
+          },
+          "ml_app": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Datadog only: the ml_app tag on exported spans.",
+            "title": "Ml App"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "otlp_endpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "generic only: the https URL of your OTLP collector.",
+            "title": "Otlp Endpoint"
+          },
+          "otlp_preset": {
+            "description": "Also datadog-apm: the dashboard's API can create that preset, this API can't, so create doesn't accept it. Can't be changed after creation.",
+            "enum": [
+              "datadog",
+              "datadog-apm",
+              "grafana",
+              "generic"
+            ],
+            "title": "Otlp Preset",
+            "type": "string"
+          },
+          "privacy_mode": {
+            "description": "When true, prompts and completions are left out of exported spans.",
+            "title": "Privacy Mode",
+            "type": "boolean"
+          },
+          "sample_rate": {
+            "description": "Fraction of requests exported, from 0.0001 to 1.",
+            "format": "double",
+            "title": "Sample Rate",
+            "type": "number"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "datadog: a Datadog site, like datadoghq.com. grafana: a Grafana Cloud zone, like prod-us-east-0. generic: not allowed; use otlp_endpoint.",
+            "title": "Site"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "kind",
+          "otlp_preset",
+          "site",
+          "otlp_endpoint",
+          "ml_app",
+          "credential_hint",
+          "credential_username",
+          "enabled",
+          "privacy_mode",
+          "metrics_enabled",
+          "sample_rate",
+          "consecutive_failures",
+          "delivery_suspended_until",
+          "last_success_at",
+          "last_error_at",
+          "last_error_message",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ExportDestinationV1Response",
+        "type": "object"
+      },
+      "ExportDestinationV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change. kind and otlp_preset can't be changed.",
+        "properties": {
+          "credential_secret": {
+            "description": "Replaces the stored secret. The API key or token the destination authenticates with. Never returned; responses show credential_hint instead. Omit to keep the current value. null is rejected.",
+            "format": "password",
+            "title": "Credential Secret",
+            "type": "string",
+            "writeOnly": true
+          },
+          "credential_username": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "grafana only: the Grafana Cloud instance ID. Not a secret, so it is returned. null clears it, where the preset doesn't need it.",
+            "title": "Credential Username"
+          },
+          "enabled": {
+            "description": "Omit to keep the current value. null is rejected.",
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "metrics_enabled": {
+            "description": "Also export metrics. Datadog and Grafana Cloud bill these separately. Omit to keep the current value. null is rejected.",
+            "title": "Metrics Enabled",
+            "type": "boolean"
+          },
+          "ml_app": {
+            "anyOf": [
+              {
+                "maxLength": 193,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Datadog only: the ml_app tag on exported spans. null clears it.",
+            "title": "Ml App"
+          },
+          "name": {
+            "description": "Omit to keep the current value. null is rejected.",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "otlp_endpoint": {
+            "description": "generic only: the https URL of your OTLP collector. Omit to keep the current value. null is rejected.",
+            "maxLength": 255,
+            "title": "Otlp Endpoint",
+            "type": "string"
+          },
+          "privacy_mode": {
+            "description": "When true, prompts and completions are left out of exported spans. Omit to keep the current value. null is rejected.",
+            "title": "Privacy Mode",
+            "type": "boolean"
+          },
+          "sample_rate": {
+            "description": "Fraction of requests exported, from 0.0001 to 1. Omit to keep the current value. null is rejected.",
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0001,
+            "title": "Sample Rate",
+            "type": "number"
+          },
+          "site": {
+            "description": "datadog: a Datadog site, like datadoghq.com. grafana: a Grafana Cloud zone, like prod-us-east-0. generic: not allowed; use otlp_endpoint. Omit to keep the current value. null is rejected.",
+            "title": "Site",
+            "type": "string"
+          }
+        },
+        "title": "ExportDestinationV1Update",
+        "type": "object"
+      },
+      "GuardrailV1List": {
+        "description": "List envelope for ``GET /v1/guardrails``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "GuardrailV1List",
+        "type": "object"
+      },
+      "GuardrailV1Response": {
+        "description": "A project's guardrails: the same objects as ``/v1/projects/{id}/controls``,\n``/pi-settings`` and ``/dlp-settings``.",
+        "properties": {
+          "controls": {
+            "$ref": "#/components/schemas/ProjectControlsV1Response"
+          },
+          "dlp_settings": {
+            "$ref": "#/components/schemas/ProjectDLPSettingsV1Response"
+          },
+          "pi_settings": {
+            "$ref": "#/components/schemas/ProjectPISettingsV1Response"
+          },
+          "project_id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Project Id",
+            "type": "string"
+          },
+          "project_name": {
+            "title": "Project Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "project_name",
+          "controls",
+          "pi_settings",
+          "dlp_settings"
+        ],
+        "title": "GuardrailV1Response",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -846,6 +2465,835 @@
           }
         },
         "title": "KeyUpdateRequest",
+        "type": "object"
+      },
+      "MemberV1List": {
+        "description": "List envelope for ``GET /v1/members``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/MemberV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "MemberV1List",
+        "type": "object"
+      },
+      "MemberV1Response": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "description": "The membership id.",
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The member's role name, like `Admin`.",
+            "title": "Role"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role"
+        ],
+        "title": "MemberV1Response",
+        "type": "object"
+      },
+      "ModelAliasV1List": {
+        "description": "List envelope for ``GET /v1/model-aliases``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ModelAliasV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "ModelAliasV1List",
+        "type": "object"
+      },
+      "ModelAliasV1Response": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "full_name": {
+            "description": "`@alias/<name>`, the value clients send as `model`.",
+            "readOnly": true,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "managed_by": {
+            "anyOf": [
+              {
+                "const": "routing_policy",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`routing_policy` for the slug a routing policy owns; null for your own aliases.",
+            "readOnly": true,
+            "title": "Managed By"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The project the alias applies to; null for the whole organization.",
+            "title": "Project Id"
+          },
+          "target_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when target_type is `model`.",
+            "title": "Target Model"
+          },
+          "target_policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when target_type is `routing_config`.",
+            "title": "Target Policy Id"
+          },
+          "target_type": {
+            "enum": [
+              "model",
+              "routing_config"
+            ],
+            "title": "Target Type",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Updated At",
+            "type": "string"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The vendor the target model is pinned to, if any.",
+            "title": "Vendor"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "full_name",
+          "target_type",
+          "target_model",
+          "vendor",
+          "target_policy_id",
+          "description",
+          "is_active",
+          "managed_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ModelAliasV1Response",
+        "type": "object"
+      },
+      "ModelV1List": {
+        "description": "List envelope for ``GET /v1/organization/models``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ModelV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "ModelV1List",
+        "type": "object"
+      },
+      "ModelV1Response": {
+        "properties": {
+          "context_window": {
+            "description": "Maximum input context, in tokens.",
+            "title": "Context Window",
+            "type": "integer"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The day the model is retired. null when no date is set.",
+            "title": "Expiration Date"
+          },
+          "id": {
+            "description": "The canonical `provider/model` id.",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "input_cost_per_million": {
+            "description": "List price per million input tokens (USD).",
+            "format": "double",
+            "title": "Input Cost Per Million",
+            "type": "number"
+          },
+          "input_modalities": {
+            "description": "What the model accepts, like `text`, `image`.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Input Modalities",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "max_output_tokens": {
+            "title": "Max Output Tokens",
+            "type": "integer"
+          },
+          "output_cost_per_million": {
+            "description": "List price per million output tokens (USD).",
+            "format": "double",
+            "title": "Output Cost Per Million",
+            "type": "number"
+          },
+          "output_modalities": {
+            "description": "What the model returns.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Output Modalities",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "provider": {
+            "description": "The model's creator, like `openai`.",
+            "title": "Provider",
+            "type": "string"
+          },
+          "replacement_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The model to move to once this one is retired.",
+            "title": "Replacement Model"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "beta",
+              "deprecated"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "display_name",
+          "context_window",
+          "max_output_tokens",
+          "input_modalities",
+          "output_modalities",
+          "input_cost_per_million",
+          "output_cost_per_million",
+          "status",
+          "expiration_date",
+          "replacement_model"
+        ],
+        "title": "ModelV1Response",
+        "type": "object"
+      },
+      "OrganizationPISettingsV1": {
+        "additionalProperties": false,
+        "description": "The organization's prompt injection policy. Projects inherit it unless\nthey override it at /v1/projects/{project_id}/pi-settings.\n\nPUT replaces the whole policy: an omitted field takes its default.",
+        "properties": {
+          "pi_allowlist_patterns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pi Allowlist Patterns",
+            "type": "array"
+          },
+          "pi_block_threshold": {
+            "default": 0.57,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Block Threshold",
+            "type": "number"
+          },
+          "pi_fail_closed": {
+            "default": false,
+            "title": "Pi Fail Closed",
+            "type": "boolean"
+          },
+          "pi_indirect_mode": {
+            "default": "off",
+            "description": "Indirect injection in tool results and documents.",
+            "enum": [
+              "off",
+              "alert",
+              "block"
+            ],
+            "title": "Pi Indirect Mode",
+            "type": "string"
+          },
+          "pi_input_action": {
+            "default": "block",
+            "enum": [
+              "observe",
+              "redact",
+              "route",
+              "block",
+              "escalate"
+            ],
+            "title": "Pi Input Action",
+            "type": "string"
+          },
+          "pi_log_full_text_on_block": {
+            "default": false,
+            "title": "Pi Log Full Text On Block",
+            "type": "boolean"
+          },
+          "pi_mode": {
+            "default": "off",
+            "description": "Direct injection: off, alert (score only) or block.",
+            "enum": [
+              "off",
+              "alert",
+              "block"
+            ],
+            "title": "Pi Mode",
+            "type": "string"
+          },
+          "pi_output_action": {
+            "default": "redact",
+            "enum": [
+              "observe",
+              "redact",
+              "route",
+              "block",
+              "escalate"
+            ],
+            "title": "Pi Output Action",
+            "type": "string"
+          },
+          "pi_pass_threshold": {
+            "default": 0.3,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Pass Threshold",
+            "type": "number"
+          },
+          "pi_safer_vendor_route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Safer Vendor Route"
+          },
+          "pi_tier2a_block_threshold": {
+            "default": 0.6,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Tier2A Block Threshold",
+            "type": "number"
+          },
+          "pi_tier2b_block_threshold": {
+            "default": 0.45,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Tier2B Block Threshold",
+            "type": "number"
+          }
+        },
+        "title": "OrganizationPISettingsV1",
+        "type": "object"
+      },
+      "OrganizationPISettingsV1Response": {
+        "additionalProperties": false,
+        "description": "The organization's prompt injection policy. Every field is always returned.",
+        "properties": {
+          "pi_allowlist_patterns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pi Allowlist Patterns",
+            "type": "array"
+          },
+          "pi_block_threshold": {
+            "default": 0.57,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Block Threshold",
+            "type": "number"
+          },
+          "pi_fail_closed": {
+            "default": false,
+            "title": "Pi Fail Closed",
+            "type": "boolean"
+          },
+          "pi_indirect_mode": {
+            "default": "off",
+            "description": "Indirect injection in tool results and documents.",
+            "enum": [
+              "off",
+              "alert",
+              "block"
+            ],
+            "title": "Pi Indirect Mode",
+            "type": "string"
+          },
+          "pi_input_action": {
+            "default": "block",
+            "enum": [
+              "observe",
+              "redact",
+              "route",
+              "block",
+              "escalate"
+            ],
+            "title": "Pi Input Action",
+            "type": "string"
+          },
+          "pi_log_full_text_on_block": {
+            "default": false,
+            "title": "Pi Log Full Text On Block",
+            "type": "boolean"
+          },
+          "pi_mode": {
+            "default": "off",
+            "description": "Direct injection: off, alert (score only) or block.",
+            "enum": [
+              "off",
+              "alert",
+              "block"
+            ],
+            "title": "Pi Mode",
+            "type": "string"
+          },
+          "pi_output_action": {
+            "default": "redact",
+            "enum": [
+              "observe",
+              "redact",
+              "route",
+              "block",
+              "escalate"
+            ],
+            "title": "Pi Output Action",
+            "type": "string"
+          },
+          "pi_pass_threshold": {
+            "default": 0.3,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Pass Threshold",
+            "type": "number"
+          },
+          "pi_safer_vendor_route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pi Safer Vendor Route"
+          },
+          "pi_tier2a_block_threshold": {
+            "default": 0.6,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Tier2A Block Threshold",
+            "type": "number"
+          },
+          "pi_tier2b_block_threshold": {
+            "default": 0.45,
+            "format": "double",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pi Tier2B Block Threshold",
+            "type": "number"
+          }
+        },
+        "required": [
+          "pi_mode",
+          "pi_block_threshold",
+          "pi_pass_threshold",
+          "pi_input_action",
+          "pi_output_action",
+          "pi_allowlist_patterns",
+          "pi_safer_vendor_route",
+          "pi_fail_closed",
+          "pi_log_full_text_on_block",
+          "pi_indirect_mode",
+          "pi_tier2a_block_threshold",
+          "pi_tier2b_block_threshold"
+        ],
+        "title": "OrganizationPISettingsV1Response",
+        "type": "object"
+      },
+      "OrganizationSettingsV1Response": {
+        "properties": {
+          "auto_handle_model_deprecations": {
+            "description": "Move routing policies off deprecated models automatically.",
+            "title": "Auto Handle Model Deprecations",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Id",
+            "type": "string"
+          },
+          "log_payloads": {
+            "description": "Store request and response bodies.",
+            "title": "Log Payloads",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Set when the organization is created. It does not change.",
+            "readOnly": true,
+            "title": "Slug",
+            "type": "string"
+          },
+          "tag_definitions": {
+            "items": {
+              "$ref": "#/components/schemas/TagDefinitionV1"
+            },
+            "title": "Tag Definitions",
+            "type": "array"
+          },
+          "vendor_restrictions": {
+            "$ref": "#/components/schemas/VendorRestrictionsV1"
+          },
+          "web_search_mode": {
+            "enum": [
+              "auto",
+              "native",
+              "merge"
+            ],
+            "title": "Web Search Mode",
+            "type": "string"
+          },
+          "zero_data_retention": {
+            "description": "Route only to vendors that retain no data.",
+            "title": "Zero Data Retention",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "tag_definitions",
+          "log_payloads",
+          "zero_data_retention",
+          "web_search_mode",
+          "auto_handle_model_deprecations",
+          "vendor_restrictions",
+          "created_at"
+        ],
+        "title": "OrganizationSettingsV1Response",
+        "type": "object"
+      },
+      "OrganizationSettingsV1Update": {
+        "additionalProperties": false,
+        "description": "Only the fields sent change.",
+        "properties": {
+          "auto_handle_model_deprecations": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Auto Handle Model Deprecations"
+          },
+          "log_payloads": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Log Payloads"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Name"
+          },
+          "tag_definitions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TagDefinitionV1"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the whole list. Omit, or send null, to keep the current value.",
+            "title": "Tag Definitions"
+          },
+          "vendor_restrictions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VendorRestrictionsV1"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the whole object. Omit, or send null, to keep the current value."
+          },
+          "web_search_mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "auto",
+                  "native",
+                  "merge"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Web Search Mode"
+          },
+          "zero_data_retention": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omit, or send null, to keep the current value.",
+            "title": "Zero Data Retention"
+          }
+        },
+        "title": "OrganizationSettingsV1Update",
         "type": "object"
       },
       "OrganizationUsageV1Response": {
@@ -2852,6 +5300,28 @@
         "title": "ScopeRoutableModel",
         "type": "object"
       },
+      "TagDefinitionV1": {
+        "description": "A request tag key and the values it allows.",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "values"
+        ],
+        "title": "TagDefinitionV1",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -2923,6 +5393,184 @@
         ],
         "title": "VendorControlsV1",
         "type": "object"
+      },
+      "VendorRestrictionsV1": {
+        "description": "Which vendors and regions the organization's traffic may use.",
+        "properties": {
+          "allowed_regions": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Regions",
+            "type": "array"
+          },
+          "allowed_vendors": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Vendors",
+            "type": "array"
+          },
+          "byok_only": {
+            "default": false,
+            "title": "Byok Only",
+            "type": "boolean"
+          },
+          "customer_key_usage_default": {
+            "anyOf": [
+              {
+                "enum": [
+                  "use_any",
+                  "prefer_byok",
+                  "byok_only",
+                  "customer_only"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Default key usage for end customers without their own setting. null means customers follow prefer_byok and byok_only.",
+            "title": "Customer Key Usage Default"
+          },
+          "ignored_regions": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Regions",
+            "type": "array"
+          },
+          "ignored_vendors": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Vendors",
+            "type": "array"
+          },
+          "prefer_byok": {
+            "default": false,
+            "title": "Prefer Byok",
+            "type": "boolean"
+          },
+          "vendor_routing_preference": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Vendor Routing Preference",
+            "type": "array"
+          }
+        },
+        "title": "VendorRestrictionsV1",
+        "type": "object"
+      },
+      "VendorV1List": {
+        "description": "List envelope for ``GET /v1/organization/vendors``. Pass ``next`` as ``cursor``.",
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/VendorV1Response"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "next",
+          "previous"
+        ],
+        "title": "VendorV1List",
+        "type": "object"
+      },
+      "VendorV1Response": {
+        "properties": {
+          "allow_byok": {
+            "description": "Whether you can add your own credential for it.",
+            "title": "Allow Byok",
+            "type": "boolean"
+          },
+          "country_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ISO 3166-1 alpha-2 code of its home country.",
+            "title": "Country Code"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "geo_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The region token used by region controls.",
+            "title": "Geo Region"
+          },
+          "slug": {
+            "description": "The vendor's id, like `bedrock`.",
+            "readOnly": true,
+            "title": "Slug",
+            "type": "string"
+          },
+          "vendor_type": {
+            "description": "`direct` for the model creator's own API, `hosted` for a cloud host.",
+            "enum": [
+              "direct",
+              "hosted"
+            ],
+            "title": "Vendor Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "display_name",
+          "vendor_type",
+          "allow_byok",
+          "country_code",
+          "geo_region"
+        ],
+        "title": "VendorV1Response",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -2940,6 +5588,1868 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/blocklist-rules": {
+      "get": {
+        "description": "List the organization's blocklist rules, newest first.\n\nReturns all of them (at most 100), so no cursor pagination.",
+        "operationId": "list_blocklist_rules",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlocklistRuleV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Blocklist Rules",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create a blocklist rule and sync it to the gateway.",
+        "operationId": "create_blocklist_rule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlocklistRuleV1Create"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlocklistRuleV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The organization already has 100 rules."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Create Blocklist Rule",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/blocklist-rules/{rule_id}": {
+      "delete": {
+        "description": "Delete a blocklist rule and sync the change to the gateway.",
+        "operationId": "delete_blocklist_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Blocklist Rule",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get one blocklist rule.",
+        "operationId": "get_blocklist_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlocklistRuleV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Blocklist Rule",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update a blocklist rule and sync it to the gateway.",
+        "operationId": "update_blocklist_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlocklistRuleV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlocklistRuleV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Blocklist Rule",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/credentials": {
+      "get": {
+        "description": "List the organization's BYOK credentials (keyset-paginated by created_at, id).",
+        "operationId": "list_credentials",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Credentials",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),\nand 409s if the organization already has one for the vendor.",
+        "operationId": "create_credential",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialV1Create"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The credential is invalid: the vendor doesn't allow BYOK, a required secret is missing, a config value is malformed, or api_base is not allowed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Create Credential",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/credentials/{credential_id}": {
+      "delete": {
+        "description": "Delete a BYOK credential.",
+        "operationId": "delete_credential",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "credential_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Credential Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Credential",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get one BYOK credential.",
+        "operationId": "get_credential",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "credential_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Credential Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Credential",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update a BYOK credential in place. The vendor can't change.",
+        "operationId": "update_credential",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "credential_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Credential Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The credential is invalid: the vendor doesn't allow BYOK, a required secret is missing, a config value is malformed, or api_base is not allowed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Credential",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/credits": {
+      "get": {
+        "description": "Get the organization's credit balance.\n\nNeeds `view_billing` or `manage_billing`.",
+        "operationId": "get_credits",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "502": {
+            "description": "Billing data is temporarily unavailable. Retry later."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Credits",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/dlp-rules": {
+      "get": {
+        "description": "List the organization's DLP rules.\n\nReturns all of them (the seeded catalog, then the custom rules), like the\ndashboard, so no cursor pagination.",
+        "operationId": "list_dlp_rules",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DLPRuleV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Dlp Rules",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create a custom DLP rule and sync it to the gateway.",
+        "operationId": "create_dlp_rule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DLPRuleV1Create"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DLPRuleV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Create Dlp Rule",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/dlp-rules/{rule_id}": {
+      "delete": {
+        "description": "Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.",
+        "operationId": "delete_dlp_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Dlp Rule",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get one DLP rule, seeded or custom.",
+        "operationId": "get_dlp_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DLPRuleV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Dlp Rule",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update a DLP rule and sync it to the gateway.",
+        "operationId": "update_dlp_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DLPRuleV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DLPRuleV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Dlp Rule",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/export-destinations": {
+      "get": {
+        "description": "List export destinations (keyset-paginated by created_at, id).\n\n404 when telemetry export is not enabled for the organization.",
+        "operationId": "list_export_destinations",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportDestinationV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Export Destinations",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "post": {
+        "description": "Create an export destination. The generic preset needs an enterprise plan (403).",
+        "operationId": "create_export_destination",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportDestinationV1Create"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportDestinationV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Create Export Destination",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/export-destinations/{destination_id}": {
+      "delete": {
+        "description": "Delete an export destination.",
+        "operationId": "delete_export_destination",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "destination_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Destination Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Delete Export Destination",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get an export destination.",
+        "operationId": "get_export_destination",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "destination_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Destination Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportDestinationV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Export Destination",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update an export destination. Sending credential_secret rotates the stored secret.",
+        "operationId": "update_export_destination",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "destination_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Destination Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportDestinationV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportDestinationV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Export Destination",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/guardrails": {
+      "get": {
+        "description": "List every project's guardrails: controls, PI and DLP settings.\n\nNeeds `view_security_rules` or `manage_security_rules`, and\n`view_org_settings` or `manage_org_settings`.",
+        "operationId": "list_guardrails",
+        "parameters": [
+          {
+            "description": "The `next` value from the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The `next` value from the previous page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardrailV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Guardrails",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/guardrails/{project_id}": {
+      "get": {
+        "description": "Get one project's guardrails.\n\nNeeds `view_security_rules` or `manage_security_rules`, and\n`view_org_settings` or `manage_org_settings`.",
+        "operationId": "get_guardrail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardrailV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Guardrail",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
     "/v1/keys": {
       "get": {
         "description": "List the org's regular API keys (excludes the internal tester key).\n\nPage through with ``offset``/``limit`` while ``has_more`` is true.",
@@ -3387,6 +7897,889 @@
         ]
       }
     },
+    "/v1/members": {
+      "get": {
+        "description": "List the organization's members.\n\nNeeds `view_users` or `manage_users`.",
+        "operationId": "list_members",
+        "parameters": [
+          {
+            "description": "The `next` value from the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The `next` value from the previous page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Members",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/members/{member_id}": {
+      "get": {
+        "description": "Get one member by membership id.\n\nNeeds `view_users` or `manage_users`.",
+        "operationId": "get_member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "member_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Member Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Member",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/model-aliases": {
+      "get": {
+        "description": "List the organization's model aliases.\n\nNeeds `view_routing` or `manage_routing`.",
+        "operationId": "list_model_aliases",
+        "parameters": [
+          {
+            "description": "Only this project's aliases.",
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this project's aliases.",
+              "title": "Project Id"
+            }
+          },
+          {
+            "description": "The `next` value from the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The `next` value from the previous page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelAliasV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Model Aliases",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/model-aliases/{alias_id}": {
+      "get": {
+        "description": "Get one model alias.\n\nNeeds `view_routing` or `manage_routing`.",
+        "operationId": "get_model_alias",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "alias_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Alias Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelAliasV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Model Alias",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/organization": {
+      "get": {
+        "description": "Get the organization's settings.",
+        "operationId": "get_organization_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Organization Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "patch": {
+        "description": "Update the organization's settings and sync them to the gateway.",
+        "operationId": "update_organization_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationSettingsV1Update"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The request is invalid."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Organization Settings",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/organization/models": {
+      "get": {
+        "description": "List the catalog models the organization can route to.\n\nNeeds `view_routing` or `manage_routing`.",
+        "operationId": "list_models",
+        "parameters": [
+          {
+            "description": "Only models whose context window is at least this.",
+            "in": "query",
+            "name": "min_context_length",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only models whose context window is at least this.",
+              "title": "Min Context Length"
+            }
+          },
+          {
+            "description": "Only models that accept this input, like `image`.",
+            "in": "query",
+            "name": "input_modality",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only models that accept this input, like `image`.",
+              "title": "Input Modality"
+            }
+          },
+          {
+            "description": "Only models that return this output, like `audio`.",
+            "in": "query",
+            "name": "output_modality",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only models that return this output, like `audio`.",
+              "title": "Output Modality"
+            }
+          },
+          {
+            "description": "The `next` value from the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The `next` value from the previous page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Models",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/organization/models/{model_id}": {
+      "get": {
+        "description": "Get one model by its `provider/model` id.\n\nNeeds `view_routing` or `manage_routing`.",
+        "operationId": "get_model",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Model",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/organization/pi-settings": {
+      "delete": {
+        "description": "Reset the organization's prompt injection policy to the defaults (PI off).",
+        "operationId": "reset_organization_pi_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationPISettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Reset Organization Pi Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "get": {
+        "description": "Get the organization's prompt injection policy.",
+        "operationId": "get_organization_pi_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationPISettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Organization Pi Settings",
+        "tags": [
+          "management-api"
+        ]
+      },
+      "put": {
+        "description": "Replace the organization's prompt injection policy and sync it to the gateway.",
+        "operationId": "update_organization_pi_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationPISettingsV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationPISettingsV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Update Organization Pi Settings",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
     "/v1/organization/usage": {
       "get": {
         "description": "Org spend rollup for the range, with optional per-dimension breakdown.",
@@ -3503,6 +8896,183 @@
         ]
       }
     },
+    "/v1/organization/vendors": {
+      "get": {
+        "description": "List the active vendors.\n\nNeeds `view_routing` or `manage_routing`.",
+        "operationId": "list_vendors",
+        "parameters": [
+          {
+            "description": "The `next` value from the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The `next` value from the previous page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorV1List"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "List Vendors",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
+    "/v1/organization/vendors/{slug}": {
+      "get": {
+        "description": "Get one active vendor by slug.\n\nNeeds `view_routing` or `manage_routing`.",
+        "operationId": "get_vendor",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorV1Response"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key is missing or invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The key lacks the scope this route needs, or the change is not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The resource does not exist in the key's organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "ManagementKey": []
+          }
+        ],
+        "summary": "Get Vendor",
+        "tags": [
+          "management-api"
+        ]
+      }
+    },
     "/v1/projects": {
       "get": {
         "description": "List projects (keyset-paginated by created_at, id).",
@@ -3547,6 +9117,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The cursor is invalid."
           },
           "401": {
             "content": {
