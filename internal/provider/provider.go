@@ -159,6 +159,7 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 		NewExportDestinationResource,
 		NewOrganizationSettingsResource,
 		NewOrganizationPISettingsResource,
+		NewDLPRuleResource,
 	}
 }
 
