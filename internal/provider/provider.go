@@ -158,6 +158,7 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 		NewCredentialResource,
 		NewExportDestinationResource,
 		NewOrganizationSettingsResource,
+		NewOrganizationPISettingsResource,
 	}
 }
 
