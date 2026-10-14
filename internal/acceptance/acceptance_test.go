@@ -1,6 +1,3 @@
-// Copyright IBM Corp. 2021, 2026
-// SPDX-License-Identifier: MPL-2.0
-
 // Package acceptance holds the provider's acceptance tests and their shared
 // helpers. The tests create real resources, so they only run when TF_ACC=1
 // (the terraform-plugin-testing convention); otherwise they skip.

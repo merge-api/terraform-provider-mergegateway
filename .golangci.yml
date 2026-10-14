@@ -33,7 +33,7 @@ linters:
     depguard:
       rules:
         main:
-          list-mode: lax # a package is allowed if it doesn't match the deny list or the allow rule is more specific (longer) than the deny rule.
+          list-mode: lax # only the packages below are denied
           deny:
             - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest" # prefix
               desc: "Use github.com/hashicorp/terraform-plugin-testing/helper/acctest"

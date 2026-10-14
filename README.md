@@ -1,6 +1,8 @@
 # Terraform Provider for Merge Gateway
 
-The `mergegateway` provider manages [Merge Gateway](https://merge.dev) configuration as code. It is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework), starting from HashiCorp's [scaffolding template](https://github.com/hashicorp/terraform-provider-scaffolding-framework).
+The `mergegateway` provider manages [Merge Gateway](https://merge.dev) configuration as code.
+
+Built on HashiCorp's Terraform Plugin Framework (https://github.com/hashicorp/terraform-plugin-framework).
 
 - Provider, resources and data sources: `internal/provider/`
 - API client, generated from `openapi.json` by [oapi-codegen](https://github.com/oapi-codegen/oapi-codegen): `internal/client/`
@@ -60,3 +62,7 @@ To generate or update documentation (and the client), run `make generate`.
 ### Acceptance tests
 
 Acceptance tests create real resources in a dedicated test org. See [CONTRIBUTING.md](CONTRIBUTING.md) for what the org needs and how to run them.
+
+## License
+
+MIT. Third-party libraries keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
