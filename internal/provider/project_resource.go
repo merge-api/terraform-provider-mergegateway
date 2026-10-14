@@ -352,8 +352,9 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	// The API only takes is_active on update, so an inactive project is
 	// created and then deactivated.
 	if !plan.IsActive.ValueBool() {
+		inactive := false
 		updated, err := r.client.UpdateProjectWithResponse(ctx, project.Id, client.ProjectV1Update{
-			IsActive: nullable.NewNullableWithValue(false),
+			IsActive: &inactive,
 		})
 		if err != nil || updated.JSON200 == nil {
 			var detail string
@@ -508,7 +509,8 @@ func projectUpdateRequest(ctx context.Context, plan, state projectResourceModel)
 	var body client.ProjectV1Update
 
 	if !plan.Name.Equal(state.Name) {
-		body.Name = nullable.NewNullableWithValue(plan.Name.ValueString())
+		name := plan.Name.ValueString()
+		body.Name = &name
 	}
 	if !plan.Description.Equal(state.Description) {
 		if plan.Description.IsNull() {
@@ -518,7 +520,8 @@ func projectUpdateRequest(ctx context.Context, plan, state projectResourceModel)
 		}
 	}
 	if !plan.IsActive.Equal(state.IsActive) {
-		body.IsActive = nullable.NewNullableWithValue(plan.IsActive.ValueBool())
+		isActive := plan.IsActive.ValueBool()
+		body.IsActive = &isActive
 	}
 	if !plan.BudgetConfig.equal(state.BudgetConfig) {
 		if plan.BudgetConfig == nil {

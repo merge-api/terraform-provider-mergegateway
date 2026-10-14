@@ -1528,7 +1528,7 @@ type ExportDestinationV1Response struct {
 	ConsecutiveFailures int       `json:"consecutive_failures"`
 	CreatedAt           time.Time `json:"created_at"`
 
-	// CredentialHint The last 4 characters of the stored secret.
+	// CredentialHint The last 4 characters of the stored secret, to tell secrets apart. null when the secret is under 12 characters (4 would give away too much of it).
 	CredentialHint nullable.Nullable[string] `json:"credential_hint"`
 
 	// CredentialUsername grafana only: the Grafana Cloud instance ID. Not a secret, so it is returned.
@@ -1643,6 +1643,9 @@ type KeyCreateRequest struct {
 	// Disabled Create the key disabled.
 	Disabled *bool `json:"disabled,omitempty"`
 
+	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires. Must be in the future; a value without an offset is UTC.
+	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
+
 	// Limit USD spend cap over the limit_reset window. Must be above 0.
 	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
 
@@ -1684,7 +1687,7 @@ type KeyCreateResponse struct {
 	CreatorUserId nullable.Nullable[openapi_types.UUID] `json:"creator_user_id"`
 	Disabled      bool                                  `json:"disabled"`
 
-	// ExpiresAt When the key stops working. Null means it never expires. Not settable through this API yet.
+	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires.
 	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
 	// Hash The key's id: the SHA-256 hash of the raw key.
@@ -1707,6 +1710,9 @@ type KeyCreateResponse struct {
 	// ProjectId The project the key is scoped to. Can't be changed after creation.
 	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
 	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+
+	// UpdatedAt When the key last changed.
+	UpdatedAt nullable.Nullable[time.Time] `json:"updated_at,omitempty"`
 
 	// Usage USD spend in the current limit_reset window.
 	Usage float64 `json:"usage"`
@@ -1758,7 +1764,7 @@ type KeyObject struct {
 	CreatorUserId nullable.Nullable[openapi_types.UUID] `json:"creator_user_id"`
 	Disabled      bool                                  `json:"disabled"`
 
-	// ExpiresAt When the key stops working. Null means it never expires. Not settable through this API yet.
+	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires.
 	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
 	// Hash The key's id: the SHA-256 hash of the raw key.
@@ -1778,6 +1784,9 @@ type KeyObject struct {
 	// ProjectId The project the key is scoped to. Can't be changed after creation.
 	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
 	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+
+	// UpdatedAt When the key last changed.
+	UpdatedAt nullable.Nullable[time.Time] `json:"updated_at,omitempty"`
 
 	// Usage USD spend in the current limit_reset window.
 	Usage float64 `json:"usage"`
@@ -1802,6 +1811,9 @@ type KeyUpdateRequest struct {
 	// BudgetGroupId Managed by Merge for Workforce; sending this field is a 400.
 	BudgetGroupId nullable.Nullable[string] `json:"budget_group_id,omitempty"`
 	Disabled      nullable.Nullable[bool]   `json:"disabled,omitempty"`
+
+	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires. Must be in the future; a value without an offset is UTC. Send null to remove the expiry; omit it to leave the expiry unchanged.
+	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
 	// Limit USD spend cap over the limit_reset window. Omit to keep the current limit; send null to remove it.
 	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
@@ -2288,13 +2300,13 @@ type ProjectControlsV1Response struct {
 // sent inherits from the organization. A list sent as “null“ counts as sent,
 // the same as “[]“. “zero_data_retention: null“ is the same as omitting it.
 type ProjectControlsV1Update struct {
-	// AllowedRegions Regions unit (override.regions).
+	// AllowedRegions Regions unit (override.regions). Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
 	AllowedRegions nullable.Nullable[[]string] `json:"allowed_regions,omitempty"`
 
 	// AllowedVendors Vendors unit (override.vendors).
 	AllowedVendors nullable.Nullable[[]string] `json:"allowed_vendors,omitempty"`
 
-	// IgnoredRegions Regions unit (override.regions).
+	// IgnoredRegions Regions unit (override.regions). Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
 	IgnoredRegions nullable.Nullable[[]string] `json:"ignored_regions,omitempty"`
 
 	// IgnoredVendors Vendors unit (override.vendors).
@@ -2470,11 +2482,11 @@ type ProjectV1Update struct {
 	// Description null clears it.
 	Description nullable.Nullable[string] `json:"description,omitempty"`
 
-	// IsActive Omit to keep the current value. Don't send null: the request fails.
-	IsActive nullable.Nullable[bool] `json:"is_active,omitempty"`
+	// IsActive Omit to keep the current value. null is rejected.
+	IsActive *bool `json:"is_active,omitempty"`
 
-	// Name Omit to keep the current value. Don't send null: the request fails.
-	Name nullable.Nullable[string] `json:"name,omitempty"`
+	// Name Omit to keep the current value. null is rejected.
+	Name *string `json:"name,omitempty"`
 
 	// RoutingPolicy Replaces the project's routing policy, or creates one. null is the same as omitting it.
 	RoutingPolicy nullable.Nullable[ProjectPolicyV1] `json:"routing_policy,omitempty"`
@@ -2653,16 +2665,19 @@ type VendorControlsV1 struct {
 
 // VendorRestrictionsV1 Which vendors and regions the organization's traffic may use.
 type VendorRestrictionsV1 struct {
+	// AllowedRegions Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
 	AllowedRegions *[]string `json:"allowed_regions,omitempty"`
 	AllowedVendors *[]string `json:"allowed_vendors,omitempty"`
 	ByokOnly       *bool     `json:"byok_only,omitempty"`
 
 	// CustomerKeyUsageDefault Default key usage for end customers without their own setting. null means customers follow prefer_byok and byok_only.
 	CustomerKeyUsageDefault nullable.Nullable[VendorRestrictionsV1CustomerKeyUsageDefault] `json:"customer_key_usage_default,omitempty"`
-	IgnoredRegions          *[]string                                                      `json:"ignored_regions,omitempty"`
-	IgnoredVendors          *[]string                                                      `json:"ignored_vendors,omitempty"`
-	PreferByok              *bool                                                          `json:"prefer_byok,omitempty"`
-	VendorRoutingPreference *[]string                                                      `json:"vendor_routing_preference,omitempty"`
+
+	// IgnoredRegions Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
+	IgnoredRegions          *[]string `json:"ignored_regions,omitempty"`
+	IgnoredVendors          *[]string `json:"ignored_vendors,omitempty"`
+	PreferByok              *bool     `json:"prefer_byok,omitempty"`
+	VendorRoutingPreference *[]string `json:"vendor_routing_preference,omitempty"`
 }
 
 // VendorRestrictionsV1CustomerKeyUsageDefault defines model for VendorRestrictionsV1.CustomerKeyUsageDefault.
@@ -4000,7 +4015,7 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/credits (the `GetCredits` operationId).
 	GetCredits(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListDlpRules List Dlp Rules
+	// ListDlpRules List DLP Rules
 	//
 	// List the organization's DLP rules.
 	//
@@ -4010,7 +4025,7 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/dlp-rules (the `ListDlpRules` operationId).
 	ListDlpRules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateDlpRuleWithBody Create Dlp Rule
+	// CreateDlpRuleWithBody Create DLP Rule
 	//
 	// Create a custom DLP rule and sync it to the gateway.
 	//
@@ -4019,7 +4034,7 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/dlp-rules (the `CreateDlpRule` operationId).
 	CreateDlpRuleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateDlpRule Create Dlp Rule
+	// CreateDlpRule Create DLP Rule
 	//
 	// Create a custom DLP rule and sync it to the gateway.
 	//
@@ -4028,21 +4043,21 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/dlp-rules (the `CreateDlpRule` operationId).
 	CreateDlpRule(ctx context.Context, body CreateDlpRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteDlpRule Delete Dlp Rule
+	// DeleteDlpRule Delete DLP Rule
 	//
 	// Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
 	//
 	// Corresponds with DELETE /v1/dlp-rules/{rule_id} (the `DeleteDlpRule` operationId).
 	DeleteDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetDlpRule Get Dlp Rule
+	// GetDlpRule Get DLP Rule
 	//
 	// Get one DLP rule, seeded or custom.
 	//
 	// Corresponds with GET /v1/dlp-rules/{rule_id} (the `GetDlpRule` operationId).
 	GetDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateDlpRuleWithBody Update Dlp Rule
+	// UpdateDlpRuleWithBody Update DLP Rule
 	//
 	// Update a DLP rule and sync it to the gateway.
 	//
@@ -4051,7 +4066,7 @@ type ClientInterface interface {
 	// Corresponds with PATCH /v1/dlp-rules/{rule_id} (the `UpdateDlpRule` operationId).
 	UpdateDlpRuleWithBody(ctx context.Context, ruleId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateDlpRule Update Dlp Rule
+	// UpdateDlpRule Update DLP Rule
 	//
 	// Update a DLP rule and sync it to the gateway.
 	//
@@ -4182,7 +4197,7 @@ type ClientInterface interface {
 
 	// UpdateKeyWithBody Update Key
 	//
-	// Update a key's name / disabled state / spend limit.
+	// Update a key's name / disabled state / spend limit / expiry.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4191,7 +4206,7 @@ type ClientInterface interface {
 
 	// UpdateKey Update Key
 	//
-	// Update a key's name / disabled state / spend limit.
+	// Update a key's name / disabled state / spend limit / expiry.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4277,21 +4292,21 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/organization/models/{model_id} (the `GetModel` operationId).
 	GetModel(ctx context.Context, modelId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ResetOrganizationPiSettings Reset Organization Pi Settings
+	// ResetOrganizationPiSettings Reset Organization PI Settings
 	//
 	// Reset the organization's prompt injection policy to the defaults (PI off).
 	//
 	// Corresponds with DELETE /v1/organization/pi-settings (the `ResetOrganizationPiSettings` operationId).
 	ResetOrganizationPiSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetOrganizationPiSettings Get Organization Pi Settings
+	// GetOrganizationPiSettings Get Organization PI Settings
 	//
 	// Get the organization's prompt injection policy.
 	//
 	// Corresponds with GET /v1/organization/pi-settings (the `GetOrganizationPiSettings` operationId).
 	GetOrganizationPiSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateOrganizationPiSettingsWithBody Update Organization Pi Settings
+	// UpdateOrganizationPiSettingsWithBody Update Organization PI Settings
 	//
 	// Replace the organization's prompt injection policy and sync it to the gateway.
 	//
@@ -4300,7 +4315,7 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/organization/pi-settings (the `UpdateOrganizationPiSettings` operationId).
 	UpdateOrganizationPiSettingsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateOrganizationPiSettings Update Organization Pi Settings
+	// UpdateOrganizationPiSettings Update Organization PI Settings
 	//
 	// Replace the organization's prompt injection policy and sync it to the gateway.
 	//
@@ -4427,7 +4442,7 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
 	UpdateProjectControls(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteProjectDlpSettings Delete Project Dlp Settings
+	// DeleteProjectDlpSettings Delete Project DLP Settings
 	//
 	// Clear the override so the project inherits the org's DLP rules.
 	//
@@ -4436,7 +4451,7 @@ type ClientInterface interface {
 	// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
 	DeleteProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetProjectDlpSettings Get Project Dlp Settings
+	// GetProjectDlpSettings Get Project DLP Settings
 	//
 	// Return the project's DLP override plus the resolved per-entity outcome.
 	//
@@ -4445,7 +4460,7 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
 	GetProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateProjectDlpSettingsWithBody Update Project Dlp Settings
+	// UpdateProjectDlpSettingsWithBody Update Project DLP Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
 	//
@@ -4456,7 +4471,7 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
 	UpdateProjectDlpSettingsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateProjectDlpSettings Update Project Dlp Settings
+	// UpdateProjectDlpSettings Update Project DLP Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
 	//
@@ -4474,7 +4489,7 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
 	ListProjectModels(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteProjectPiSettings Delete Project Pi Settings
+	// DeleteProjectPiSettings Delete Project PI Settings
 	//
 	// Clear the override so the project inherits the org PI policy wholesale.
 	//
@@ -4483,7 +4498,7 @@ type ClientInterface interface {
 	// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
 	DeleteProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetProjectPiSettings Get Project Pi Settings
+	// GetProjectPiSettings Get Project PI Settings
 	//
 	// Return the project's PI override, the effective policy, and what it inherits.
 	//
@@ -4492,7 +4507,7 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
 	GetProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateProjectPiSettingsWithBody Update Project Pi Settings
+	// UpdateProjectPiSettingsWithBody Update Project PI Settings
 	//
 	// Replace the project's PI override wholesale + sync to the data plane.
 	//
@@ -4507,7 +4522,7 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
 	UpdateProjectPiSettingsWithBody(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateProjectPiSettings Update Project Pi Settings
+	// UpdateProjectPiSettings Update Project PI Settings
 	//
 	// Replace the project's PI override wholesale + sync to the data plane.
 	//
@@ -4891,7 +4906,7 @@ func (c *Client) GetCredits(ctx context.Context, reqEditors ...RequestEditorFn) 
 	return c.Client.Do(req)
 }
 
-// ListDlpRules List Dlp Rules
+// ListDlpRules List DLP Rules
 //
 // List the organization's DLP rules.
 //
@@ -4911,7 +4926,7 @@ func (c *Client) ListDlpRules(ctx context.Context, reqEditors ...RequestEditorFn
 	return c.Client.Do(req)
 }
 
-// CreateDlpRuleWithBody Create Dlp Rule
+// CreateDlpRuleWithBody Create DLP Rule
 //
 // Create a custom DLP rule and sync it to the gateway.
 //
@@ -4930,7 +4945,7 @@ func (c *Client) CreateDlpRuleWithBody(ctx context.Context, contentType string, 
 	return c.Client.Do(req)
 }
 
-// CreateDlpRule Create Dlp Rule
+// CreateDlpRule Create DLP Rule
 //
 // Create a custom DLP rule and sync it to the gateway.
 //
@@ -4949,7 +4964,7 @@ func (c *Client) CreateDlpRule(ctx context.Context, body CreateDlpRuleJSONReques
 	return c.Client.Do(req)
 }
 
-// DeleteDlpRule Delete Dlp Rule
+// DeleteDlpRule Delete DLP Rule
 //
 // Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
 //
@@ -4966,7 +4981,7 @@ func (c *Client) DeleteDlpRule(ctx context.Context, ruleId openapi_types.UUID, r
 	return c.Client.Do(req)
 }
 
-// GetDlpRule Get Dlp Rule
+// GetDlpRule Get DLP Rule
 //
 // Get one DLP rule, seeded or custom.
 //
@@ -4983,7 +4998,7 @@ func (c *Client) GetDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqE
 	return c.Client.Do(req)
 }
 
-// UpdateDlpRuleWithBody Update Dlp Rule
+// UpdateDlpRuleWithBody Update DLP Rule
 //
 // Update a DLP rule and sync it to the gateway.
 //
@@ -5002,7 +5017,7 @@ func (c *Client) UpdateDlpRuleWithBody(ctx context.Context, ruleId openapi_types
 	return c.Client.Do(req)
 }
 
-// UpdateDlpRule Update Dlp Rule
+// UpdateDlpRule Update DLP Rule
 //
 // Update a DLP rule and sync it to the gateway.
 //
@@ -5283,7 +5298,7 @@ func (c *Client) GetKey(ctx context.Context, keyHash string, reqEditors ...Reque
 
 // UpdateKeyWithBody Update Key
 //
-// Update a key's name / disabled state / spend limit.
+// Update a key's name / disabled state / spend limit / expiry.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5302,7 +5317,7 @@ func (c *Client) UpdateKeyWithBody(ctx context.Context, keyHash string, contentT
 
 // UpdateKey Update Key
 //
-// Update a key's name / disabled state / spend limit.
+// Update a key's name / disabled state / spend limit / expiry.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5488,7 +5503,7 @@ func (c *Client) GetModel(ctx context.Context, modelId string, reqEditors ...Req
 	return c.Client.Do(req)
 }
 
-// ResetOrganizationPiSettings Reset Organization Pi Settings
+// ResetOrganizationPiSettings Reset Organization PI Settings
 //
 // Reset the organization's prompt injection policy to the defaults (PI off).
 //
@@ -5505,7 +5520,7 @@ func (c *Client) ResetOrganizationPiSettings(ctx context.Context, reqEditors ...
 	return c.Client.Do(req)
 }
 
-// GetOrganizationPiSettings Get Organization Pi Settings
+// GetOrganizationPiSettings Get Organization PI Settings
 //
 // Get the organization's prompt injection policy.
 //
@@ -5522,7 +5537,7 @@ func (c *Client) GetOrganizationPiSettings(ctx context.Context, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-// UpdateOrganizationPiSettingsWithBody Update Organization Pi Settings
+// UpdateOrganizationPiSettingsWithBody Update Organization PI Settings
 //
 // Replace the organization's prompt injection policy and sync it to the gateway.
 //
@@ -5541,7 +5556,7 @@ func (c *Client) UpdateOrganizationPiSettingsWithBody(ctx context.Context, conte
 	return c.Client.Do(req)
 }
 
-// UpdateOrganizationPiSettings Update Organization Pi Settings
+// UpdateOrganizationPiSettings Update Organization PI Settings
 //
 // Replace the organization's prompt injection policy and sync it to the gateway.
 //
@@ -5818,7 +5833,7 @@ func (c *Client) UpdateProjectControls(ctx context.Context, projectId openapi_ty
 	return c.Client.Do(req)
 }
 
-// DeleteProjectDlpSettings Delete Project Dlp Settings
+// DeleteProjectDlpSettings Delete Project DLP Settings
 //
 // Clear the override so the project inherits the org's DLP rules.
 //
@@ -5837,7 +5852,7 @@ func (c *Client) DeleteProjectDlpSettings(ctx context.Context, projectId openapi
 	return c.Client.Do(req)
 }
 
-// GetProjectDlpSettings Get Project Dlp Settings
+// GetProjectDlpSettings Get Project DLP Settings
 //
 // Return the project's DLP override plus the resolved per-entity outcome.
 //
@@ -5856,7 +5871,7 @@ func (c *Client) GetProjectDlpSettings(ctx context.Context, projectId openapi_ty
 	return c.Client.Do(req)
 }
 
-// UpdateProjectDlpSettingsWithBody Update Project Dlp Settings
+// UpdateProjectDlpSettingsWithBody Update Project DLP Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
 //
@@ -5877,7 +5892,7 @@ func (c *Client) UpdateProjectDlpSettingsWithBody(ctx context.Context, projectId
 	return c.Client.Do(req)
 }
 
-// UpdateProjectDlpSettings Update Project Dlp Settings
+// UpdateProjectDlpSettings Update Project DLP Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
 //
@@ -5915,7 +5930,7 @@ func (c *Client) ListProjectModels(ctx context.Context, projectId openapi_types.
 	return c.Client.Do(req)
 }
 
-// DeleteProjectPiSettings Delete Project Pi Settings
+// DeleteProjectPiSettings Delete Project PI Settings
 //
 // Clear the override so the project inherits the org PI policy wholesale.
 //
@@ -5934,7 +5949,7 @@ func (c *Client) DeleteProjectPiSettings(ctx context.Context, projectId openapi_
 	return c.Client.Do(req)
 }
 
-// GetProjectPiSettings Get Project Pi Settings
+// GetProjectPiSettings Get Project PI Settings
 //
 // Return the project's PI override, the effective policy, and what it inherits.
 //
@@ -5953,7 +5968,7 @@ func (c *Client) GetProjectPiSettings(ctx context.Context, projectId openapi_typ
 	return c.Client.Do(req)
 }
 
-// UpdateProjectPiSettingsWithBody Update Project Pi Settings
+// UpdateProjectPiSettingsWithBody Update Project PI Settings
 //
 // Replace the project's PI override wholesale + sync to the data plane.
 //
@@ -5978,7 +5993,7 @@ func (c *Client) UpdateProjectPiSettingsWithBody(ctx context.Context, projectId 
 	return c.Client.Do(req)
 }
 
-// UpdateProjectPiSettings Update Project Pi Settings
+// UpdateProjectPiSettings Update Project PI Settings
 //
 // Replace the project's PI override wholesale + sync to the data plane.
 //
@@ -9150,7 +9165,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/credits (the `GetCredits` operationId).
 	GetCreditsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCreditsResponse, error)
 
-	// ListDlpRulesWithResponse List Dlp Rules
+	// ListDlpRulesWithResponse List DLP Rules
 	//
 	// List the organization's DLP rules.
 	//
@@ -9162,7 +9177,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/dlp-rules (the `ListDlpRules` operationId).
 	ListDlpRulesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDlpRulesResponse, error)
 
-	// CreateDlpRuleWithBodyWithResponse Create Dlp Rule
+	// CreateDlpRuleWithBodyWithResponse Create DLP Rule
 	//
 	// Create a custom DLP rule and sync it to the gateway.
 	//
@@ -9171,7 +9186,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/dlp-rules (the `CreateDlpRule` operationId).
 	CreateDlpRuleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDlpRuleResponse, error)
 
-	// CreateDlpRuleWithResponse Create Dlp Rule
+	// CreateDlpRuleWithResponse Create DLP Rule
 	//
 	// Create a custom DLP rule and sync it to the gateway.
 	//
@@ -9180,7 +9195,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/dlp-rules (the `CreateDlpRule` operationId).
 	CreateDlpRuleWithResponse(ctx context.Context, body CreateDlpRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDlpRuleResponse, error)
 
-	// DeleteDlpRuleWithResponse Delete Dlp Rule
+	// DeleteDlpRuleWithResponse Delete DLP Rule
 	//
 	// Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
 	//
@@ -9189,7 +9204,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /v1/dlp-rules/{rule_id} (the `DeleteDlpRule` operationId).
 	DeleteDlpRuleWithResponse(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteDlpRuleResponse, error)
 
-	// GetDlpRuleWithResponse Get Dlp Rule
+	// GetDlpRuleWithResponse Get DLP Rule
 	//
 	// Get one DLP rule, seeded or custom.
 	//
@@ -9198,7 +9213,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/dlp-rules/{rule_id} (the `GetDlpRule` operationId).
 	GetDlpRuleWithResponse(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetDlpRuleResponse, error)
 
-	// UpdateDlpRuleWithBodyWithResponse Update Dlp Rule
+	// UpdateDlpRuleWithBodyWithResponse Update DLP Rule
 	//
 	// Update a DLP rule and sync it to the gateway.
 	//
@@ -9207,7 +9222,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PATCH /v1/dlp-rules/{rule_id} (the `UpdateDlpRule` operationId).
 	UpdateDlpRuleWithBodyWithResponse(ctx context.Context, ruleId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDlpRuleResponse, error)
 
-	// UpdateDlpRuleWithResponse Update Dlp Rule
+	// UpdateDlpRuleWithResponse Update DLP Rule
 	//
 	// Update a DLP rule and sync it to the gateway.
 	//
@@ -9354,7 +9369,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateKeyWithBodyWithResponse Update Key
 	//
-	// Update a key's name / disabled state / spend limit.
+	// Update a key's name / disabled state / spend limit / expiry.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9363,7 +9378,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateKeyWithResponse Update Key
 	//
-	// Update a key's name / disabled state / spend limit.
+	// Update a key's name / disabled state / spend limit / expiry.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9463,7 +9478,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/organization/models/{model_id} (the `GetModel` operationId).
 	GetModelWithResponse(ctx context.Context, modelId string, reqEditors ...RequestEditorFn) (*GetModelResponse, error)
 
-	// ResetOrganizationPiSettingsWithResponse Reset Organization Pi Settings
+	// ResetOrganizationPiSettingsWithResponse Reset Organization PI Settings
 	//
 	// Reset the organization's prompt injection policy to the defaults (PI off).
 	//
@@ -9472,7 +9487,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /v1/organization/pi-settings (the `ResetOrganizationPiSettings` operationId).
 	ResetOrganizationPiSettingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ResetOrganizationPiSettingsResponse, error)
 
-	// GetOrganizationPiSettingsWithResponse Get Organization Pi Settings
+	// GetOrganizationPiSettingsWithResponse Get Organization PI Settings
 	//
 	// Get the organization's prompt injection policy.
 	//
@@ -9481,7 +9496,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/organization/pi-settings (the `GetOrganizationPiSettings` operationId).
 	GetOrganizationPiSettingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationPiSettingsResponse, error)
 
-	// UpdateOrganizationPiSettingsWithBodyWithResponse Update Organization Pi Settings
+	// UpdateOrganizationPiSettingsWithBodyWithResponse Update Organization PI Settings
 	//
 	// Replace the organization's prompt injection policy and sync it to the gateway.
 	//
@@ -9490,7 +9505,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/organization/pi-settings (the `UpdateOrganizationPiSettings` operationId).
 	UpdateOrganizationPiSettingsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationPiSettingsResponse, error)
 
-	// UpdateOrganizationPiSettingsWithResponse Update Organization Pi Settings
+	// UpdateOrganizationPiSettingsWithResponse Update Organization PI Settings
 	//
 	// Replace the organization's prompt injection policy and sync it to the gateway.
 	//
@@ -9633,7 +9648,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/projects/{project_id}/controls (the `UpdateProjectControls` operationId).
 	UpdateProjectControlsWithResponse(ctx context.Context, projectId openapi_types.UUID, body UpdateProjectControlsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectControlsResponse, error)
 
-	// DeleteProjectDlpSettingsWithResponse Delete Project Dlp Settings
+	// DeleteProjectDlpSettingsWithResponse Delete Project DLP Settings
 	//
 	// Clear the override so the project inherits the org's DLP rules.
 	//
@@ -9644,7 +9659,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
 	DeleteProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectDlpSettingsResponse, error)
 
-	// GetProjectDlpSettingsWithResponse Get Project Dlp Settings
+	// GetProjectDlpSettingsWithResponse Get Project DLP Settings
 	//
 	// Return the project's DLP override plus the resolved per-entity outcome.
 	//
@@ -9655,7 +9670,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
 	GetProjectDlpSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectDlpSettingsResponse, error)
 
-	// UpdateProjectDlpSettingsWithBodyWithResponse Update Project Dlp Settings
+	// UpdateProjectDlpSettingsWithBodyWithResponse Update Project DLP Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
 	//
@@ -9666,7 +9681,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
 	UpdateProjectDlpSettingsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectDlpSettingsResponse, error)
 
-	// UpdateProjectDlpSettingsWithResponse Update Project Dlp Settings
+	// UpdateProjectDlpSettingsWithResponse Update Project DLP Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
 	//
@@ -9686,7 +9701,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
 	ListProjectModelsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ListProjectModelsResponse, error)
 
-	// DeleteProjectPiSettingsWithResponse Delete Project Pi Settings
+	// DeleteProjectPiSettingsWithResponse Delete Project PI Settings
 	//
 	// Clear the override so the project inherits the org PI policy wholesale.
 	//
@@ -9697,7 +9712,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
 	DeleteProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteProjectPiSettingsResponse, error)
 
-	// GetProjectPiSettingsWithResponse Get Project Pi Settings
+	// GetProjectPiSettingsWithResponse Get Project PI Settings
 	//
 	// Return the project's PI override, the effective policy, and what it inherits.
 	//
@@ -9708,7 +9723,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
 	GetProjectPiSettingsWithResponse(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetProjectPiSettingsResponse, error)
 
-	// UpdateProjectPiSettingsWithBodyWithResponse Update Project Pi Settings
+	// UpdateProjectPiSettingsWithBodyWithResponse Update Project PI Settings
 	//
 	// Replace the project's PI override wholesale + sync to the data plane.
 	//
@@ -9723,7 +9738,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
 	UpdateProjectPiSettingsWithBodyWithResponse(ctx context.Context, projectId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectPiSettingsResponse, error)
 
-	// UpdateProjectPiSettingsWithResponse Update Project Pi Settings
+	// UpdateProjectPiSettingsWithResponse Update Project PI Settings
 	//
 	// Replace the project's PI override wholesale + sync to the data plane.
 	//
@@ -10177,6 +10192,8 @@ type ListCredentialsResponse struct {
 	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -10202,6 +10219,11 @@ func (r ListCredentialsResponse) GetJSON403() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r ListCredentialsResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r ListCredentialsResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -10248,6 +10270,8 @@ type CreateCredentialResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -10278,6 +10302,11 @@ func (r CreateCredentialResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r CreateCredentialResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateCredentialResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -10455,6 +10484,8 @@ type UpdateCredentialResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -10485,6 +10516,11 @@ func (r UpdateCredentialResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateCredentialResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r UpdateCredentialResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -10639,6 +10675,8 @@ type CreateDlpRuleResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *CreateDlpRule422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -10664,6 +10702,11 @@ func (r CreateDlpRuleResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r CreateDlpRuleResponse) GetJSON422() *CreateDlpRule422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateDlpRuleResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -10706,6 +10749,8 @@ type DeleteDlpRuleResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *DeleteDlpRule422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -10726,6 +10771,11 @@ func (r DeleteDlpRuleResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteDlpRuleResponse) GetJSON422() *DeleteDlpRule422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteDlpRuleResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -10841,6 +10891,8 @@ type UpdateDlpRuleResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UpdateDlpRule422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -10871,6 +10923,11 @@ func (r UpdateDlpRuleResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateDlpRuleResponse) GetJSON422() *UpdateDlpRule422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateDlpRuleResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -10993,6 +11050,8 @@ type CreateExportDestinationResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *CreateExportDestination422JSONResponseBody
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -11023,6 +11082,11 @@ func (r CreateExportDestinationResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r CreateExportDestinationResponse) GetJSON422() *CreateExportDestination422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateExportDestinationResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -11200,6 +11264,8 @@ type UpdateExportDestinationResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UpdateExportDestination422JSONResponseBody
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -11230,6 +11296,11 @@ func (r UpdateExportDestinationResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateExportDestinationResponse) GetJSON422() *UpdateExportDestination422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r UpdateExportDestinationResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -11410,6 +11481,8 @@ type ListKeysResponse struct {
 	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -11430,6 +11503,11 @@ func (r ListKeysResponse) GetJSON403() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r ListKeysResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r ListKeysResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -11476,6 +11554,10 @@ type CreateKeyResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -11506,6 +11588,16 @@ func (r CreateKeyResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r CreateKeyResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateKeyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateKeyResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -11548,6 +11640,8 @@ type DeleteKeyResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -11568,6 +11662,11 @@ func (r DeleteKeyResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteKeyResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteKeyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -11683,6 +11782,8 @@ type UpdateKeyResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -11713,6 +11814,11 @@ func (r UpdateKeyResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateKeyResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateKeyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -12660,6 +12766,8 @@ type ListProjectsResponse struct {
 	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -12685,6 +12793,11 @@ func (r ListProjectsResponse) GetJSON403() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r ListProjectsResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r ListProjectsResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -12729,6 +12842,8 @@ type CreateProjectResponse struct {
 	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -12754,6 +12869,11 @@ func (r CreateProjectResponse) GetJSON403() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r CreateProjectResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateProjectResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -12798,6 +12918,10 @@ type DeleteProjectResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -12823,6 +12947,16 @@ func (r DeleteProjectResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteProjectResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteProjectResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r DeleteProjectResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -12867,6 +13001,8 @@ type GetProjectResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -12892,6 +13028,11 @@ func (r GetProjectResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r GetProjectResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetProjectResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -12938,6 +13079,10 @@ type UpdateProjectResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -12968,6 +13113,16 @@ func (r UpdateProjectResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateProjectResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateProjectResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r UpdateProjectResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -13811,6 +13966,8 @@ type ListRoutingPoliciesResponse struct {
 	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -13831,6 +13988,11 @@ func (r ListRoutingPoliciesResponse) GetJSON403() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r ListRoutingPoliciesResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r ListRoutingPoliciesResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -13875,6 +14037,10 @@ type CreateRoutingPolicyResponse struct {
 	JSON403 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -13900,6 +14066,16 @@ func (r CreateRoutingPolicyResponse) GetJSON403() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r CreateRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateRoutingPolicyResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -13944,6 +14120,10 @@ type DeleteRoutingPolicyResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -13969,6 +14149,16 @@ func (r DeleteRoutingPolicyResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -14086,6 +14276,10 @@ type UpdateRoutingPolicyResponse struct {
 	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UpdateRoutingPolicy422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -14121,6 +14315,16 @@ func (r UpdateRoutingPolicyResponse) GetJSON409() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateRoutingPolicyResponse) GetJSON422() *UpdateRoutingPolicy422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r UpdateRoutingPolicyResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -14165,6 +14369,10 @@ type SetDefaultRoutingPolicyResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -14190,6 +14398,16 @@ func (r SetDefaultRoutingPolicyResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r SetDefaultRoutingPolicyResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r SetDefaultRoutingPolicyResponse) GetJSON503() *ErrorResponse {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -14452,7 +14670,7 @@ func (c *ClientWithResponses) GetCreditsWithResponse(ctx context.Context, reqEdi
 	return ParseGetCreditsResponse(rsp)
 }
 
-// ListDlpRulesWithResponse List Dlp Rules
+// ListDlpRulesWithResponse List DLP Rules
 //
 // List the organization's DLP rules.
 //
@@ -14470,7 +14688,7 @@ func (c *ClientWithResponses) ListDlpRulesWithResponse(ctx context.Context, reqE
 	return ParseListDlpRulesResponse(rsp)
 }
 
-// CreateDlpRuleWithBodyWithResponse Create Dlp Rule
+// CreateDlpRuleWithBodyWithResponse Create DLP Rule
 //
 // Create a custom DLP rule and sync it to the gateway.
 //
@@ -14485,7 +14703,7 @@ func (c *ClientWithResponses) CreateDlpRuleWithBodyWithResponse(ctx context.Cont
 	return ParseCreateDlpRuleResponse(rsp)
 }
 
-// CreateDlpRuleWithResponse Create Dlp Rule
+// CreateDlpRuleWithResponse Create DLP Rule
 //
 // Create a custom DLP rule and sync it to the gateway.
 //
@@ -14500,7 +14718,7 @@ func (c *ClientWithResponses) CreateDlpRuleWithResponse(ctx context.Context, bod
 	return ParseCreateDlpRuleResponse(rsp)
 }
 
-// DeleteDlpRuleWithResponse Delete Dlp Rule
+// DeleteDlpRuleWithResponse Delete DLP Rule
 //
 // Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
 //
@@ -14515,7 +14733,7 @@ func (c *ClientWithResponses) DeleteDlpRuleWithResponse(ctx context.Context, rul
 	return ParseDeleteDlpRuleResponse(rsp)
 }
 
-// GetDlpRuleWithResponse Get Dlp Rule
+// GetDlpRuleWithResponse Get DLP Rule
 //
 // Get one DLP rule, seeded or custom.
 //
@@ -14530,7 +14748,7 @@ func (c *ClientWithResponses) GetDlpRuleWithResponse(ctx context.Context, ruleId
 	return ParseGetDlpRuleResponse(rsp)
 }
 
-// UpdateDlpRuleWithBodyWithResponse Update Dlp Rule
+// UpdateDlpRuleWithBodyWithResponse Update DLP Rule
 //
 // Update a DLP rule and sync it to the gateway.
 //
@@ -14545,7 +14763,7 @@ func (c *ClientWithResponses) UpdateDlpRuleWithBodyWithResponse(ctx context.Cont
 	return ParseUpdateDlpRuleResponse(rsp)
 }
 
-// UpdateDlpRuleWithResponse Update Dlp Rule
+// UpdateDlpRuleWithResponse Update DLP Rule
 //
 // Update a DLP rule and sync it to the gateway.
 //
@@ -14782,7 +15000,7 @@ func (c *ClientWithResponses) GetKeyWithResponse(ctx context.Context, keyHash st
 
 // UpdateKeyWithBodyWithResponse Update Key
 //
-// Update a key's name / disabled state / spend limit.
+// Update a key's name / disabled state / spend limit / expiry.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14797,7 +15015,7 @@ func (c *ClientWithResponses) UpdateKeyWithBodyWithResponse(ctx context.Context,
 
 // UpdateKeyWithResponse Update Key
 //
-// Update a key's name / disabled state / spend limit.
+// Update a key's name / disabled state / spend limit / expiry.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14957,7 +15175,7 @@ func (c *ClientWithResponses) GetModelWithResponse(ctx context.Context, modelId 
 	return ParseGetModelResponse(rsp)
 }
 
-// ResetOrganizationPiSettingsWithResponse Reset Organization Pi Settings
+// ResetOrganizationPiSettingsWithResponse Reset Organization PI Settings
 //
 // Reset the organization's prompt injection policy to the defaults (PI off).
 //
@@ -14972,7 +15190,7 @@ func (c *ClientWithResponses) ResetOrganizationPiSettingsWithResponse(ctx contex
 	return ParseResetOrganizationPiSettingsResponse(rsp)
 }
 
-// GetOrganizationPiSettingsWithResponse Get Organization Pi Settings
+// GetOrganizationPiSettingsWithResponse Get Organization PI Settings
 //
 // Get the organization's prompt injection policy.
 //
@@ -14987,7 +15205,7 @@ func (c *ClientWithResponses) GetOrganizationPiSettingsWithResponse(ctx context.
 	return ParseGetOrganizationPiSettingsResponse(rsp)
 }
 
-// UpdateOrganizationPiSettingsWithBodyWithResponse Update Organization Pi Settings
+// UpdateOrganizationPiSettingsWithBodyWithResponse Update Organization PI Settings
 //
 // Replace the organization's prompt injection policy and sync it to the gateway.
 //
@@ -15002,7 +15220,7 @@ func (c *ClientWithResponses) UpdateOrganizationPiSettingsWithBodyWithResponse(c
 	return ParseUpdateOrganizationPiSettingsResponse(rsp)
 }
 
-// UpdateOrganizationPiSettingsWithResponse Update Organization Pi Settings
+// UpdateOrganizationPiSettingsWithResponse Update Organization PI Settings
 //
 // Replace the organization's prompt injection policy and sync it to the gateway.
 //
@@ -15235,7 +15453,7 @@ func (c *ClientWithResponses) UpdateProjectControlsWithResponse(ctx context.Cont
 	return ParseUpdateProjectControlsResponse(rsp)
 }
 
-// DeleteProjectDlpSettingsWithResponse Delete Project Dlp Settings
+// DeleteProjectDlpSettingsWithResponse Delete Project DLP Settings
 //
 // Clear the override so the project inherits the org's DLP rules.
 //
@@ -15252,7 +15470,7 @@ func (c *ClientWithResponses) DeleteProjectDlpSettingsWithResponse(ctx context.C
 	return ParseDeleteProjectDlpSettingsResponse(rsp)
 }
 
-// GetProjectDlpSettingsWithResponse Get Project Dlp Settings
+// GetProjectDlpSettingsWithResponse Get Project DLP Settings
 //
 // Return the project's DLP override plus the resolved per-entity outcome.
 //
@@ -15269,7 +15487,7 @@ func (c *ClientWithResponses) GetProjectDlpSettingsWithResponse(ctx context.Cont
 	return ParseGetProjectDlpSettingsResponse(rsp)
 }
 
-// UpdateProjectDlpSettingsWithBodyWithResponse Update Project Dlp Settings
+// UpdateProjectDlpSettingsWithBodyWithResponse Update Project DLP Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
 //
@@ -15286,7 +15504,7 @@ func (c *ClientWithResponses) UpdateProjectDlpSettingsWithBodyWithResponse(ctx c
 	return ParseUpdateProjectDlpSettingsResponse(rsp)
 }
 
-// UpdateProjectDlpSettingsWithResponse Update Project Dlp Settings
+// UpdateProjectDlpSettingsWithResponse Update Project DLP Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
 //
@@ -15318,7 +15536,7 @@ func (c *ClientWithResponses) ListProjectModelsWithResponse(ctx context.Context,
 	return ParseListProjectModelsResponse(rsp)
 }
 
-// DeleteProjectPiSettingsWithResponse Delete Project Pi Settings
+// DeleteProjectPiSettingsWithResponse Delete Project PI Settings
 //
 // Clear the override so the project inherits the org PI policy wholesale.
 //
@@ -15335,7 +15553,7 @@ func (c *ClientWithResponses) DeleteProjectPiSettingsWithResponse(ctx context.Co
 	return ParseDeleteProjectPiSettingsResponse(rsp)
 }
 
-// GetProjectPiSettingsWithResponse Get Project Pi Settings
+// GetProjectPiSettingsWithResponse Get Project PI Settings
 //
 // Return the project's PI override, the effective policy, and what it inherits.
 //
@@ -15352,7 +15570,7 @@ func (c *ClientWithResponses) GetProjectPiSettingsWithResponse(ctx context.Conte
 	return ParseGetProjectPiSettingsResponse(rsp)
 }
 
-// UpdateProjectPiSettingsWithBodyWithResponse Update Project Pi Settings
+// UpdateProjectPiSettingsWithBodyWithResponse Update Project PI Settings
 //
 // Replace the project's PI override wholesale + sync to the data plane.
 //
@@ -15373,7 +15591,7 @@ func (c *ClientWithResponses) UpdateProjectPiSettingsWithBodyWithResponse(ctx co
 	return ParseUpdateProjectPiSettingsResponse(rsp)
 }
 
-// UpdateProjectPiSettingsWithResponse Update Project Pi Settings
+// UpdateProjectPiSettingsWithResponse Update Project PI Settings
 //
 // Replace the project's PI override wholesale + sync to the data plane.
 //
@@ -15850,6 +16068,13 @@ func ParseListCredentialsResponse(rsp *http.Response) (*ListCredentialsResponse,
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -15910,6 +16135,13 @@ func ParseCreateCredentialResponse(rsp *http.Response) (*CreateCredentialRespons
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -16076,6 +16308,13 @@ func ParseUpdateCredentialResponse(rsp *http.Response) (*UpdateCredentialRespons
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -16213,6 +16452,13 @@ func ParseCreateDlpRuleResponse(rsp *http.Response) (*CreateDlpRuleResponse, err
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -16262,6 +16508,13 @@ func ParseDeleteDlpRuleResponse(rsp *http.Response) (*DeleteDlpRuleResponse, err
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -16377,6 +16630,13 @@ func ParseUpdateDlpRuleResponse(rsp *http.Response) (*UpdateDlpRuleResponse, err
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -16499,6 +16759,13 @@ func ParseCreateExportDestinationResponse(rsp *http.Response) (*CreateExportDest
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -16665,6 +16932,13 @@ func ParseUpdateExportDestinationResponse(rsp *http.Response) (*UpdateExportDest
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -16820,6 +17094,13 @@ func ParseListKeysResponse(rsp *http.Response) (*ListKeysResponse, error) {
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -16881,6 +17162,20 @@ func ParseCreateKeyResponse(rsp *http.Response) (*CreateKeyResponse, error) {
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -16930,6 +17225,13 @@ func ParseDeleteKeyResponse(rsp *http.Response) (*DeleteKeyResponse, error) {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -17045,6 +17347,13 @@ func ParseUpdateKeyResponse(rsp *http.Response) (*UpdateKeyResponse, error) {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -17793,6 +18102,13 @@ func ParseListProjectsResponse(rsp *http.Response) (*ListProjectsResponse, error
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -17846,6 +18162,13 @@ func ParseCreateProjectResponse(rsp *http.Response) (*CreateProjectResponse, err
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -17904,6 +18227,20 @@ func ParseDeleteProjectResponse(rsp *http.Response) (*DeleteProjectResponse, err
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -17957,6 +18294,13 @@ func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -18018,6 +18362,20 @@ func ParseUpdateProjectResponse(rsp *http.Response) (*UpdateProjectResponse, err
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -18702,6 +19060,13 @@ func ParseListRoutingPoliciesResponse(rsp *http.Response) (*ListRoutingPoliciesR
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -18755,6 +19120,20 @@ func ParseCreateRoutingPolicyResponse(rsp *http.Response) (*CreateRoutingPolicyR
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -18812,6 +19191,20 @@ func ParseDeleteRoutingPolicyResponse(rsp *http.Response) (*DeleteRoutingPolicyR
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -18935,6 +19328,20 @@ func ParseUpdateRoutingPolicyResponse(rsp *http.Response) (*UpdateRoutingPolicyR
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -18988,6 +19395,20 @@ func ParseSetDefaultRoutingPolicyResponse(rsp *http.Response) (*SetDefaultRoutin
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
