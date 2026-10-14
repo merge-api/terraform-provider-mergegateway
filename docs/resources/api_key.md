@@ -18,6 +18,7 @@ resource "mergegateway_project" "support_bot" {
 }
 
 # A key scoped to one project, capped at $100 a month, limited to two models.
+# Removing `limit` later removes the cap.
 resource "mergegateway_api_key" "support_bot" {
   name           = "Support bot production"
   project_id     = mergegateway_project.support_bot.id
@@ -47,8 +48,8 @@ output "support_bot_api_key" {
 
 - `allowed_models` (Set of String) The only models the key may use, at most 200, each written as `provider/model`. A single trailing `*` matches a prefix, such as `openai/*`; model aliases aren't allowed. Leave it out to allow every model. An empty list, which the API treats as allowing no model, isn't supported: set `disabled = true` instead.
 - `disabled` (Boolean) Whether the key is disabled. Defaults to `false`.
-- `limit` (Number) USD spend cap over the `limit_reset` window. Must be greater than 0. Leave it out for no cap. Once set, it can be changed but not removed: the API can't clear it yet, so a plan that removes it fails.
-- `limit_reset` (String) The window `limit` applies to: `daily`, `weekly` or `monthly`. Defaults to `monthly`.
+- `limit` (Number) USD spend cap over the `limit_reset` window. Must be greater than 0. Leave it out for no cap: removing it from the config removes the key's cap.
+- `limit_reset` (String) The window `limit` applies to: `daily`, `weekly` or `monthly`. Defaults to `monthly`. Removing `limit` also clears the window in the API; this attribute keeps its configured value, which is sent again when a limit is set.
 - `name` (String) The key's name. Leave it out for none. Once set, it can be changed but not removed: the API can't clear it yet, so leaving it out keeps the current name. A key replaced because `project_id` changed gets no name unless one is set.
 - `project_id` (String) The project the key is scoped to. Leave it out for a key that can use any project. It can't be changed after creation: changing it replaces the key.
 - `routing_policy_id` (String) A routing policy to bind the key to: an organization-level policy or one scoped to the key's project.

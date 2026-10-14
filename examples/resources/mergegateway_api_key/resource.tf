@@ -3,6 +3,7 @@ resource "mergegateway_project" "support_bot" {
 }
 
 # A key scoped to one project, capped at $100 a month, limited to two models.
+# Removing `limit` later removes the cap.
 resource "mergegateway_api_key" "support_bot" {
   name           = "Support bot production"
   project_id     = mergegateway_project.support_bot.id
