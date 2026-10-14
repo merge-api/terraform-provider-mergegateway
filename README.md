@@ -1,6 +1,8 @@
 # Terraform Provider for Merge Gateway
 
-The `mergegateway` provider manages [Merge Gateway](https://merge.dev) configuration as code. It is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework), starting from HashiCorp's [scaffolding template](https://github.com/hashicorp/terraform-provider-scaffolding-framework).
+The `mergegateway` provider manages [Merge Gateway](https://merge.dev) configuration as code.
+
+Built on HashiCorp's Terraform Plugin Framework (https://github.com/hashicorp/terraform-plugin-framework).
 
 - Provider, resources and data sources: `internal/provider/`
 - API client, generated from `openapi.json` by [oapi-codegen](https://github.com/oapi-codegen/oapi-codegen): `internal/client/`
@@ -9,7 +11,7 @@ The `mergegateway` provider manages [Merge Gateway](https://merge.dev) configura
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0, and >= 1.11 for `mergegateway_credential` and `mergegateway_export_destination`, whose secrets are write-only
-- [Go](https://golang.org/doc/install) >= 1.24
+- [Go](https://golang.org/doc/install) >= 1.25
 
 ## Building the Provider
 
@@ -59,20 +61,8 @@ To generate or update documentation (and the client), run `make generate`.
 
 ### Acceptance tests
 
-Acceptance tests (`internal/acceptance/`) create real resources, so they only run with `TF_ACC=1`. They need `MERGE_GATEWAY_MANAGEMENT_KEY`, a management key for a dedicated test org, and `MERGE_GATEWAY_BASE_URL` (default `http://localhost:8001`). Test resources are named `tf-acc-*`; leftovers are deleted at the start of each run.
+Acceptance tests create real resources in a dedicated test org. See [CONTRIBUTING.md](CONTRIBUTING.md) for what the org needs and how to run them.
 
-**In CI**, `.github/workflows/acceptance.yml` runs them against the deployed dev Gateway (`https://api-gateway-develop.merge.dev`) on pull requests from this repo, pushes to main, nightly and on demand. It uses the `MERGE_GATEWAY_MANAGEMENT_KEY` repo secret: a management key, created by an admin in the dev dashboard, for a separate "Terraform acceptance tests" org. Only one run uses the org at a time.
+## License
 
-**Locally**, run them against dev the same way with your own test-org key, or against the full Gateway stack in Docker:
-
-```shell
-# In merge-gateway, with merge-gateway-control-backend checked out next to it:
-docker compose -f docker-compose.local.yml up -d --build --wait control-plane data-plane-grpc
-
-# Back in this repo:
-export MERGE_GATEWAY_BASE_URL=http://localhost:8001
-export MERGE_GATEWAY_MANAGEMENT_KEY="$(scripts/seed-acceptance.sh)"
-TF_ACC=1 go test -v ./internal/acceptance/...
-```
-
-`scripts/seed-acceptance.sh` registers a test org on the local stack and prints a management key with every scope. It only works against a local stack.
+MIT. Third-party libraries keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

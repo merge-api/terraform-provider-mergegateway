@@ -1,8 +1,6 @@
-// Copyright IBM Corp. 2021, 2026
-// SPDX-License-Identifier: MPL-2.0
-
 //go:build generate
 
+// Package tools pins the code generators used by `make generate` and runs them.
 package tools
 
 import (
@@ -10,13 +8,14 @@ import (
 	_ "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen"
 )
 
-// Generate the API client from openapi.json.
+// The API client in internal/client comes from openapi.json.
 //go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -config ../oapi-codegen.yaml -o ../internal/client/client.gen.go ../openapi.json
 
-// Format Terraform code for use in documentation.
-// If you do not have Terraform installed, you can remove the formatting command, but it is suggested
-// to ensure the documentation is formatted properly.
+// Example configurations are formatted before they are copied into the docs.
 //go:generate terraform fmt -recursive ../examples/
 
-// Generate documentation.
+// The docs in docs/ come from the provider schema and the examples.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir .. -provider-name mergegateway
+
+// THIRD_PARTY_LICENSES holds the license texts of the modules in the binary.
+//go:generate bash ../scripts/third-party-licenses.sh

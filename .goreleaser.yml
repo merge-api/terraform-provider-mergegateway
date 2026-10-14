@@ -1,15 +1,13 @@
-# Visit https://goreleaser.com for documentation on how to customize this
-# behavior.
+# Release build for the Terraform Registry: zipped binaries per platform, a
+# SHA256SUMS file signed with our GPG key, and the registry manifest.
+# release.yml runs this when a v* tag is pushed.
 version: 2
 before:
   hooks:
-    # this is just an example and not a requirement for provider building/publishing
     - go mod tidy
 builds:
 - env:
-    # goreleaser does not work with CGO, it could also complicate
-    # usage by users in CI/CD systems like HCP Terraform where
-    # they are unable to install libraries.
+    # Static binaries, so they run anywhere Terraform does without system libraries.
     - CGO_ENABLED=0
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
@@ -38,11 +36,19 @@ builds:
       goarch: arm
     - goos: windows
       goarch: s390x
+  # The registry expects terraform-provider-<name>_v<version>.
   binary: '{{ .ProjectName }}_v{{ .Version }}'
 archives:
 - formats:
   - zip
   name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+  # Our license and the third-party notices and license texts go in every zip.
+  files:
+    - LICENSE
+    - README.md
+    - CHANGELOG.md
+    - THIRD_PARTY_NOTICES.md
+    - THIRD_PARTY_LICENSES
 checksum:
   extra_files:
     - glob: 'terraform-registry-manifest.json'
@@ -52,11 +58,10 @@ checksum:
 signs:
   - artifacts: checksum
     args:
-      # if you are using this in a GitHub action or some other automated pipeline, you 
-      # need to pass the batch flag to indicate its not interactive.
+      # --batch because CI has no terminal to prompt in.
       - "--batch"
       - "--local-user"
-      - "{{ .Env.GPG_FINGERPRINT }}" # set this environment variable for your signing key
+      - "{{ .Env.GPG_FINGERPRINT }}" # set by release.yml from the imported key
       - "--output"
       - "${signature}"
       - "--detach-sign"
@@ -65,7 +70,5 @@ release:
   extra_files:
     - glob: 'terraform-registry-manifest.json'
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
-  # If you want to manually examine the release before its live, uncomment this line:
-  # draft: true
 changelog:
   disable: true

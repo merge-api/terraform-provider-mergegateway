@@ -1,6 +1,4 @@
-// Copyright IBM Corp. 2021, 2026
-// SPDX-License-Identifier: MPL-2.0
-
+// Command terraform-provider-mergegateway serves the Merge Gateway Terraform provider.
 package main
 
 import (
@@ -9,35 +7,23 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+
 	"github.com/merge-api/terraform-provider-mergegateway/internal/provider"
 )
 
-var (
-	// these will be set by the goreleaser configuration
-	// to appropriate values for the compiled binary.
-	version string = "dev"
-
-	// goreleaser can pass other information to the main package, such as the specific commit
-	// https://goreleaser.com/cookbooks/using-main.version/
-)
+// version is the provider version. Release builds set it with
+// -ldflags "-X main.version=..." (see .goreleaser.yml).
+var version = "dev"
 
 func main() {
-	var debug bool
-
-	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	debug := flag.Bool("debug", false, "run the provider in debug mode so a debugger such as delve can attach")
 	flag.Parse()
 
-	opts := providerserver.ServeOpts{
-		// TODO: Update this string with the published name of your provider.
-		// Also update the tfplugindocs generate command to either remove the
-		// -provider-name flag or set its value to the updated provider name.
+	err := providerserver.Serve(context.Background(), provider.New(version), providerserver.ServeOpts{
 		Address: "registry.terraform.io/merge-api/mergegateway",
-		Debug:   debug,
-	}
-
-	err := providerserver.Serve(context.Background(), provider.New(version), opts)
-
+		Debug:   *debug,
+	})
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 }

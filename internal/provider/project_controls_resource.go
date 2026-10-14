@@ -1,6 +1,3 @@
-// Copyright IBM Corp. 2021, 2026
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
@@ -75,7 +72,9 @@ func controlsListAttribute(description string) schema.ListAttribute {
 }
 
 func (r *ProjectControlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	const regionsUnit = " Regions are overridden together: setting either `allowed_regions` or `ignored_regions` " +
+	const regionsUnit = " A region is any active vendor's `country_code` or `geo_region`, such as `US`, `CA` or `NA`, " +
+		"and is case-sensitive; see the `mergegateway_vendors` data source." +
+		" Regions are overridden together: setting either `allowed_regions` or `ignored_regions` " +
 		"overrides both, and the one left out is empty rather than the organization's."
 	const vendorsUnit = " Vendors are overridden together: setting any of `allowed_vendors`, `ignored_vendors` or " +
 		"`vendor_routing_preference` overrides all three, and those left out are empty rather than the organization's."

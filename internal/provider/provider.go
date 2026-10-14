@@ -1,6 +1,4 @@
-// Copyright IBM Corp. 2021, 2026
-// SPDX-License-Identifier: MPL-2.0
-
+// Package provider implements the Merge Gateway Terraform provider.
 package provider
 
 import (
@@ -28,29 +26,32 @@ const (
 	requestTimeout = 60 * time.Second
 )
 
-// Ensure MergeGatewayProvider satisfies various provider interfaces.
-var _ provider.Provider = &MergeGatewayProvider{}
+// New returns a constructor for the provider. version is "dev" for local
+// builds, "test" in tests and the release version in published binaries.
+func New(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &mergeGatewayProvider{version: version}
+	}
+}
 
-// MergeGatewayProvider defines the provider implementation.
-type MergeGatewayProvider struct {
-	// version is set to the provider version on release, "dev" when the
-	// provider is built and ran locally, and "test" when running acceptance
-	// testing.
+var _ provider.Provider = (*mergeGatewayProvider)(nil)
+
+type mergeGatewayProvider struct {
 	version string
 }
 
-// MergeGatewayProviderModel describes the provider data model.
-type MergeGatewayProviderModel struct {
+// providerConfig holds the provider block's attributes.
+type providerConfig struct {
 	APIKey  types.String `tfsdk:"api_key"`
 	BaseURL types.String `tfsdk:"base_url"`
 }
 
-func (p *MergeGatewayProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *mergeGatewayProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "mergegateway"
 	resp.Version = p.version
 }
 
-func (p *MergeGatewayProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *mergeGatewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manage Merge Gateway configuration as code.",
 		Attributes: map[string]schema.Attribute{
@@ -67,16 +68,15 @@ func (p *MergeGatewayProvider) Schema(ctx context.Context, req provider.SchemaRe
 	}
 }
 
-func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data MergeGatewayProviderModel
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
+// Configure builds the API client that every resource and data source uses.
+func (p *mergeGatewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var cfg providerConfig
+	resp.Diagnostics.Append(req.Config.Get(ctx, &cfg)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if data.APIKey.IsUnknown() {
+	if cfg.APIKey.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_key"),
 			"Unknown Merge Gateway API key",
@@ -84,8 +84,7 @@ func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.Confi
 				"Set it to a known value or use the "+apiKeyEnvVar+" environment variable.",
 		)
 	}
-
-	if data.BaseURL.IsUnknown() {
+	if cfg.BaseURL.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("base_url"),
 			"Unknown Merge Gateway base URL",
@@ -93,19 +92,18 @@ func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.Confi
 				"Set it to a known value or leave it unset to use "+defaultBaseURL+".",
 		)
 	}
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	apiKey := os.Getenv(apiKeyEnvVar)
-	if data.APIKey.ValueString() != "" {
-		apiKey = data.APIKey.ValueString()
+	// An empty string in config counts as unset.
+	apiKey := cfg.APIKey.ValueString()
+	if apiKey == "" {
+		apiKey = os.Getenv(apiKeyEnvVar)
 	}
-
-	baseURL := defaultBaseURL
-	if data.BaseURL.ValueString() != "" {
-		baseURL = data.BaseURL.ValueString()
+	baseURL := cfg.BaseURL.ValueString()
+	if baseURL == "" {
+		baseURL = defaultBaseURL
 	}
 
 	if u, err := url.Parse(baseURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
@@ -116,7 +114,6 @@ func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.Confi
 		)
 		return
 	}
-
 	if apiKey == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_key"),
@@ -129,9 +126,9 @@ func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.Confi
 	userAgent := "terraform-provider-mergegateway/" + p.version
 	c, err := client.NewClientWithResponses(baseURL,
 		client.WithHTTPClient(&http.Client{Timeout: requestTimeout}),
-		client.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			req.Header.Set("Authorization", "Bearer "+apiKey)
-			req.Header.Set("User-Agent", userAgent)
+		client.WithRequestEditorFn(func(_ context.Context, r *http.Request) error {
+			r.Header.Set("Authorization", "Bearer "+apiKey)
+			r.Header.Set("User-Agent", userAgent)
 			return nil
 		}),
 	)
@@ -143,11 +140,11 @@ func (p *MergeGatewayProvider) Configure(ctx context.Context, req provider.Confi
 		return
 	}
 
-	resp.DataSourceData = c
 	resp.ResourceData = c
+	resp.DataSourceData = c
 }
 
-func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *mergeGatewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewProjectPISettingsResource,
@@ -164,18 +161,10 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 	}
 }
 
-func (p *MergeGatewayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *mergeGatewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewModelsDataSource,
 		NewVendorsDataSource,
 		NewGuardrailsDataSource,
-	}
-}
-
-func New(version string) func() provider.Provider {
-	return func() provider.Provider {
-		return &MergeGatewayProvider{
-			version: version,
-		}
 	}
 }

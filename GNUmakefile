@@ -9,6 +9,7 @@ install: build
 lint:
 	golangci-lint run
 
+# Regenerate the API client, docs and THIRD_PARTY_LICENSES.
 generate:
 	cd tools; go generate ./...
 

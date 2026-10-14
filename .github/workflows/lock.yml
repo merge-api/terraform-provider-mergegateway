@@ -1,5 +1,4 @@
-# DO NOT EDIT - This GitHub Workflow is managed by automation
-# https://github.com/hashicorp/terraform-devex-repos
+# Locks issues and PRs 30 days after they close.
 name: 'Lock Threads'
 
 on:
@@ -10,8 +9,6 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
-      # NOTE: When TSCCR updates the GitHub action version, update the template workflow file to avoid drift:
-      # https://github.com/hashicorp/terraform-devex-repos/blob/main/modules/repo/workflows/lock.tftpl
       - uses: dessant/lock-threads@89ae32b08ed1a541efecbab17912962a5e38981c # v6.0.2
         with:
           process-only: 'issues, prs'

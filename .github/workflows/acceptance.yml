@@ -1,7 +1,7 @@
 # Acceptance tests against the deployed dev Gateway, with a management key for
 # a dedicated "Terraform acceptance tests" org on dev. The nightly run catches
 # dev deploys that break the provider. To run them against a local stack
-# instead, see the README.
+# instead, see CONTRIBUTING.md.
 name: Acceptance Tests
 
 on:
@@ -21,12 +21,16 @@ jobs:
     # Pull requests from forks don't get secrets, so they skip.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # Every run shares the test org, so runs take turns rather than sweeping
-    # each other's resources. A running one is never cancelled.
+    # each other's resources. A running one is never cancelled, and queue: max
+    # keeps every waiting run in line instead of dropping all but the newest.
     concurrency:
       group: acceptance-dev
       cancel-in-progress: false
+      queue: max
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 45
+    # Never set TF_LOG or TF_LOG_PROVIDER in this workflow: provider debug logs
+    # can include API responses with secrets.
     env:
       TF_ACC: "1"
       MERGE_GATEWAY_BASE_URL: https://api-gateway-develop.merge.dev
