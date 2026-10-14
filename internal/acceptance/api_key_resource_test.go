@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"testing"
 	"time"
 
@@ -56,8 +55,8 @@ func checkAPIKeyDestroy() resource.TestCheckFunc {
 
 // TestAccAPIKeyResource walks one key through create, a no-op re-plan, in-place
 // updates of every field, clearing the ones the API can clear, replace (new
-// project), removing name (which keeps it), a plan-time error for removing
-// limit, and imports along the way, then checks destroy.
+// project), removing limit, removing name (which keeps it), and imports along
+// the way, then checks destroy.
 func TestAccAPIKeyResource(t *testing.T) {
 	name := randomName()
 	renamed := name + "-renamed"
@@ -174,9 +173,10 @@ func TestAccAPIKeyResource(t *testing.T) {
 			// Replace: moving the key to project b creates a new key.
 			{
 				Config: apiKeyConfig(name, fmt.Sprintf(`
-  name       = %q
-  project_id = mergegateway_project.b.id
-  limit      = 25.5
+  name        = %q
+  project_id  = mergegateway_project.b.id
+  limit       = 25.5
+  limit_reset = "daily"
 `, renamed)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionDestroyBeforeCreate)},
@@ -190,23 +190,37 @@ func TestAccAPIKeyResource(t *testing.T) {
 						"mergegateway_project.b", tfjsonpath.New("id"), compare.ValuesSame()),
 				},
 			},
-			// The API can't clear limit, so removing it fails at plan time
-			// rather than replacing the key.
+			// Removing limit removes the key's cap in place. The API also clears
+			// the window, but limit_reset keeps its configured value.
 			{
 				Config: apiKeyConfig(name, fmt.Sprintf(`
-  name       = %q
-  project_id = mergegateway_project.b.id
+  name        = %q
+  project_id  = mergegateway_project.b.id
+  limit_reset = "daily"
 `, renamed)),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`Can't remove limit`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(apiKeyAddress, tfjsonpath.New("limit"), knownvalue.Null()),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					expectAPIKey("limit", knownvalue.Null()),
+					expectAPIKey("limit_remaining", knownvalue.Null()),
+					expectAPIKey("limit_reset", knownvalue.StringExact("daily")),
+				},
+				Check: checkAPIKeyNoLimit(),
 			},
-			// Nor can it clear name: removing it keeps the current name, also
-			// through an update of another field.
+			// The API can't clear name: removing it keeps the current name, also
+			// through an update of another field. Setting limit again sends its
+			// window too, so it reads back as daily.
 			{
 				Config: apiKeyConfig(name, `
-  project_id = mergegateway_project.b.id
-  limit      = 25.5
-  disabled   = true
+  project_id  = mergegateway_project.b.id
+  limit       = 25.5
+  limit_reset = "daily"
+  disabled    = true
 `),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -217,8 +231,30 @@ func TestAccAPIKeyResource(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					expectAPIKey("name", knownvalue.StringExact(renamed)),
+					expectAPIKey("limit", knownvalue.Float64Exact(25.5)),
+					expectAPIKey("limit_reset", knownvalue.StringExact("daily")),
 					expectAPIKey("disabled", knownvalue.Bool(true)),
 				},
+			},
+			// With neither limit nor limit_reset, the key has no cap and the
+			// next plan is empty.
+			{
+				Config: apiKeyConfig(name, `
+  project_id = mergegateway_project.b.id
+  disabled   = true
+`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(apiKeyAddress, tfjsonpath.New("limit"), knownvalue.Null()),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					expectAPIKey("limit", knownvalue.Null()),
+					expectAPIKey("limit_reset", knownvalue.StringExact("monthly")),
+				},
+				Check: checkAPIKeyNoLimit(),
 			},
 			// Import by key hash.
 			importStep,
@@ -272,6 +308,36 @@ resource "mergegateway_api_key" "test" {
 			},
 		},
 	})
+}
+
+// checkAPIKeyNoLimit checks against the API that the key has no limit.
+func checkAPIKeyNoLimit() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+
+		key, ok := s.RootModule().Resources[apiKeyAddress]
+		if !ok {
+			return fmt.Errorf("%s not in state", apiKeyAddress)
+		}
+		status, body, err := apiRequest(ctx, http.MethodGet, "/v1/keys/"+key.Primary.ID, nil)
+		if err != nil {
+			return fmt.Errorf("reading API key %s: %w", key.Primary.ID, err)
+		}
+		if status != http.StatusOK {
+			return fmt.Errorf("reading API key %s: HTTP %d", key.Primary.ID, status)
+		}
+		var got struct {
+			Limit *float64 `json:"limit"`
+		}
+		if err := json.Unmarshal(body, &got); err != nil {
+			return fmt.Errorf("decode API key: %w", err)
+		}
+		if got.Limit != nil {
+			return fmt.Errorf("API key %s: limit = %v, want null", key.Primary.ID, *got.Limit)
+		}
+		return nil
+	}
 }
 
 // renameAPIKey renames a key through the API, outside Terraform.

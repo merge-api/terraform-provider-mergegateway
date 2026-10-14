@@ -34,7 +34,6 @@ var (
 	_ resource.ResourceWithConfigure      = &APIKeyResource{}
 	_ resource.ResourceWithImportState    = &APIKeyResource{}
 	_ resource.ResourceWithValidateConfig = &APIKeyResource{}
-	_ resource.ResourceWithModifyPlan     = &APIKeyResource{}
 )
 
 func NewAPIKeyResource() resource.Resource {
@@ -104,15 +103,17 @@ func (r *APIKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"limit": schema.Float64Attribute{
-				MarkdownDescription: "USD spend cap over the `limit_reset` window. Must be greater than 0. Leave it out for no cap. " +
-					"Once set, it can be changed but not removed: the API can't clear it yet, so a plan that removes it fails.",
+				MarkdownDescription: "USD spend cap over the `limit_reset` window. Must be greater than 0. Leave it out for no cap: " +
+					"removing it from the config removes the key's cap.",
 				Optional: true,
 			},
 			"limit_reset": schema.StringAttribute{
-				MarkdownDescription: "The window `limit` applies to: `daily`, `weekly` or `monthly`. Defaults to `monthly`.",
-				Optional:            true,
-				Computed:            true,
-				Default:             stringdefault.StaticString(limitResetMonthly),
+				MarkdownDescription: "The window `limit` applies to: `daily`, `weekly` or `monthly`. Defaults to `monthly`. " +
+					"Removing `limit` also clears the window in the API; this attribute keeps its configured value, " +
+					"which is sent again when a limit is set.",
+				Optional: true,
+				Computed: true,
+				Default:  stringdefault.StaticString(limitResetMonthly),
 				Validators: []validator.String{stringvalidator.OneOf(
 					string(client.KeyObjectLimitResetDaily),
 					string(client.KeyObjectLimitResetWeekly),
@@ -241,25 +242,6 @@ func (r *APIKeyResource) ValidateConfig(ctx context.Context, req resource.Valida
 				fmt.Sprintf("Expected a project UUID, got %q: %s", projectID.ValueString(), err))
 		}
 	}
-}
-
-// ModifyPlan stops a plan that removes limit from an existing key: the API
-// ignores null for it, so the apply would fail with an inconsistent result.
-// Removing it on purpose shouldn't silently replace the key either, since a
-// new raw key breaks every app using the old one.
-func (r *APIKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Creating or destroying the key.
-	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
-		return
-	}
-
-	var plan, state apiKeyResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	resp.Diagnostics.Append(apiKeyClearErrors(plan, state)...)
 }
 
 func (r *APIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -413,11 +395,12 @@ func apiKeyCreateRequest(ctx context.Context, plan apiKeyResourceModel) (client.
 }
 
 // apiKeyUpdateRequest builds the PATCH /v1/keys/{key_hash} body. It sends only
-// the fields that differ between plan and state; a removed allowed_models or
-// routing_policy_id is sent as null, which clears it. name and limit are never
-// sent as null (the API ignores it: a name left out keeps the state's, and
-// ModifyPlan stops a plan that removes limit), and project_id is never sent:
-// changing it replaces the key.
+// the fields that differ between plan and state; a removed allowed_models,
+// limit, routing_policy_id is sent as null, which clears it. name is never sent
+// as null (the API ignores it: a name left out keeps the state's), and
+// project_id is never sent: changing it replaces the key. limit_reset is also
+// sent when a limit is set on a key without one, since removing a limit
+// clears its window in the API.
 func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (client.KeyUpdateRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var body client.KeyUpdateRequest
@@ -425,10 +408,14 @@ func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (
 	if !plan.Name.Equal(state.Name) && !plan.Name.IsUnknown() && !plan.Name.IsNull() {
 		body.Name = nullable.NewNullableWithValue(plan.Name.ValueString())
 	}
-	if !plan.Limit.Equal(state.Limit) && !plan.Limit.IsNull() {
-		body.Limit = nullable.NewNullableWithValue(plan.Limit.ValueFloat64())
+	if !plan.Limit.Equal(state.Limit) {
+		if plan.Limit.IsNull() {
+			body.Limit = nullable.NewNullNullable[float64]()
+		} else {
+			body.Limit = nullable.NewNullableWithValue(plan.Limit.ValueFloat64())
+		}
 	}
-	if !plan.LimitReset.Equal(state.LimitReset) {
+	if !plan.LimitReset.Equal(state.LimitReset) || (state.Limit.IsNull() && !plan.Limit.IsNull()) {
 		body.LimitReset = nullable.NewNullableWithValue(client.KeyUpdateRequestLimitReset(plan.LimitReset.ValueString()))
 	}
 	if !plan.AllowedModels.Equal(state.AllowedModels) {
@@ -451,22 +438,6 @@ func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (
 		}
 	}
 	return body, diags
-}
-
-// apiKeyClearErrors reports limit removed from a key that has one, unless
-// project_id changes, which replaces the key anyway.
-func apiKeyClearErrors(plan, state apiKeyResourceModel) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if !plan.ProjectID.Equal(state.ProjectID) {
-		return diags
-	}
-	const detail = "An API key's %[1]s can't be removed once set: the Merge Gateway API can't clear it yet. " +
-		"Set a new value instead. To get a key without a %[1]s, recreate it, which issues a new raw key: " +
-		"terraform apply -destroy -target=<address>, then terraform apply."
-	if plan.Limit.IsNull() && !state.Limit.IsNull() {
-		diags.AddAttributeError(path.Root("limit"), "Can't remove limit", fmt.Sprintf(detail, "limit"))
-	}
-	return diags
 }
 
 // apiKeyFromAPI maps an API key to the Terraform model. prior is the plan
@@ -501,8 +472,12 @@ func apiKeyFromAPI(ctx context.Context, k *client.KeyObject, prior apiKeyResourc
 		m.ProjectID = types.StringValue(projectID.String())
 	}
 	// A key without a window uses monthly, so null and monthly are the same.
+	// Removing a limit clears its window too: a key without a limit keeps the
+	// prior window, which apiKeyUpdateRequest sends again with a new limit.
 	if limitReset, err := k.LimitReset.Get(); err == nil {
 		m.LimitReset = types.StringValue(string(limitReset))
+	} else if m.Limit.IsNull() && !prior.LimitReset.IsNull() && !prior.LimitReset.IsUnknown() {
+		m.LimitReset = prior.LimitReset
 	}
 	// [] allows no model and null allows every one, so [] stays an empty set:
 	// the config can't hold one, and the plan sets it back to null.

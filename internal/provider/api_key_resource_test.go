@@ -139,17 +139,24 @@ func TestAPIKeyUpdateRequest(t *testing.T) {
 			},
 			want: `{"allowed_models": null, "routing_policy_id": null}`,
 		},
+		"removing limit clears it": {
+			state: full,
+			plan: func(m *apiKeyResourceModel) {
+				full(m)
+				m.Limit = types.Float64Null()
+			},
+			want: `{"limit": null}`,
+		},
+		"setting a limit again sends its window": {
+			plan: func(m *apiKeyResourceModel) { m.Limit = types.Float64Value(10) },
+			want: `{"limit": 10, "limit_reset": "monthly"}`,
+		},
 		"name left out keeps the state's": {
 			plan: func(m *apiKeyResourceModel) { m.Name = types.StringUnknown() },
 			want: `{}`,
 		},
-		"name and limit are never sent as null": {
-			state: full,
-			plan: func(m *apiKeyResourceModel) {
-				full(m)
-				m.Name = types.StringNull()
-				m.Limit = types.Float64Null()
-			},
+		"name is never sent as null": {
+			plan: func(m *apiKeyResourceModel) { m.Name = types.StringNull() },
 			want: `{}`,
 		},
 		"project_id is never sent": {
@@ -171,32 +178,6 @@ func TestAPIKeyUpdateRequest(t *testing.T) {
 			}
 			assertJSON(t, body, tt.want)
 		})
-	}
-}
-
-func TestAPIKeyClearErrors(t *testing.T) {
-	state := testAPIKey()
-	state.Limit = types.Float64Value(10)
-
-	changed := state
-	changed.Name = types.StringValue("tf-acc-renamed")
-	changed.Limit = types.Float64Value(20)
-	if diags := apiKeyClearErrors(changed, state); diags.HasError() {
-		t.Fatalf("changing name and limit: unexpected error: %v", diags)
-	}
-
-	// A name left out keeps the state's, so only limit can be removed.
-	removed := state
-	removed.Limit = types.Float64Null()
-	diags := apiKeyClearErrors(removed, state)
-	if len(diags) != 1 || diags[0].Summary() != "Can't remove limit" {
-		t.Fatalf("expected an error for limit, got %v", diags)
-	}
-
-	// A new project replaces the key, so it may drop them.
-	removed.ProjectID = types.StringValue("6f1c1f5e-8a8b-4c43-9a0e-3f0f6d0c8b11")
-	if diags := apiKeyClearErrors(removed, state); diags.HasError() {
-		t.Fatalf("replacing: unexpected error: %v", diags)
 	}
 }
 
@@ -266,6 +247,17 @@ func TestAPIKeyFromAPI(t *testing.T) {
 		got.AllowedModels = want.AllowedModels
 		if !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %+v\nwant %+v", got, want)
+		}
+	})
+
+	// Removing a limit clears its window: the prior window stays, so a config
+	// that keeps limit_reset converges.
+	t.Run("no limit keeps the prior limit_reset", func(t *testing.T) {
+		prior := testAPIKey()
+		prior.LimitReset = types.StringValue("daily")
+		got, _ := apiKeyFromAPI(ctx, testKeyResponse(t, ``), prior)
+		if want := types.StringValue("daily"); !got.LimitReset.Equal(want) {
+			t.Fatalf("limit_reset = %v, want %v", got.LimitReset, want)
 		}
 	})
 

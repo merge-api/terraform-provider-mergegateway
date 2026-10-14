@@ -1800,9 +1800,11 @@ type KeyUpdateRequest struct {
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
 
 	// BudgetGroupId Managed by Merge for Workforce; sending this field is a 400.
-	BudgetGroupId nullable.Nullable[string]  `json:"budget_group_id,omitempty"`
-	Disabled      nullable.Nullable[bool]    `json:"disabled,omitempty"`
-	Limit         nullable.Nullable[float64] `json:"limit,omitempty"`
+	BudgetGroupId nullable.Nullable[string] `json:"budget_group_id,omitempty"`
+	Disabled      nullable.Nullable[bool]   `json:"disabled,omitempty"`
+
+	// Limit USD spend cap over the limit_reset window. Omit to keep the current limit; send null to remove it.
+	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
 
 	// LimitReset The window `limit` applies to. Monthly when unset.
 	LimitReset nullable.Nullable[KeyUpdateRequestLimitReset] `json:"limit_reset,omitempty"`
@@ -4360,7 +4362,8 @@ type ClientInterface interface {
 	// DeleteProject Delete Project
 	//
 	// Delete a project. Blocked (409) while active project-scoped API keys
-	// exist; fails closed (503) if the data plane is unreachable.
+	// exist; fails closed (503) if the data plane is unreachable. The project's
+	// PI, DLP and controls overrides stop applying in the gateway.
 	//
 	// Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
 	DeleteProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4374,7 +4377,8 @@ type ClientInterface interface {
 
 	// UpdateProjectWithBody Update Project
 	//
-	// Update a project.
+	// Update a project. Setting is_active to false stops the project's PI, DLP
+	// and controls overrides applying in the gateway; true restores them.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4383,7 +4387,8 @@ type ClientInterface interface {
 
 	// UpdateProject Update Project
 	//
-	// Update a project.
+	// Update a project. Setting is_active to false stops the project's PI, DLP
+	// and controls overrides applying in the gateway; true restores them.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4426,6 +4431,8 @@ type ClientInterface interface {
 	//
 	// Clear the override so the project inherits the org's DLP rules.
 	//
+	// Needs `manage_security_rules` or `manage_projects`.
+	//
 	// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
 	DeleteProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4433,12 +4440,16 @@ type ClientInterface interface {
 	//
 	// Return the project's DLP override plus the resolved per-entity outcome.
 	//
+	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
+	//
 	// Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
 	GetProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateProjectDlpSettingsWithBody Update Project Dlp Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Needs `manage_security_rules` or `manage_projects`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4448,6 +4459,8 @@ type ClientInterface interface {
 	// UpdateProjectDlpSettings Update Project Dlp Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Needs `manage_security_rules` or `manage_projects`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4465,12 +4478,16 @@ type ClientInterface interface {
 	//
 	// Clear the override so the project inherits the org PI policy wholesale.
 	//
+	// Needs `manage_security_rules` or `manage_projects`.
+	//
 	// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
 	DeleteProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectPiSettings Get Project Pi Settings
 	//
 	// Return the project's PI override, the effective policy, and what it inherits.
+	//
+	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
 	// Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
 	GetProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4482,6 +4499,8 @@ type ClientInterface interface {
 	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
 	// field back to inheritance. An empty body therefore means "inherit
 	// everything", the same as DELETE.
+	//
+	// Needs `manage_security_rules` or `manage_projects`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4495,6 +4514,8 @@ type ClientInterface interface {
 	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
 	// field back to inheritance. An empty body therefore means "inherit
 	// everything", the same as DELETE.
+	//
+	// Needs `manage_security_rules` or `manage_projects`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4515,7 +4536,8 @@ type ClientInterface interface {
 
 	// ListRoutingPolicies List Routing Policies
 	//
-	// List the org's standalone routing policies.
+	// List the org's standalone routing policies. Accepts a management key or a
+	// gateway API key.
 	//
 	// Returns all of them (an org has a handful, like the ERS customer surface),
 	// so no cursor pagination.
@@ -4526,7 +4548,8 @@ type ClientInterface interface {
 	// CreateRoutingPolicyWithBody Create Routing Policy
 	//
 	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default.
+	// automatically; otherwise pass is_default=true to make it the default. Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4536,7 +4559,8 @@ type ClientInterface interface {
 	// CreateRoutingPolicy Create Routing Policy
 	//
 	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default.
+	// automatically; otherwise pass is_default=true to make it the default. Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4547,20 +4571,24 @@ type ClientInterface interface {
 	//
 	// Delete an org routing policy. Deleting the default leaves the org with no
 	// default until another is set (requests fall back to per-request model pins).
+	// Refused (409, with the count) while any API key is bound to the policy:
+	// unbind or delete those keys first. Needs a management key: a gateway API
+	// key gets 403.
 	//
 	// Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
 	DeleteRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetRoutingPolicy Get Routing Policy
 	//
-	// Get one org routing policy.
+	// Get one org routing policy. Accepts a management key or a gateway API key.
 	//
 	// Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
 	GetRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateRoutingPolicyWithBody Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs).
+	// Update an org routing policy in place (stable id for IaC diffs). Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4569,7 +4597,8 @@ type ClientInterface interface {
 
 	// UpdateRoutingPolicy Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs).
+	// Update an org routing policy in place (stable id for IaC diffs). Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4578,7 +4607,8 @@ type ClientInterface interface {
 
 	// SetDefaultRoutingPolicy Set Default Routing Policy
 	//
-	// Make this policy the org's default (unsets the previous default).
+	// Make this policy the org's default (unsets the previous default). Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
 	SetDefaultRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5643,7 +5673,8 @@ func (c *Client) CreateProject(ctx context.Context, body CreateProjectJSONReques
 // DeleteProject Delete Project
 //
 // Delete a project. Blocked (409) while active project-scoped API keys
-// exist; fails closed (503) if the data plane is unreachable.
+// exist; fails closed (503) if the data plane is unreachable. The project's
+// PI, DLP and controls overrides stop applying in the gateway.
 //
 // Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
 func (c *Client) DeleteProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5677,7 +5708,8 @@ func (c *Client) GetProject(ctx context.Context, projectId openapi_types.UUID, r
 
 // UpdateProjectWithBody Update Project
 //
-// Update a project.
+// Update a project. Setting is_active to false stops the project's PI, DLP
+// and controls overrides applying in the gateway; true restores them.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5696,7 +5728,8 @@ func (c *Client) UpdateProjectWithBody(ctx context.Context, projectId openapi_ty
 
 // UpdateProject Update Project
 //
-// Update a project.
+// Update a project. Setting is_active to false stops the project's PI, DLP
+// and controls overrides applying in the gateway; true restores them.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5789,6 +5822,8 @@ func (c *Client) UpdateProjectControls(ctx context.Context, projectId openapi_ty
 //
 // Clear the override so the project inherits the org's DLP rules.
 //
+// Needs `manage_security_rules` or `manage_projects`.
+//
 // Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
 func (c *Client) DeleteProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteProjectDlpSettingsRequest(c.Server, projectId)
@@ -5806,6 +5841,8 @@ func (c *Client) DeleteProjectDlpSettings(ctx context.Context, projectId openapi
 //
 // Return the project's DLP override plus the resolved per-entity outcome.
 //
+// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
+//
 // Corresponds with GET /v1/projects/{project_id}/dlp-settings (the `GetProjectDlpSettings` operationId).
 func (c *Client) GetProjectDlpSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectDlpSettingsRequest(c.Server, projectId)
@@ -5822,6 +5859,8 @@ func (c *Client) GetProjectDlpSettings(ctx context.Context, projectId openapi_ty
 // UpdateProjectDlpSettingsWithBody Update Project Dlp Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Needs `manage_security_rules` or `manage_projects`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5841,6 +5880,8 @@ func (c *Client) UpdateProjectDlpSettingsWithBody(ctx context.Context, projectId
 // UpdateProjectDlpSettings Update Project Dlp Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Needs `manage_security_rules` or `manage_projects`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5878,6 +5919,8 @@ func (c *Client) ListProjectModels(ctx context.Context, projectId openapi_types.
 //
 // Clear the override so the project inherits the org PI policy wholesale.
 //
+// Needs `manage_security_rules` or `manage_projects`.
+//
 // Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
 func (c *Client) DeleteProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteProjectPiSettingsRequest(c.Server, projectId)
@@ -5894,6 +5937,8 @@ func (c *Client) DeleteProjectPiSettings(ctx context.Context, projectId openapi_
 // GetProjectPiSettings Get Project Pi Settings
 //
 // Return the project's PI override, the effective policy, and what it inherits.
+//
+// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
 // Corresponds with GET /v1/projects/{project_id}/pi-settings (the `GetProjectPiSettings` operationId).
 func (c *Client) GetProjectPiSettings(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5915,6 +5960,8 @@ func (c *Client) GetProjectPiSettings(ctx context.Context, projectId openapi_typ
 // Sparse: unset fields inherit the org value, and an explicit “null“ clears a
 // field back to inheritance. An empty body therefore means "inherit
 // everything", the same as DELETE.
+//
+// Needs `manage_security_rules` or `manage_projects`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5938,6 +5985,8 @@ func (c *Client) UpdateProjectPiSettingsWithBody(ctx context.Context, projectId 
 // Sparse: unset fields inherit the org value, and an explicit “null“ clears a
 // field back to inheritance. An empty body therefore means "inherit
 // everything", the same as DELETE.
+//
+// Needs `manage_security_rules` or `manage_projects`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5978,7 +6027,8 @@ func (c *Client) GetProjectUsage(ctx context.Context, projectId openapi_types.UU
 
 // ListRoutingPolicies List Routing Policies
 //
-// List the org's standalone routing policies.
+// List the org's standalone routing policies. Accepts a management key or a
+// gateway API key.
 //
 // Returns all of them (an org has a handful, like the ERS customer surface),
 // so no cursor pagination.
@@ -5999,7 +6049,8 @@ func (c *Client) ListRoutingPolicies(ctx context.Context, params *ListRoutingPol
 // CreateRoutingPolicyWithBody Create Routing Policy
 //
 // Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default.
+// automatically; otherwise pass is_default=true to make it the default. Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6019,7 +6070,8 @@ func (c *Client) CreateRoutingPolicyWithBody(ctx context.Context, contentType st
 // CreateRoutingPolicy Create Routing Policy
 //
 // Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default.
+// automatically; otherwise pass is_default=true to make it the default. Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6040,6 +6092,9 @@ func (c *Client) CreateRoutingPolicy(ctx context.Context, body CreateRoutingPoli
 //
 // Delete an org routing policy. Deleting the default leaves the org with no
 // default until another is set (requests fall back to per-request model pins).
+// Refused (409, with the count) while any API key is bound to the policy:
+// unbind or delete those keys first. Needs a management key: a gateway API
+// key gets 403.
 //
 // Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
 func (c *Client) DeleteRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6056,7 +6111,7 @@ func (c *Client) DeleteRoutingPolicy(ctx context.Context, policyId openapi_types
 
 // GetRoutingPolicy Get Routing Policy
 //
-// Get one org routing policy.
+// Get one org routing policy. Accepts a management key or a gateway API key.
 //
 // Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
 func (c *Client) GetRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6073,7 +6128,8 @@ func (c *Client) GetRoutingPolicy(ctx context.Context, policyId openapi_types.UU
 
 // UpdateRoutingPolicyWithBody Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs).
+// Update an org routing policy in place (stable id for IaC diffs). Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6092,7 +6148,8 @@ func (c *Client) UpdateRoutingPolicyWithBody(ctx context.Context, policyId opena
 
 // UpdateRoutingPolicy Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs).
+// Update an org routing policy in place (stable id for IaC diffs). Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6111,7 +6168,8 @@ func (c *Client) UpdateRoutingPolicy(ctx context.Context, policyId openapi_types
 
 // SetDefaultRoutingPolicy Set Default Routing Policy
 //
-// Make this policy the org's default (unsets the previous default).
+// Make this policy the org's default (unsets the previous default). Needs a
+// management key: a gateway API key gets 403.
 //
 // Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
 func (c *Client) SetDefaultRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9502,7 +9560,8 @@ type ClientWithResponsesInterface interface {
 	// DeleteProjectWithResponse Delete Project
 	//
 	// Delete a project. Blocked (409) while active project-scoped API keys
-	// exist; fails closed (503) if the data plane is unreachable.
+	// exist; fails closed (503) if the data plane is unreachable. The project's
+	// PI, DLP and controls overrides stop applying in the gateway.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9520,7 +9579,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectWithBodyWithResponse Update Project
 	//
-	// Update a project.
+	// Update a project. Setting is_active to false stops the project's PI, DLP
+	// and controls overrides applying in the gateway; true restores them.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9529,7 +9589,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectWithResponse Update Project
 	//
-	// Update a project.
+	// Update a project. Setting is_active to false stops the project's PI, DLP
+	// and controls overrides applying in the gateway; true restores them.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9576,6 +9637,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Clear the override so the project inherits the org's DLP rules.
 	//
+	// Needs `manage_security_rules` or `manage_projects`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
@@ -9584,6 +9647,8 @@ type ClientWithResponsesInterface interface {
 	// GetProjectDlpSettingsWithResponse Get Project Dlp Settings
 	//
 	// Return the project's DLP override plus the resolved per-entity outcome.
+	//
+	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9594,6 +9659,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
 	//
+	// Needs `manage_security_rules` or `manage_projects`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
@@ -9602,6 +9669,8 @@ type ClientWithResponsesInterface interface {
 	// UpdateProjectDlpSettingsWithResponse Update Project Dlp Settings
 	//
 	// Replace the project's DLP override wholesale + sync to the data plane.
+	//
+	// Needs `manage_security_rules` or `manage_projects`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9621,6 +9690,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Clear the override so the project inherits the org PI policy wholesale.
 	//
+	// Needs `manage_security_rules` or `manage_projects`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
@@ -9629,6 +9700,8 @@ type ClientWithResponsesInterface interface {
 	// GetProjectPiSettingsWithResponse Get Project Pi Settings
 	//
 	// Return the project's PI override, the effective policy, and what it inherits.
+	//
+	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9643,6 +9716,8 @@ type ClientWithResponsesInterface interface {
 	// field back to inheritance. An empty body therefore means "inherit
 	// everything", the same as DELETE.
 	//
+	// Needs `manage_security_rules` or `manage_projects`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
@@ -9655,6 +9730,8 @@ type ClientWithResponsesInterface interface {
 	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
 	// field back to inheritance. An empty body therefore means "inherit
 	// everything", the same as DELETE.
+	//
+	// Needs `manage_security_rules` or `manage_projects`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9677,7 +9754,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListRoutingPoliciesWithResponse List Routing Policies
 	//
-	// List the org's standalone routing policies.
+	// List the org's standalone routing policies. Accepts a management key or a
+	// gateway API key.
 	//
 	// Returns all of them (an org has a handful, like the ERS customer surface),
 	// so no cursor pagination.
@@ -9690,7 +9768,8 @@ type ClientWithResponsesInterface interface {
 	// CreateRoutingPolicyWithBodyWithResponse Create Routing Policy
 	//
 	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default.
+	// automatically; otherwise pass is_default=true to make it the default. Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9700,7 +9779,8 @@ type ClientWithResponsesInterface interface {
 	// CreateRoutingPolicyWithResponse Create Routing Policy
 	//
 	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default.
+	// automatically; otherwise pass is_default=true to make it the default. Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9711,6 +9791,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Delete an org routing policy. Deleting the default leaves the org with no
 	// default until another is set (requests fall back to per-request model pins).
+	// Refused (409, with the count) while any API key is bound to the policy:
+	// unbind or delete those keys first. Needs a management key: a gateway API
+	// key gets 403.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9719,7 +9802,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetRoutingPolicyWithResponse Get Routing Policy
 	//
-	// Get one org routing policy.
+	// Get one org routing policy. Accepts a management key or a gateway API key.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9728,7 +9811,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateRoutingPolicyWithBodyWithResponse Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs).
+	// Update an org routing policy in place (stable id for IaC diffs). Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9737,7 +9821,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateRoutingPolicyWithResponse Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs).
+	// Update an org routing policy in place (stable id for IaC diffs). Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9746,7 +9831,8 @@ type ClientWithResponsesInterface interface {
 
 	// SetDefaultRoutingPolicyWithResponse Set Default Routing Policy
 	//
-	// Make this policy the org's default (unsets the previous default).
+	// Make this policy the org's default (unsets the previous default). Needs a
+	// management key: a gateway API key gets 403.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -12926,6 +13012,8 @@ type DeleteProjectControlsResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -12951,6 +13039,11 @@ func (r DeleteProjectControlsResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteProjectControlsResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteProjectControlsResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -13064,6 +13157,8 @@ type UpdateProjectControlsResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UpdateProjectControls422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -13089,6 +13184,11 @@ func (r UpdateProjectControlsResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateProjectControlsResponse) GetJSON422() *UpdateProjectControls422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateProjectControlsResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -13133,6 +13233,8 @@ type DeleteProjectDlpSettingsResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -13158,6 +13260,11 @@ func (r DeleteProjectDlpSettingsResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteProjectDlpSettingsResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteProjectDlpSettingsResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -13271,6 +13378,8 @@ type UpdateProjectDlpSettingsResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UpdateProjectDlpSettings422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -13296,6 +13405,11 @@ func (r UpdateProjectDlpSettingsResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateProjectDlpSettingsResponse) GetJSON422() *UpdateProjectDlpSettings422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateProjectDlpSettingsResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -13409,6 +13523,8 @@ type DeleteProjectPiSettingsResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -13434,6 +13550,11 @@ func (r DeleteProjectPiSettingsResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r DeleteProjectPiSettingsResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeleteProjectPiSettingsResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -13547,6 +13668,8 @@ type UpdateProjectPiSettingsResponse struct {
 	JSON404 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UpdateProjectPiSettings422JSONResponseBody
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *ErrorResponse
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -13572,6 +13695,11 @@ func (r UpdateProjectPiSettingsResponse) GetJSON404() *ErrorResponse {
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
 func (r UpdateProjectPiSettingsResponse) GetJSON422() *UpdateProjectPiSettings422JSONResponseBody {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateProjectPiSettingsResponse) GetJSON502() *ErrorResponse {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -13812,6 +13940,8 @@ type DeleteRoutingPolicyResponse struct {
 	JSON403 *ErrorResponse
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *ErrorResponse
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ErrorResponse
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *HTTPValidationError
 }
@@ -13829,6 +13959,11 @@ func (r DeleteRoutingPolicyResponse) GetJSON403() *ErrorResponse {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r DeleteRoutingPolicyResponse) GetJSON404() *ErrorResponse {
 	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteRoutingPolicyResponse) GetJSON409() *ErrorResponse {
+	return r.JSON409
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -14979,7 +15114,8 @@ func (c *ClientWithResponses) CreateProjectWithResponse(ctx context.Context, bod
 // DeleteProjectWithResponse Delete Project
 //
 // Delete a project. Blocked (409) while active project-scoped API keys
-// exist; fails closed (503) if the data plane is unreachable.
+// exist; fails closed (503) if the data plane is unreachable. The project's
+// PI, DLP and controls overrides stop applying in the gateway.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15009,7 +15145,8 @@ func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, projec
 
 // UpdateProjectWithBodyWithResponse Update Project
 //
-// Update a project.
+// Update a project. Setting is_active to false stops the project's PI, DLP
+// and controls overrides applying in the gateway; true restores them.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15024,7 +15161,8 @@ func (c *ClientWithResponses) UpdateProjectWithBodyWithResponse(ctx context.Cont
 
 // UpdateProjectWithResponse Update Project
 //
-// Update a project.
+// Update a project. Setting is_active to false stops the project's PI, DLP
+// and controls overrides applying in the gateway; true restores them.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15101,6 +15239,8 @@ func (c *ClientWithResponses) UpdateProjectControlsWithResponse(ctx context.Cont
 //
 // Clear the override so the project inherits the org's DLP rules.
 //
+// Needs `manage_security_rules` or `manage_projects`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/projects/{project_id}/dlp-settings (the `DeleteProjectDlpSettings` operationId).
@@ -15115,6 +15255,8 @@ func (c *ClientWithResponses) DeleteProjectDlpSettingsWithResponse(ctx context.C
 // GetProjectDlpSettingsWithResponse Get Project Dlp Settings
 //
 // Return the project's DLP override plus the resolved per-entity outcome.
+//
+// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15131,6 +15273,8 @@ func (c *ClientWithResponses) GetProjectDlpSettingsWithResponse(ctx context.Cont
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
 //
+// Needs `manage_security_rules` or `manage_projects`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/projects/{project_id}/dlp-settings (the `UpdateProjectDlpSettings` operationId).
@@ -15145,6 +15289,8 @@ func (c *ClientWithResponses) UpdateProjectDlpSettingsWithBodyWithResponse(ctx c
 // UpdateProjectDlpSettingsWithResponse Update Project Dlp Settings
 //
 // Replace the project's DLP override wholesale + sync to the data plane.
+//
+// Needs `manage_security_rules` or `manage_projects`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15176,6 +15322,8 @@ func (c *ClientWithResponses) ListProjectModelsWithResponse(ctx context.Context,
 //
 // Clear the override so the project inherits the org PI policy wholesale.
 //
+// Needs `manage_security_rules` or `manage_projects`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/projects/{project_id}/pi-settings (the `DeleteProjectPiSettings` operationId).
@@ -15190,6 +15338,8 @@ func (c *ClientWithResponses) DeleteProjectPiSettingsWithResponse(ctx context.Co
 // GetProjectPiSettingsWithResponse Get Project Pi Settings
 //
 // Return the project's PI override, the effective policy, and what it inherits.
+//
+// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15210,6 +15360,8 @@ func (c *ClientWithResponses) GetProjectPiSettingsWithResponse(ctx context.Conte
 // field back to inheritance. An empty body therefore means "inherit
 // everything", the same as DELETE.
 //
+// Needs `manage_security_rules` or `manage_projects`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/projects/{project_id}/pi-settings (the `UpdateProjectPiSettings` operationId).
@@ -15228,6 +15380,8 @@ func (c *ClientWithResponses) UpdateProjectPiSettingsWithBodyWithResponse(ctx co
 // Sparse: unset fields inherit the org value, and an explicit “null“ clears a
 // field back to inheritance. An empty body therefore means "inherit
 // everything", the same as DELETE.
+//
+// Needs `manage_security_rules` or `manage_projects`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15262,7 +15416,8 @@ func (c *ClientWithResponses) GetProjectUsageWithResponse(ctx context.Context, p
 
 // ListRoutingPoliciesWithResponse List Routing Policies
 //
-// List the org's standalone routing policies.
+// List the org's standalone routing policies. Accepts a management key or a
+// gateway API key.
 //
 // Returns all of them (an org has a handful, like the ERS customer surface),
 // so no cursor pagination.
@@ -15281,7 +15436,8 @@ func (c *ClientWithResponses) ListRoutingPoliciesWithResponse(ctx context.Contex
 // CreateRoutingPolicyWithBodyWithResponse Create Routing Policy
 //
 // Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default.
+// automatically; otherwise pass is_default=true to make it the default. Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15297,7 +15453,8 @@ func (c *ClientWithResponses) CreateRoutingPolicyWithBodyWithResponse(ctx contex
 // CreateRoutingPolicyWithResponse Create Routing Policy
 //
 // Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default.
+// automatically; otherwise pass is_default=true to make it the default. Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15314,6 +15471,9 @@ func (c *ClientWithResponses) CreateRoutingPolicyWithResponse(ctx context.Contex
 //
 // Delete an org routing policy. Deleting the default leaves the org with no
 // default until another is set (requests fall back to per-request model pins).
+// Refused (409, with the count) while any API key is bound to the policy:
+// unbind or delete those keys first. Needs a management key: a gateway API
+// key gets 403.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15328,7 +15488,7 @@ func (c *ClientWithResponses) DeleteRoutingPolicyWithResponse(ctx context.Contex
 
 // GetRoutingPolicyWithResponse Get Routing Policy
 //
-// Get one org routing policy.
+// Get one org routing policy. Accepts a management key or a gateway API key.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15343,7 +15503,8 @@ func (c *ClientWithResponses) GetRoutingPolicyWithResponse(ctx context.Context, 
 
 // UpdateRoutingPolicyWithBodyWithResponse Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs).
+// Update an org routing policy in place (stable id for IaC diffs). Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15358,7 +15519,8 @@ func (c *ClientWithResponses) UpdateRoutingPolicyWithBodyWithResponse(ctx contex
 
 // UpdateRoutingPolicyWithResponse Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs).
+// Update an org routing policy in place (stable id for IaC diffs). Needs a
+// management key: a gateway API key gets 403.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15373,7 +15535,8 @@ func (c *ClientWithResponses) UpdateRoutingPolicyWithResponse(ctx context.Contex
 
 // SetDefaultRoutingPolicyWithResponse Set Default Routing Policy
 //
-// Make this policy the org's default (unsets the previous default).
+// Make this policy the org's default (unsets the previous default). Needs a
+// management key: a gateway API key gets 403.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -17910,6 +18073,13 @@ func ParseDeleteProjectControlsResponse(rsp *http.Response) (*DeleteProjectContr
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -18018,6 +18188,13 @@ func ParseUpdateProjectControlsResponse(rsp *http.Response) (*UpdateProjectContr
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -18071,6 +18248,13 @@ func ParseDeleteProjectDlpSettingsResponse(rsp *http.Response) (*DeleteProjectDl
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -18180,6 +18364,13 @@ func ParseUpdateProjectDlpSettingsResponse(rsp *http.Response) (*UpdateProjectDl
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -18288,6 +18479,13 @@ func ParseDeleteProjectPiSettingsResponse(rsp *http.Response) (*DeleteProjectPiS
 		}
 		response.JSON422 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -18395,6 +18593,13 @@ func ParseUpdateProjectPiSettingsResponse(rsp *http.Response) (*UpdateProjectPiS
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -18593,6 +18798,13 @@ func ParseDeleteRoutingPolicyResponse(rsp *http.Response) (*DeleteRoutingPolicyR
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest HTTPValidationError

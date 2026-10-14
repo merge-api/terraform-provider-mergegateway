@@ -2409,6 +2409,7 @@
                 "type": "null"
               }
             ],
+            "description": "USD spend cap over the limit_reset window. Omit to keep the current limit; send null to remove it.",
             "title": "Limit"
           },
           "limit_reset": {
@@ -5575,7 +5576,7 @@
     },
     "securitySchemes": {
       "ManagementKey": {
-        "description": "A management key (`mgmt_...`), sent as `Authorization: Bearer <key>`. /v1/routing-policies also accepts the organization's gateway API keys.",
+        "description": "A management key (`mgmt_...`), sent as `Authorization: Bearer <key>`. Reading /v1/routing-policies also accepts the organization's gateway API keys; writing there needs a management key.",
         "scheme": "bearer",
         "type": "http"
       }
@@ -9247,7 +9248,7 @@
     },
     "/v1/projects/{project_id}": {
       "delete": {
-        "description": "Delete a project. Blocked (409) while active project-scoped API keys\nexist; fails closed (503) if the data plane is unreachable.",
+        "description": "Delete a project. Blocked (409) while active project-scoped API keys\nexist; fails closed (503) if the data plane is unreachable. The project's\nPI, DLP and controls overrides stop applying in the gateway.",
         "operationId": "delete_project",
         "parameters": [
           {
@@ -9404,7 +9405,7 @@
         ]
       },
       "patch": {
-        "description": "Update a project.",
+        "description": "Update a project. Setting is_active to false stops the project's PI, DLP\nand controls overrides applying in the gateway; true restores them.",
         "operationId": "update_project",
         "parameters": [
           {
@@ -9567,6 +9568,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -9738,6 +9749,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -9753,7 +9774,7 @@
     },
     "/v1/projects/{project_id}/dlp-settings": {
       "delete": {
-        "description": "Clear the override so the project inherits the org's DLP rules.",
+        "description": "Clear the override so the project inherits the org's DLP rules.\n\nNeeds `manage_security_rules` or `manage_projects`.",
         "operationId": "delete_project_dlp_settings",
         "parameters": [
           {
@@ -9817,6 +9838,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -9830,7 +9861,7 @@
         ]
       },
       "get": {
-        "description": "Return the project's DLP override plus the resolved per-entity outcome.",
+        "description": "Return the project's DLP override plus the resolved per-entity outcome.\n\nNeeds `view_security_rules`, `manage_security_rules` or `manage_projects`.",
         "operationId": "get_project_dlp_settings",
         "parameters": [
           {
@@ -9907,7 +9938,7 @@
         ]
       },
       "put": {
-        "description": "Replace the project's DLP override wholesale + sync to the data plane.",
+        "description": "Replace the project's DLP override wholesale + sync to the data plane.\n\nNeeds `manage_security_rules` or `manage_projects`.",
         "operationId": "update_project_dlp_settings",
         "parameters": [
           {
@@ -9988,6 +10019,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -10082,7 +10123,7 @@
     },
     "/v1/projects/{project_id}/pi-settings": {
       "delete": {
-        "description": "Clear the override so the project inherits the org PI policy wholesale.",
+        "description": "Clear the override so the project inherits the org PI policy wholesale.\n\nNeeds `manage_security_rules` or `manage_projects`.",
         "operationId": "delete_project_pi_settings",
         "parameters": [
           {
@@ -10146,6 +10187,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -10159,7 +10210,7 @@
         ]
       },
       "get": {
-        "description": "Return the project's PI override, the effective policy, and what it inherits.",
+        "description": "Return the project's PI override, the effective policy, and what it inherits.\n\nNeeds `view_security_rules`, `manage_security_rules` or `manage_projects`.",
         "operationId": "get_project_pi_settings",
         "parameters": [
           {
@@ -10236,7 +10287,7 @@
         ]
       },
       "put": {
-        "description": "Replace the project's PI override wholesale + sync to the data plane.\n\nSparse: unset fields inherit the org value, and an explicit ``null`` clears a\nfield back to inheritance. An empty body therefore means \"inherit\neverything\", the same as DELETE.",
+        "description": "Replace the project's PI override wholesale + sync to the data plane.\n\nSparse: unset fields inherit the org value, and an explicit ``null`` clears a\nfield back to inheritance. An empty body therefore means \"inherit\neverything\", the same as DELETE.\n\nNeeds `manage_security_rules` or `manage_projects`.",
         "operationId": "update_project_pi_settings",
         "parameters": [
           {
@@ -10317,6 +10368,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -10447,7 +10508,7 @@
     },
     "/v1/routing-policies": {
       "get": {
-        "description": "List the org's standalone routing policies.\n\nReturns all of them (an org has a handful, like the ERS customer surface),\nso no cursor pagination.",
+        "description": "List the org's standalone routing policies. Accepts a management key or a\ngateway API key.\n\nReturns all of them (an org has a handful, like the ERS customer surface),\nso no cursor pagination.",
         "operationId": "list_routing_policies",
         "parameters": [
           {
@@ -10516,7 +10577,7 @@
         ]
       },
       "post": {
-        "description": "Create an org routing policy. The org's first policy becomes the default\nautomatically; otherwise pass is_default=true to make it the default.",
+        "description": "Create an org routing policy. The org's first policy becomes the default\nautomatically; otherwise pass is_default=true to make it the default. Needs a\nmanagement key: a gateway API key gets 403.",
         "operationId": "create_routing_policy",
         "requestBody": {
           "content": {
@@ -10593,7 +10654,7 @@
     },
     "/v1/routing-policies/{policy_id}": {
       "delete": {
-        "description": "Delete an org routing policy. Deleting the default leaves the org with no\ndefault until another is set (requests fall back to per-request model pins).",
+        "description": "Delete an org routing policy. Deleting the default leaves the org with no\ndefault until another is set (requests fall back to per-request model pins).\nRefused (409, with the count) while any API key is bound to the policy:\nunbind or delete those keys first. Needs a management key: a gateway API\nkey gets 403.",
         "operationId": "delete_routing_policy",
         "parameters": [
           {
@@ -10641,6 +10702,16 @@
             },
             "description": "The resource does not exist in the key's organization."
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10663,7 +10734,7 @@
         ]
       },
       "get": {
-        "description": "Get one org routing policy.",
+        "description": "Get one org routing policy. Accepts a management key or a gateway API key.",
         "operationId": "get_routing_policy",
         "parameters": [
           {
@@ -10740,7 +10811,7 @@
         ]
       },
       "patch": {
-        "description": "Update an org routing policy in place (stable id for IaC diffs).",
+        "description": "Update an org routing policy in place (stable id for IaC diffs). Needs a\nmanagement key: a gateway API key gets 403.",
         "operationId": "update_routing_policy",
         "parameters": [
           {
@@ -10856,7 +10927,7 @@
     },
     "/v1/routing-policies/{policy_id}/set-default": {
       "post": {
-        "description": "Make this policy the org's default (unsets the previous default).",
+        "description": "Make this policy the org's default (unsets the previous default). Needs a\nmanagement key: a gateway API key gets 403.",
         "operationId": "set_default_routing_policy",
         "parameters": [
           {
