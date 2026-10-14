@@ -59,8 +59,8 @@ func checkAPIKeyDestroy() resource.TestCheckFunc {
 
 // TestAccAPIKeyResource walks one key through create, a no-op re-plan, in-place
 // updates of every field, clearing the ones the API can clear, replace (new
-// project), plan-time errors for removing name or limit, and imports along
-// the way, then checks destroy.
+// project), removing name (which keeps it), a plan-time error for removing
+// limit, and imports along the way, then checks destroy.
 func TestAccAPIKeyResource(t *testing.T) {
 	name := randomName()
 	renamed := name + "-renamed"
@@ -193,8 +193,8 @@ func TestAccAPIKeyResource(t *testing.T) {
 						"mergegateway_project.b", tfjsonpath.New("id"), compare.ValuesSame()),
 				},
 			},
-			// The API can't clear limit or name, so removing either fails at
-			// plan time rather than replacing the key.
+			// The API can't clear limit, so removing it fails at plan time
+			// rather than replacing the key.
 			{
 				Config: apiKeyConfig(name, fmt.Sprintf(`
   name       = %q
@@ -203,13 +203,25 @@ func TestAccAPIKeyResource(t *testing.T) {
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Can't remove limit`),
 			},
+			// Nor can it clear name: removing it keeps the current name, also
+			// through an update of another field.
 			{
 				Config: apiKeyConfig(name, `
   project_id = mergegateway_project.b.id
   limit      = 25.5
+  disabled   = true
 `),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`Can't remove name`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(apiKeyAddress, tfjsonpath.New("name"), knownvalue.StringExact(renamed)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					expectAPIKey("name", knownvalue.StringExact(renamed)),
+					expectAPIKey("disabled", knownvalue.Bool(true)),
+				},
 			},
 			// Import by key hash.
 			importStep,

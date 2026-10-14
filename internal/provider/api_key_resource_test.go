@@ -72,7 +72,7 @@ func TestAPIKeyCreateRequest(t *testing.T) {
 		want string
 	}{
 		"defaults": {
-			plan: func(m *apiKeyResourceModel) { m.Name = types.StringNull() },
+			plan: func(m *apiKeyResourceModel) { m.Name = types.StringUnknown() },
 			want: `{"limit_reset": "monthly", "disabled": false}`,
 		},
 		"every field": {
@@ -142,6 +142,10 @@ func TestAPIKeyUpdateRequest(t *testing.T) {
 			},
 			want: `{"allowed_models": null, "routing_policy_id": null}`,
 		},
+		"name left out keeps the state's": {
+			plan: func(m *apiKeyResourceModel) { m.Name = types.StringUnknown() },
+			want: `{}`,
+		},
 		"name and limit are never sent as null": {
 			state: full,
 			plan: func(m *apiKeyResourceModel) {
@@ -184,12 +188,12 @@ func TestAPIKeyClearErrors(t *testing.T) {
 		t.Fatalf("changing name and limit: unexpected error: %v", diags)
 	}
 
+	// A name left out keeps the state's, so only limit can be removed.
 	removed := state
-	removed.Name = types.StringNull()
 	removed.Limit = types.Float64Null()
 	diags := apiKeyClearErrors(removed, state)
-	if len(diags) != 2 || diags[0].Summary() != "Can't remove name" || diags[1].Summary() != "Can't remove limit" {
-		t.Fatalf("expected errors for name and limit, got %v", diags)
+	if len(diags) != 1 || diags[0].Summary() != "Can't remove limit" {
+		t.Fatalf("expected an error for limit, got %v", diags)
 	}
 
 	// A new project replaces the key, so it may drop them.

@@ -49,7 +49,7 @@ output "support_bot_api_key" {
 - `disabled` (Boolean) Whether the key is disabled. Defaults to `false`.
 - `limit` (Number) USD spend cap over the `limit_reset` window. Must be greater than 0. Leave it out for no cap. Once set, it can be changed but not removed: the API can't clear it yet, so a plan that removes it fails.
 - `limit_reset` (String) The window `limit` applies to: `daily`, `weekly` or `monthly`. Defaults to `monthly`.
-- `name` (String) The key's name. Leave it out for none. Once set, it can be changed but not removed: the API can't clear it yet, so a plan that removes it fails.
+- `name` (String) The key's name. Leave it out for none. Once set, it can be changed but not removed: the API can't clear it yet, so leaving it out keeps the current name. A key replaced because `project_id` changed gets no name unless one is set.
 - `project_id` (String) The project the key is scoped to. Leave it out for a key that can use any project. It can't be changed after creation: changing it replaces the key.
 - `routing_policy_id` (String) A routing policy to bind the key to: an organization-level policy or one scoped to the key's project.
 
