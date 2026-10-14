@@ -355,13 +355,7 @@ func checkSlug(plan, state routingPolicyResourceModel) diag.Diagnostics {
 // call. Responses type the ID as a string, but the path only takes a UUID, so
 // a policy with another kind of ID can't be managed through the API.
 func parseRoutingPolicyID(id types.String) (uuid.UUID, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	parsed, err := uuid.Parse(id.ValueString())
-	if err != nil {
-		diags.AddAttributeError(path.Root("id"), "Invalid routing policy ID",
-			fmt.Sprintf("Expected a routing policy UUID, got %q: %s", id.ValueString(), err))
-	}
-	return parsed, diags
+	return parseUUID(id, "routing policy")
 }
 
 // routingPolicyCreateRequest builds the POST /v1/routing-policies body from the

@@ -155,11 +155,21 @@ func (p *MergeGatewayProvider) Resources(ctx context.Context) []func() resource.
 		NewProjectControlsResource,
 		NewRoutingPolicyResource,
 		NewAPIKeyResource,
+		NewCredentialResource,
+		NewExportDestinationResource,
+		NewOrganizationSettingsResource,
+		NewOrganizationPISettingsResource,
+		NewDLPRuleResource,
+		NewBlocklistRuleResource,
 	}
 }
 
 func (p *MergeGatewayProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewModelsDataSource,
+		NewVendorsDataSource,
+		NewGuardrailsDataSource,
+	}
 }
 
 func New(version string) func() provider.Provider {

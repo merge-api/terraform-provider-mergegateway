@@ -18,14 +18,20 @@ import (
 
 // sweepPaths lists the collections the sweeper cleans up, in order. Each one
 // lists as {"results": [{"id": ..., "name": ...}], ...} (keys: {"data":
-// [{"hash": ..., "name": ...}]}) and deletes at <path>/<id>. Add a collection
-// here when its resource gets acceptance tests. Keys come before projects, since
-// a project with keys can't be deleted. Project settings (such as PI settings)
-// need no entry: they go with their tf-acc- project.
+// [{"hash": ..., "name": ...}]}; DLP rules are named by entity_type and
+// blocklist rules by reason) and deletes at <path>/<id>. Add a collection
+// here when its resource gets acceptance tests. Keys come before projects,
+// since a project with keys can't be deleted. Project settings (such as PI
+// settings) need no entry: they go with their tf-acc- project. Organization
+// settings need none either: their tests restore them.
 var sweepPaths = []string{
 	"/v1/keys",
 	"/v1/projects",
 	"/v1/routing-policies",
+	"/v1/credentials",
+	"/v1/export-destinations",
+	"/v1/dlp-rules",
+	"/v1/blocklist-rules",
 }
 
 // TestMain deletes tf-acc- resources left behind by crashed or cancelled
@@ -46,8 +52,9 @@ func sweep() error {
 	defer cancel()
 
 	var errs []string
-	for _, path := range sweepPaths {
-		if err := sweepCollection(ctx, path); err != nil {
+	for i, path := range sweepPaths {
+		// The first collection proves the key works, so the rest may skip.
+		if err := sweepCollection(ctx, path, i > 0); err != nil {
 			errs = append(errs, path+": "+err.Error())
 		}
 	}
@@ -60,19 +67,28 @@ func sweep() error {
 // sweepCollection deletes every item on the collection's first page whose name
 // starts with the tf-acc- prefix; each run sweeps again, so one page is enough.
 // Response bodies stay out of errors and logs, since some collections echo secrets.
-func sweepCollection(ctx context.Context, path string) error {
+// With mayBeMissing, a collection the API doesn't serve is skipped: one not
+// deployed yet (dev answers an unrouted path with 401) or a feature not
+// enabled for the test org (404).
+func sweepCollection(ctx context.Context, path string, mayBeMissing bool) error {
 	status, body, err := apiRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
+	}
+	if mayBeMissing && (status == http.StatusNotFound || status == http.StatusUnauthorized) {
+		fmt.Fprintf(os.Stderr, "sweeper: skipping %s: HTTP %d\n", path, status)
+		return nil
 	}
 	if status != http.StatusOK {
 		return fmt.Errorf("GET %s: HTTP %d", path, status)
 	}
 
 	type sweepItem struct {
-		ID   string `json:"id"`
-		Hash string `json:"hash"`
-		Name string `json:"name"`
+		ID         string `json:"id"`
+		Hash       string `json:"hash"`
+		Name       string `json:"name"`
+		EntityType string `json:"entity_type"`
+		Reason     string `json:"reason"`
 	}
 	var list struct {
 		Results []sweepItem `json:"results"`
@@ -85,6 +101,12 @@ func sweepCollection(ctx context.Context, path string) error {
 	for _, item := range append(list.Results, list.Data...) {
 		if item.ID == "" {
 			item.ID = item.Hash
+		}
+		if item.Name == "" {
+			item.Name = item.EntityType
+		}
+		if item.Name == "" {
+			item.Name = item.Reason
 		}
 		if !strings.HasPrefix(item.Name, namePrefix+"-") || item.ID == "" {
 			continue

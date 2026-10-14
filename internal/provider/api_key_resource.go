@@ -93,9 +93,12 @@ func (r *APIKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The key's name. Leave it out for none. Once set, it can be changed but not removed: " +
-					"the API can't clear it yet, so a plan that removes it fails.",
-				Optional:   true,
-				Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
+					"the API can't clear it yet, so leaving it out keeps the current name. A key replaced " +
+					"because `project_id` changed gets no name unless one is set.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"project_id": schema.StringAttribute{
 				MarkdownDescription: "The project the key is scoped to. Leave it out for a key that can use any project. " +
@@ -243,10 +246,10 @@ func (r *APIKeyResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 }
 
-// ModifyPlan stops a plan that removes name or limit from an existing key: the
-// API ignores null for them, so the apply would fail with an inconsistent
-// result. Removing them on purpose shouldn't silently replace the key either,
-// since a new raw key breaks every app using the old one.
+// ModifyPlan stops a plan that removes limit from an existing key: the API
+// ignores null for it, so the apply would fail with an inconsistent result.
+// Removing it on purpose shouldn't silently replace the key either, since a
+// new raw key breaks every app using the old one.
 func (r *APIKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	// Creating or destroying the key.
 	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
@@ -386,7 +389,8 @@ func apiKeyCreateRequest(ctx context.Context, plan apiKeyResourceModel) (client.
 		Disabled:   &disabled,
 	}
 
-	if !plan.Name.IsNull() {
+	// Unknown when left out of the config: the key gets no name.
+	if !plan.Name.IsUnknown() && !plan.Name.IsNull() {
 		body.Name = nullable.NewNullableWithValue(plan.Name.ValueString())
 	}
 	if !plan.ProjectID.IsNull() {
@@ -414,13 +418,14 @@ func apiKeyCreateRequest(ctx context.Context, plan apiKeyResourceModel) (client.
 // apiKeyUpdateRequest builds the PATCH /v1/keys/{key_hash} body. It sends only
 // the fields that differ between plan and state; a removed allowed_models or
 // routing_policy_id is sent as null, which clears it. name and limit are never
-// sent as null (the API ignores it; ModifyPlan stops such a plan), and
-// project_id is never sent: changing it replaces the key.
+// sent as null (the API ignores it: a name left out keeps the state's, and
+// ModifyPlan stops a plan that removes limit), and project_id is never sent:
+// changing it replaces the key.
 func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (client.KeyUpdateRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var body client.KeyUpdateRequest
 
-	if !plan.Name.Equal(state.Name) && !plan.Name.IsNull() {
+	if !plan.Name.Equal(state.Name) && !plan.Name.IsUnknown() && !plan.Name.IsNull() {
 		body.Name = nullable.NewNullableWithValue(plan.Name.ValueString())
 	}
 	if !plan.Limit.Equal(state.Limit) && !plan.Limit.IsNull() {
@@ -451,8 +456,8 @@ func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (
 	return body, diags
 }
 
-// apiKeyClearErrors reports name or limit removed from a key that has one,
-// unless project_id changes, which replaces the key anyway.
+// apiKeyClearErrors reports limit removed from a key that has one, unless
+// project_id changes, which replaces the key anyway.
 func apiKeyClearErrors(plan, state apiKeyResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 	if !plan.ProjectID.Equal(state.ProjectID) {
@@ -461,9 +466,6 @@ func apiKeyClearErrors(plan, state apiKeyResourceModel) diag.Diagnostics {
 	const detail = "An API key's %[1]s can't be removed once set: the Merge Gateway API can't clear it yet. " +
 		"Set a new value instead. To get a key without a %[1]s, recreate it, which issues a new raw key: " +
 		"terraform apply -destroy -target=<address>, then terraform apply."
-	if plan.Name.IsNull() && !state.Name.IsNull() {
-		diags.AddAttributeError(path.Root("name"), "Can't remove name", fmt.Sprintf(detail, "name"))
-	}
 	if plan.Limit.IsNull() && !state.Limit.IsNull() {
 		diags.AddAttributeError(path.Root("limit"), "Can't remove limit", fmt.Sprintf(detail, "limit"))
 	}

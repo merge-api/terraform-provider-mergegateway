@@ -476,13 +476,7 @@ func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func parseProjectID(id types.String) (uuid.UUID, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	parsed, err := uuid.Parse(id.ValueString())
-	if err != nil {
-		diags.AddAttributeError(path.Root("id"), "Invalid project ID",
-			fmt.Sprintf("Expected a project UUID, got %q: %s", id.ValueString(), err))
-	}
-	return parsed, diags
+	return parseUUID(id, "project")
 }
 
 // projectCreateRequest builds the POST /v1/projects body from the plan.
