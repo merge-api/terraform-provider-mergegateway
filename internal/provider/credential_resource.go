@@ -137,7 +137,8 @@ func (r *CredentialResource) Schema(ctx context.Context, req resource.SchemaRequ
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a bring-your-own-key (BYOK) credential: the organization's own key for a vendor, " +
 			"which the Gateway uses instead of Merge-managed access. An organization has at most one credential per vendor, " +
-			"and BYOK needs a Pro or Enterprise plan. Requires Terraform 1.11 or later: the secrets are write-only.",
+			"and BYOK needs a Pro or Enterprise plan: on the Free plan the API refuses it with 403 \"Bring-your-own-key " +
+			"credentials require a Pro or Enterprise plan\". Requires Terraform 1.11 or later: the secrets are write-only.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The credential's ID.",

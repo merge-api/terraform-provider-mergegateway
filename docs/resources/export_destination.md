@@ -3,12 +3,12 @@
 page_title: "mergegateway_export_destination Resource - mergegateway"
 subcategory: ""
 description: |-
-  Manages a telemetry export destination: where the Gateway sends request traces (OTLP spans, and optionally metrics), such as Datadog, Grafana Cloud or your own OTLP collector. Telemetry export must be enabled for the organization. Requires Terraform 1.11 or later: the secret is write-only.
+  Manages a telemetry export destination: where the Gateway sends request traces (OTLP spans, and optionally metrics), such as Datadog, Grafana Cloud or your own OTLP collector. Needs the telemetry export feature enabled for the organization. Requires Terraform 1.11 or later: the secret is write-only.
 ---
 
 # mergegateway_export_destination (Resource)
 
-Manages a telemetry export destination: where the Gateway sends request traces (OTLP spans, and optionally metrics), such as Datadog, Grafana Cloud or your own OTLP collector. Telemetry export must be enabled for the organization. Requires Terraform 1.11 or later: the secret is write-only.
+Manages a telemetry export destination: where the Gateway sends request traces (OTLP spans, and optionally metrics), such as Datadog, Grafana Cloud or your own OTLP collector. Needs the telemetry export feature enabled for the organization. Requires Terraform 1.11 or later: the secret is write-only.
 
 ## Example Usage
 

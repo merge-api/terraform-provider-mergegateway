@@ -100,7 +100,7 @@ func (r *ExportDestinationResource) Schema(ctx context.Context, req resource.Sch
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a telemetry export destination: where the Gateway sends request traces (OTLP spans, " +
 			"and optionally metrics), such as Datadog, Grafana Cloud or your own OTLP collector. " +
-			"Telemetry export must be enabled for the organization. Requires Terraform 1.11 or later: the secret is write-only.",
+			"Needs the telemetry export feature enabled for the organization. Requires Terraform 1.11 or later: the secret is write-only.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The export destination's ID.",
