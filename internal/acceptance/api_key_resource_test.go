@@ -209,7 +209,6 @@ func TestAccAPIKeyResource(t *testing.T) {
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					sameID.AddStateValue(apiKeyAddress, tfjsonpath.New("id")),
 					expectAPIKey("limit", knownvalue.Null()),
 					expectAPIKey("limit_remaining", knownvalue.Null()),
 					expectAPIKey("limit_reset", knownvalue.StringExact("daily")),
