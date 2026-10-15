@@ -1,8 +1,9 @@
-# Weekly update PRs for Go modules and GitHub Actions.
+# Weekly update PRs for Go modules (the provider, and the code generators in
+# tools/) and GitHub Actions.
 version: 2
 updates:
   - package-ecosystem: gomod
-    directory: /
+    directories: ["/", "/tools"]
     schedule:
       interval: weekly
     groups:
