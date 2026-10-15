@@ -10,7 +10,7 @@ out=THIRD_PARTY_LICENSES
 
 # The modules compiled in for every OS we release for (see .goreleaser.yml).
 modules=$(for goos in darwin freebsd linux windows; do
-  GOOS=$goos go list -deps -f '{{with .Module}}{{if not .Main}}{{.Path}}@{{.Version}}{{end}}{{end}}' .
+  GOOS=$goos go list -deps -f '{{with .Module}}{{if not .Main}}{{.Path}}{{end}}{{end}}' .
 done | sort -u)
 
 append() { # title, files...
@@ -32,18 +32,17 @@ missing=0
   # Some Go installs (e.g. Homebrew's) leave out GOROOT/LICENSE. The Go
   # standard library uses the same license text as golang.org/x/sys.
   append "Go standard library" "$(go list -m -f '{{.Dir}}' golang.org/x/sys)/LICENSE"
-  for m in $modules; do
-    path=${m%@*} version=${m#*@}
+  for path in $modules; do
     dir=$(go list -m -f '{{.Dir}}' "$path")
     files=$(find "$dir" -maxdepth 1 -type f \( -iname 'LICEN[CS]E*' -o -iname 'COPYING*' -o -iname 'NOTICE*' -o -iname 'PATENTS*' \) | sort)
     if [ -z "$files" ]; then
-      echo "no license file found for $m" >&2
+      echo "no license file found for $path" >&2
       missing=1
     fi
     # shellcheck disable=SC2086 # one file per word
-    append "$path $version" $files
-    if ! grep -qF "| $path | $version |" THIRD_PARTY_NOTICES.md; then
-      echo "THIRD_PARTY_NOTICES.md has no row for $path $version" >&2
+    append "$path" $files
+    if ! grep -qF "| $path |" THIRD_PARTY_NOTICES.md; then
+      echo "THIRD_PARTY_NOTICES.md has no row for $path" >&2
       missing=1
     fi
   done
