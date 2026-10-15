@@ -52,6 +52,7 @@ func testAPIKey() apiKeyResourceModel {
 		CreatedAt:       types.StringValue("2026-10-01T12:00:00Z"),
 		CreatorUserID:   types.StringNull(),
 		ExpiresAt:       types.StringNull(),
+		UpdatedAt:       types.StringValue("2026-10-02T08:30:00Z"),
 	}
 }
 
@@ -83,6 +84,10 @@ func TestAPIKeyCreateRequest(t *testing.T) {
 			},
 			want: `{"name": "tf-acc-key", "project_id": "6f1c1f5e-8a8b-4c43-9a0e-3f0f6d0c8b11", "limit": 12.5,
 				"limit_reset": "weekly", "allowed_models": ["openai/gpt-4o"], "disabled": true, "routing_policy_id": "policy-id"}`,
+		},
+		"expires_at is sent": {
+			plan: func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-01-01T01:00:00+01:00") },
+			want: `{"name": "tf-acc-key", "limit_reset": "monthly", "disabled": false, "expires_at": "2027-01-01T01:00:00+01:00"}`,
 		},
 	}
 
@@ -159,6 +164,34 @@ func TestAPIKeyUpdateRequest(t *testing.T) {
 			plan: func(m *apiKeyResourceModel) { m.Name = types.StringNull() },
 			want: `{}`,
 		},
+		"setting expires_at sends it": {
+			plan: func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-01-01T00:00:00Z") },
+			want: `{"expires_at": "2027-01-01T00:00:00Z"}`,
+		},
+		"changing expires_at sends it": {
+			state: func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-01-01T00:00:00Z") },
+			plan:  func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-06-30T12:00:00Z") },
+			want:  `{"expires_at": "2027-06-30T12:00:00Z"}`,
+		},
+		"removing expires_at sends null": {
+			state: func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-01-01T00:00:00Z") },
+			plan:  func(m *apiKeyResourceModel) {},
+			want:  `{"expires_at": null}`,
+		},
+		// The API refuses a past expiry, even an unchanged one.
+		"an unchanged, past expires_at is not sent": {
+			state: func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2026-01-01T00:00:00Z") },
+			plan: func(m *apiKeyResourceModel) {
+				m.ExpiresAt = types.StringValue("2026-01-01T00:00:00Z")
+				m.Disabled = types.BoolValue(true)
+			},
+			want: `{"disabled": true}`,
+		},
+		"the same expires_at in another offset is not sent": {
+			state: func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-01-01T00:00:00Z") },
+			plan:  func(m *apiKeyResourceModel) { m.ExpiresAt = types.StringValue("2027-01-01T01:00:00+01:00") },
+			want:  `{}`,
+		},
 		"project_id is never sent": {
 			plan: func(m *apiKeyResourceModel) { m.ProjectID = types.StringValue("6f1c1f5e-8a8b-4c43-9a0e-3f0f6d0c8b11") },
 			want: `{}`,
@@ -190,7 +223,8 @@ func testKeyResponse(t *testing.T, extra string) *client.KeyObject {
 		"project_id": null, "routing_policy_id": null, "budget_group_id": null,
 		"usage": 0, "usage_daily": 0, "usage_weekly": 0, "usage_monthly": 0,
 		"byok_usage": 0, "byok_usage_daily": 0, "byok_usage_weekly": 0, "byok_usage_monthly": 0,
-		"creator_user_id": null, "expires_at": null, "created_at": "2026-10-01T12:00:00.123456Z"` + extra + `}`
+		"creator_user_id": null, "expires_at": null, "created_at": "2026-10-01T12:00:00.123456Z",
+		"updated_at": "2026-10-02T08:30:00.654321Z"` + extra + `}`
 	var k client.KeyObject
 	if err := json.Unmarshal([]byte(body), &k); err != nil {
 		t.Fatalf("decode response: %v", err)
@@ -261,6 +295,35 @@ func TestAPIKeyFromAPI(t *testing.T) {
 		}
 	})
 
+	// The API returns the expiry in UTC: the configured text stays when it's
+	// the same time, so the next plan is empty.
+	t.Run("same expires_at in another offset keeps the prior text", func(t *testing.T) {
+		prior := testAPIKey()
+		prior.ExpiresAt = types.StringValue("2027-01-01T01:00:00+01:00")
+		got, _ := apiKeyFromAPI(ctx, testKeyResponse(t, `, "expires_at": "2027-01-01T00:00:00+00:00"`), prior)
+		if !got.ExpiresAt.Equal(prior.ExpiresAt) {
+			t.Fatalf("expires_at = %v, want %v", got.ExpiresAt, prior.ExpiresAt)
+		}
+	})
+
+	t.Run("expires_at keeps fractions of a second", func(t *testing.T) {
+		prior := testAPIKey()
+		prior.ExpiresAt = types.StringValue("2027-01-01T01:00:00.5+01:00")
+		got, _ := apiKeyFromAPI(ctx, testKeyResponse(t, `, "expires_at": "2027-01-01T00:00:00.500000+00:00"`), prior)
+		if !got.ExpiresAt.Equal(prior.ExpiresAt) {
+			t.Fatalf("expires_at = %v, want %v", got.ExpiresAt, prior.ExpiresAt)
+		}
+	})
+
+	t.Run("changed expires_at reads the API's", func(t *testing.T) {
+		prior := testAPIKey()
+		prior.ExpiresAt = types.StringValue("2027-01-01T00:00:00Z")
+		got, _ := apiKeyFromAPI(ctx, testKeyResponse(t, `, "expires_at": "2027-06-30T12:00:00+00:00"`), prior)
+		if want := types.StringValue("2027-06-30T12:00:00Z"); !got.ExpiresAt.Equal(want) {
+			t.Fatalf("expires_at = %v, want %v", got.ExpiresAt, want)
+		}
+	})
+
 	// [] allows no model, unlike null: it must show as a diff, not as null.
 	t.Run("empty allowed_models stays empty", func(t *testing.T) {
 		got, _ := apiKeyFromAPI(ctx, testKeyResponse(t, `, "allowed_models": []`), testAPIKey())
@@ -316,6 +379,14 @@ func TestAPIKeyResourceValidateConfig(t *testing.T) {
 		"project_id without hyphens": {
 			body: `project_id = "6f1c1f5e8a8b4c439a0e3f0f6d0c8b11"`,
 			want: "lowercase with hyphens",
+		},
+		"expires_at without a time": {
+			body: `expires_at = "2027-01-01"`,
+			want: "Expected an RFC 3339 timestamp",
+		},
+		"expires_at without an offset": {
+			body: `expires_at = "2027-01-01T00:00:00"`,
+			want: "Expected an RFC 3339 timestamp",
 		},
 	}
 

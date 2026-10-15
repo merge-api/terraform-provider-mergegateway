@@ -114,6 +114,7 @@ func TestAccAPIKeyResource(t *testing.T) {
 					expectAPIKey("created_at", knownvalue.NotNull()),
 					expectAPIKey("creator_user_id", knownvalue.Null()),
 					expectAPIKey("expires_at", knownvalue.Null()),
+					expectAPIKey("updated_at", knownvalue.NotNull()),
 				},
 			},
 			// Rename, change the limit, its window and the models, disable the
@@ -210,7 +211,7 @@ func TestAccAPIKeyResource(t *testing.T) {
 					expectAPIKey("limit_remaining", knownvalue.Null()),
 					expectAPIKey("limit_reset", knownvalue.StringExact("daily")),
 				},
-				Check: checkAPIKeyNoLimit(),
+				Check: checkAPIKeyNull("limit"),
 			},
 			// The API can't clear name: removing it keeps the current name, also
 			// through an update of another field. Setting limit again sends its
@@ -254,10 +255,88 @@ func TestAccAPIKeyResource(t *testing.T) {
 					expectAPIKey("limit", knownvalue.Null()),
 					expectAPIKey("limit_reset", knownvalue.StringExact("monthly")),
 				},
-				Check: checkAPIKeyNoLimit(),
+				Check: checkAPIKeyNull("limit"),
 			},
 			// Import by key hash.
 			importStep,
+		},
+	})
+}
+
+// TestAccAPIKeyResource_expiresAt sets a key's expiry in a non-UTC offset,
+// changes it in place, imports it and removes it, with an empty plan after
+// each step.
+func TestAccAPIKeyResource_expiresAt(t *testing.T) {
+	name := randomName()
+	expires := time.Now().UTC().Add(30 * 24 * time.Hour)
+	// The same time an hour ahead of UTC: the API returns it in UTC.
+	expiresPlusOne := expires.In(time.FixedZone("+01:00", 3600)).Format(time.RFC3339)
+	changed := expires.Add(30 * 24 * time.Hour).Format(time.RFC3339)
+	config := func(expiresAt string) string {
+		body := fmt.Sprintf("  name = %q\n", name)
+		if expiresAt != "" {
+			body += fmt.Sprintf("  expires_at = %q\n", expiresAt)
+		}
+		return providerConfig() + fmt.Sprintf(`
+resource "mergegateway_api_key" "test" {
+%s}
+`, body)
+	}
+	sameID := statecheck.CompareValue(compare.ValuesSame())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: protoV6ProviderFactories(),
+		CheckDestroy:             checkDestroy("mergegateway_api_key", "/v1/keys"),
+		Steps: []resource.TestStep{
+			// Create with an expiry. State keeps the configured offset.
+			{
+				Config: config(expiresPlusOne),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionCreate)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					sameID.AddStateValue(apiKeyAddress, tfjsonpath.New("id")),
+					expectAPIKey("expires_at", knownvalue.StringExact(expiresPlusOne)),
+					expectAPIKey("updated_at", knownvalue.NotNull()),
+				},
+			},
+			// Change it in place.
+			{
+				Config: config(changed),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionUpdate)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					sameID.AddStateValue(apiKeyAddress, tfjsonpath.New("id")),
+					expectAPIKey("expires_at", knownvalue.StringExact(changed)),
+				},
+			},
+			// Import with an expiry.
+			{
+				ResourceName:            apiKeyAddress,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key"},
+			},
+			// Removing it removes the expiry: the key never expires.
+			{
+				Config: config(""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(apiKeyAddress, plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(apiKeyAddress, tfjsonpath.New("expires_at"), knownvalue.Null()),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					sameID.AddStateValue(apiKeyAddress, tfjsonpath.New("id")),
+					expectAPIKey("expires_at", knownvalue.Null()),
+				},
+				Check: checkAPIKeyNull("expires_at"),
+			},
 		},
 	})
 }
@@ -310,8 +389,8 @@ resource "mergegateway_api_key" "test" {
 	})
 }
 
-// checkAPIKeyNoLimit checks against the API that the key has no limit.
-func checkAPIKeyNoLimit() resource.TestCheckFunc {
+// checkAPIKeyNull checks against the API that the key's field is null.
+func checkAPIKeyNull(field string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 		defer cancel()
@@ -327,14 +406,12 @@ func checkAPIKeyNoLimit() resource.TestCheckFunc {
 		if status != http.StatusOK {
 			return fmt.Errorf("reading API key %s: HTTP %d", key.Primary.ID, status)
 		}
-		var got struct {
-			Limit *float64 `json:"limit"`
-		}
+		var got map[string]any
 		if err := json.Unmarshal(body, &got); err != nil {
 			return fmt.Errorf("decode API key: %w", err)
 		}
-		if got.Limit != nil {
-			return fmt.Errorf("API key %s: limit = %v, want null", key.Primary.ID, *got.Limit)
+		if v, ok := got[field]; !ok || v != nil {
+			return fmt.Errorf("API key %s: %s = %v, want null", key.Primary.ID, field, v)
 		}
 		return nil
 	}

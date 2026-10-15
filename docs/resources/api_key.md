@@ -33,6 +33,13 @@ resource "mergegateway_api_key" "internal_tools" {
   name = "Internal tools"
 }
 
+# A contractor's key that stops working at the end of March 2027. Removing
+# `expires_at` later makes the key never expire.
+resource "mergegateway_api_key" "contractor" {
+  name       = "Contractor"
+  expires_at = "2027-03-31T23:59:59Z"
+}
+
 # The raw key is only known after create. Pass it on without printing it, for
 # example to a secret store, or read it with `terraform output -raw`.
 output "support_bot_api_key" {
@@ -48,6 +55,7 @@ output "support_bot_api_key" {
 
 - `allowed_models` (Set of String) The only models the key may use, at most 200, each written as `provider/model`. A single trailing `*` matches a prefix, such as `openai/*`; model aliases aren't allowed. Leave it out to allow every model. An empty list, which the API treats as allowing no model, isn't supported: set `disabled = true` instead.
 - `disabled` (Boolean) Whether the key is disabled. Defaults to `false`.
+- `expires_at` (String) When the key stops working, as an RFC 3339 timestamp such as `2027-01-01T00:00:00Z`. Leave it out for a key that never expires: removing it from the config removes the key's expiry. It can be changed in place. It must be in the future when it is set or changed; a key that has expired keeps planning cleanly while its config is unchanged. The API stores it in UTC, so the same time written with another offset, such as `2027-01-01T01:00:00+01:00`, shows no diff.
 - `limit` (Number) USD spend cap over the `limit_reset` window. Must be greater than 0. Leave it out for no cap: removing it from the config removes the key's cap.
 - `limit_reset` (String) The window `limit` applies to: `daily`, `weekly` or `monthly`. Defaults to `monthly`. Removing `limit` also clears the window in the API; this attribute keeps its configured value, which is sent again when a limit is set.
 - `name` (String) The key's name. Leave it out for none. Once set, it can be changed but not removed: the API can't clear it yet, so leaving it out keeps the current name. A key replaced because `project_id` changed gets no name unless one is set.
@@ -59,11 +67,11 @@ output "support_bot_api_key" {
 - `budget_group_id` (String) The Merge for Workforce budget group the key draws down. Managed by Merge for Workforce.
 - `created_at` (String) When the key was created (RFC 3339).
 - `creator_user_id` (String) The dashboard user who created the key. Null for keys created with a management key, as Terraform does.
-- `expires_at` (String) When the key stops working (RFC 3339). Null means it never expires. Not settable yet.
 - `id` (String) The key's ID: the SHA-256 hash of the raw key.
 - `key` (String, Sensitive) The raw API key. The API returns it only when the key is created, so it is null after an import.
 - `label` (String) The key's first characters, for display.
 - `limit_remaining` (Number) `limit` minus `usage`, never below 0, as of the last refresh. Null when there is no limit.
+- `updated_at` (String) When the key was last changed (RFC 3339).
 - `usage` (Number) USD spend in the current `limit_reset` window, as of the last refresh.
 
 ## Import

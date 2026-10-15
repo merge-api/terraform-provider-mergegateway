@@ -1396,7 +1396,7 @@
                 "type": "null"
               }
             ],
-            "description": "The last 4 characters of the stored secret.",
+            "description": "The last 4 characters of the stored secret, to tell secrets apart. null when the secret is under 12 characters (4 would give away too much of it).",
             "readOnly": true,
             "title": "Credential Hint"
           },
@@ -1777,6 +1777,19 @@
             "title": "Disabled",
             "type": "boolean"
           },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the key expires. From then on the data plane refuses it. Null means it never expires. Must be in the future; a value without an offset is UTC.",
+            "title": "Expires At"
+          },
           "limit": {
             "anyOf": [
               {
@@ -1945,8 +1958,7 @@
                 "type": "null"
               }
             ],
-            "description": "When the key stops working. Null means it never expires. Not settable through this API yet.",
-            "readOnly": true,
+            "description": "When the key expires. From then on the data plane refuses it. Null means it never expires.",
             "title": "Expires At"
           },
           "hash": {
@@ -2045,6 +2057,20 @@
               }
             ],
             "title": "Routing Policy Id"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the key last changed.",
+            "readOnly": true,
+            "title": "Updated At"
           },
           "usage": {
             "description": "USD spend in the current limit_reset window.",
@@ -2220,8 +2246,7 @@
                 "type": "null"
               }
             ],
-            "description": "When the key stops working. Null means it never expires. Not settable through this API yet.",
-            "readOnly": true,
+            "description": "When the key expires. From then on the data plane refuses it. Null means it never expires.",
             "title": "Expires At"
           },
           "hash": {
@@ -2314,6 +2339,20 @@
             ],
             "title": "Routing Policy Id"
           },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the key last changed.",
+            "readOnly": true,
+            "title": "Updated At"
+          },
           "usage": {
             "description": "USD spend in the current limit_reset window.",
             "format": "double",
@@ -2398,6 +2437,19 @@
               }
             ],
             "title": "Disabled"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the key expires. From then on the data plane refuses it. Null means it never expires. Must be in the future; a value without an offset is UTC. Send null to remove the expiry; omit it to leave the expiry unchanged.",
+            "title": "Expires At"
           },
           "limit": {
             "anyOf": [
@@ -4051,7 +4103,7 @@
                 "type": "null"
               }
             ],
-            "description": "Regions unit (override.regions).",
+            "description": "Regions unit (override.regions). Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. \"US\", \"CA\", \"NA\"). Case-sensitive. An unknown token is a 422.",
             "title": "Allowed Regions"
           },
           "allowed_vendors": {
@@ -4081,7 +4133,7 @@
                 "type": "null"
               }
             ],
-            "description": "Regions unit (override.regions).",
+            "description": "Regions unit (override.regions). Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. \"US\", \"CA\", \"NA\"). Case-sensitive. An unknown token is a 422.",
             "title": "Ignored Regions"
           },
           "ignored_vendors": {
@@ -4694,29 +4746,15 @@
             "title": "Description"
           },
           "is_active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Omit to keep the current value. Don't send null: the request fails.",
-            "title": "Is Active"
+            "description": "Omit to keep the current value. null is rejected.",
+            "title": "Is Active",
+            "type": "boolean"
           },
           "name": {
-            "anyOf": [
-              {
-                "maxLength": 255,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Omit to keep the current value. Don't send null: the request fails.",
-            "title": "Name"
+            "description": "Omit to keep the current value. null is rejected.",
+            "maxLength": 255,
+            "title": "Name",
+            "type": "string"
           },
           "routing_policy": {
             "anyOf": [
@@ -5400,6 +5438,7 @@
         "properties": {
           "allowed_regions": {
             "default": [],
+            "description": "Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. \"US\", \"CA\", \"NA\"). Case-sensitive. An unknown token is a 422.",
             "items": {
               "type": "string"
             },
@@ -5439,6 +5478,7 @@
           },
           "ignored_regions": {
             "default": [],
+            "description": "Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. \"US\", \"CA\", \"NA\"). Case-sensitive. An unknown token is a 422.",
             "items": {
               "type": "string"
             },
@@ -6038,6 +6078,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -6123,6 +6173,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -6369,6 +6429,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -6473,7 +6543,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "List Dlp Rules",
+        "summary": "List DLP Rules",
         "tags": [
           "management-api"
         ]
@@ -6548,6 +6618,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -6555,7 +6635,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Create Dlp Rule",
+        "summary": "Create DLP Rule",
         "tags": [
           "management-api"
         ]
@@ -6627,6 +6707,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -6634,7 +6724,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Delete Dlp Rule",
+        "summary": "Delete DLP Rule",
         "tags": [
           "management-api"
         ]
@@ -6711,7 +6801,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Get Dlp Rule",
+        "summary": "Get DLP Rule",
         "tags": [
           "management-api"
         ]
@@ -6808,6 +6898,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -6815,7 +6915,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Update Dlp Rule",
+        "summary": "Update DLP Rule",
         "tags": [
           "management-api"
         ]
@@ -7007,6 +7107,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -7260,6 +7370,16 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -7557,6 +7677,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -7642,6 +7772,26 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -7713,6 +7863,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -7802,7 +7962,7 @@
         ]
       },
       "patch": {
-        "description": "Update a key's name / disabled state / spend limit.",
+        "description": "Update a key's name / disabled state / spend limit / expiry.",
         "operationId": "update_key",
         "parameters": [
           {
@@ -7885,6 +8045,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -8665,7 +8835,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Reset Organization Pi Settings",
+        "summary": "Reset Organization PI Settings",
         "tags": [
           "management-api"
         ]
@@ -8710,7 +8880,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Get Organization Pi Settings",
+        "summary": "Get Organization PI Settings",
         "tags": [
           "management-api"
         ]
@@ -8775,7 +8945,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Update Organization Pi Settings",
+        "summary": "Update Organization PI Settings",
         "tags": [
           "management-api"
         ]
@@ -9158,6 +9328,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -9233,6 +9413,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
           }
         },
         "security": [
@@ -9315,6 +9505,26 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -9392,6 +9602,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -9489,6 +9709,26 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -9855,7 +10095,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Delete Project Dlp Settings",
+        "summary": "Delete Project DLP Settings",
         "tags": [
           "management-api"
         ]
@@ -9932,7 +10172,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Get Project Dlp Settings",
+        "summary": "Get Project DLP Settings",
         "tags": [
           "management-api"
         ]
@@ -10036,7 +10276,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Update Project Dlp Settings",
+        "summary": "Update Project DLP Settings",
         "tags": [
           "management-api"
         ]
@@ -10204,7 +10444,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Delete Project Pi Settings",
+        "summary": "Delete Project PI Settings",
         "tags": [
           "management-api"
         ]
@@ -10281,7 +10521,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Get Project Pi Settings",
+        "summary": "Get Project PI Settings",
         "tags": [
           "management-api"
         ]
@@ -10385,7 +10625,7 @@
             "ManagementKey": []
           }
         ],
-        "summary": "Update Project Pi Settings",
+        "summary": "Update Project PI Settings",
         "tags": [
           "management-api"
         ]
@@ -10564,6 +10804,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -10639,6 +10889,26 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -10721,6 +10991,26 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -10912,6 +11202,26 @@
               }
             },
             "description": "The request is invalid."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [
@@ -10991,6 +11301,26 @@
               }
             },
             "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The gateway could not be updated. Retrying the same request is safe."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "A service the request needs (the gateway's data plane, billing, or credential encryption) is temporarily unavailable. Retry later."
           }
         },
         "security": [

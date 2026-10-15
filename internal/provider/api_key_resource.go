@@ -63,6 +63,7 @@ type apiKeyResourceModel struct {
 	CreatedAt       types.String  `tfsdk:"created_at"`
 	CreatorUserID   types.String  `tfsdk:"creator_user_id"`
 	ExpiresAt       types.String  `tfsdk:"expires_at"`
+	UpdatedAt       types.String  `tfsdk:"updated_at"`
 }
 
 // limitResetMonthly is the window the API uses for a key that doesn't set one.
@@ -174,7 +175,15 @@ func (r *APIKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"expires_at": schema.StringAttribute{
-				MarkdownDescription: "When the key stops working (RFC 3339). Null means it never expires. Not settable yet.",
+				MarkdownDescription: "When the key stops working, as an RFC 3339 timestamp such as `2027-01-01T00:00:00Z`. " +
+					"Leave it out for a key that never expires: removing it from the config removes the key's expiry. " +
+					"It can be changed in place. It must be in the future when it is set or changed; a key that has " +
+					"expired keeps planning cleanly while its config is unchanged. The API stores it in UTC, so the same " +
+					"time written with another offset, such as `2027-01-01T01:00:00+01:00`, shows no diff.",
+				Optional: true,
+			},
+			"updated_at": schema.StringAttribute{
+				MarkdownDescription: "When the key was last changed (RFC 3339).",
 				Computed:            true,
 			},
 		},
@@ -204,9 +213,11 @@ func (r *APIKeyResource) ValidateConfig(ctx context.Context, req resource.Valida
 	var limit types.Float64
 	var projectID types.String
 	var models types.Set
+	var expiresAt types.String
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("limit"), &limit)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("project_id"), &projectID)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("allowed_models"), &models)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("expires_at"), &expiresAt)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -240,6 +251,15 @@ func (r *APIKeyResource) ValidateConfig(ctx context.Context, req resource.Valida
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(path.Root("project_id"), "Invalid project ID",
 				fmt.Sprintf("Expected a project UUID, got %q: %s", projectID.ValueString(), err))
+		}
+	}
+
+	// Only the format: whether it's in the future depends on when it's applied,
+	// and the API rejects a past time.
+	if !expiresAt.IsUnknown() && !expiresAt.IsNull() {
+		if _, err := time.Parse(time.RFC3339, expiresAt.ValueString()); err != nil {
+			resp.Diagnostics.AddAttributeError(path.Root("expires_at"), "Invalid expiry",
+				fmt.Sprintf("Expected an RFC 3339 timestamp such as 2027-01-01T00:00:00Z, got %q: %s", expiresAt.ValueString(), err))
 		}
 	}
 }
@@ -391,16 +411,25 @@ func apiKeyCreateRequest(ctx context.Context, plan apiKeyResourceModel) (client.
 	if !plan.RoutingPolicyID.IsNull() {
 		body.RoutingPolicyId = nullable.NewNullableWithValue(plan.RoutingPolicyID.ValueString())
 	}
+	if !plan.ExpiresAt.IsNull() {
+		expiresAt, err := time.Parse(time.RFC3339, plan.ExpiresAt.ValueString())
+		if err != nil {
+			diags.AddAttributeError(path.Root("expires_at"), "Invalid expiry", err.Error())
+		}
+		body.ExpiresAt = nullable.NewNullableWithValue(expiresAt)
+	}
 	return body, diags
 }
 
 // apiKeyUpdateRequest builds the PATCH /v1/keys/{key_hash} body. It sends only
 // the fields that differ between plan and state; a removed allowed_models,
-// limit, routing_policy_id is sent as null, which clears it. name is never sent
-// as null (the API ignores it: a name left out keeps the state's), and
-// project_id is never sent: changing it replaces the key. limit_reset is also
-// sent when a limit is set on a key without one, since removing a limit
-// clears its window in the API.
+// limit, routing_policy_id or expires_at is sent as null, which clears it.
+// name is never sent as null (the API ignores it: a name left out keeps the
+// state's), and project_id is never sent: changing it replaces the key.
+// limit_reset is also sent when a limit is set on a key without one, since
+// removing a limit clears its window in the API. expires_at is compared as a
+// time, not as text: the API refuses a past expiry, so an expired key's
+// unchanged expiry must not be sent.
 func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (client.KeyUpdateRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var body client.KeyUpdateRequest
@@ -437,6 +466,17 @@ func apiKeyUpdateRequest(ctx context.Context, plan, state apiKeyResourceModel) (
 			body.RoutingPolicyId = nullable.NewNullableWithValue(plan.RoutingPolicyID.ValueString())
 		}
 	}
+	if !sameTime(plan.ExpiresAt, state.ExpiresAt) {
+		if plan.ExpiresAt.IsNull() {
+			body.ExpiresAt = nullable.NewNullNullable[time.Time]()
+		} else {
+			expiresAt, err := time.Parse(time.RFC3339, plan.ExpiresAt.ValueString())
+			if err != nil {
+				diags.AddAttributeError(path.Root("expires_at"), "Invalid expiry", err.Error())
+			}
+			body.ExpiresAt = nullable.NewNullableWithValue(expiresAt)
+		}
+	}
 	return body, diags
 }
 
@@ -461,7 +501,8 @@ func apiKeyFromAPI(ctx context.Context, k *client.KeyObject, prior apiKeyResourc
 		LimitRemaining:  nullableFloat64(k.LimitRemaining),
 		CreatedAt:       nullableTime(k.CreatedAt),
 		CreatorUserID:   types.StringNull(),
-		ExpiresAt:       nullableTime(k.ExpiresAt),
+		ExpiresAt:       types.StringNull(),
+		UpdatedAt:       nullableTime(k.UpdatedAt),
 	}
 	// An import has no prior key: it stays null rather than unknown.
 	if m.Key.IsUnknown() {
@@ -489,7 +530,30 @@ func apiKeyFromAPI(ctx context.Context, k *client.KeyObject, prior apiKeyResourc
 	if creator, err := k.CreatorUserId.Get(); err == nil {
 		m.CreatorUserID = types.StringValue(creator.String())
 	}
+	// Keeps fractions of a second, which a config may hold.
+	if expiresAt, err := k.ExpiresAt.Get(); err == nil {
+		m.ExpiresAt = types.StringValue(expiresAt.Format(time.RFC3339Nano))
+	}
+	// The API returns the expiry in UTC: the same time as configured, in
+	// another offset, keeps the configured text so the next plan is empty.
+	if sameTime(m.ExpiresAt, prior.ExpiresAt) {
+		m.ExpiresAt = prior.ExpiresAt
+	}
 	return m, diags
+}
+
+// sameTime reports whether two RFC 3339 values are both null or the same
+// instant, whatever their offsets.
+func sameTime(a, b types.String) bool {
+	if a.IsNull() || b.IsNull() || a.IsUnknown() || b.IsUnknown() {
+		return a.Equal(b)
+	}
+	at, errA := time.Parse(time.RFC3339, a.ValueString())
+	bt, errB := time.Parse(time.RFC3339, b.ValueString())
+	if errA != nil || errB != nil {
+		return a.Equal(b)
+	}
+	return at.Equal(bt)
 }
 
 func nullableTime(v nullable.Nullable[time.Time]) types.String {
