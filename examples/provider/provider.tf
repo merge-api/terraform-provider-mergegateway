@@ -18,6 +18,7 @@ resource "mergegateway_api_key" "support_bot" {
 
 # A routing policy: try gpt-4o first, then fall back to gpt-4o-mini. Requests
 # use it by sending "@alias/fast-fallback" as the model.
+# If it is the organization's first routing policy, it also becomes the default.
 resource "mergegateway_routing_policy" "fast_fallback" {
   name     = "Fast fallback"
   slug     = "fast-fallback"
