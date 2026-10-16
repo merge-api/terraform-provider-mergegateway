@@ -171,10 +171,11 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 						Validators:  []validator.Set{setvalidator.SizeAtMost(20)},
 					},
 					"notify_org_admins": schema.BoolAttribute{
-						MarkdownDescription: "Also email every organization admin when an alert threshold is crossed. Defaults to `true`.",
-						Optional:            true,
-						Computed:            true,
-						Default:             booldefault.StaticBool(true),
+						MarkdownDescription: "Also email every organization admin when an alert threshold is crossed, on top of `notification_emails`. " +
+							"Set `false` to email only `notification_emails`; while that list is empty, one admin is still emailed. Defaults to `true`.",
+						Optional: true,
+						Computed: true,
+						Default:  booldefault.StaticBool(true),
 					},
 				},
 			},
