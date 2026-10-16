@@ -77,7 +77,7 @@ Optional:
 
 - `alert_thresholds` (Set of Number) Percentages of the budget that trigger an alert, such as `[50, 80, 90]`. Defaults to none.
 - `notification_emails` (Set of String) Addresses emailed when an alert threshold is crossed, at most 20. Addresses are compared ignoring case, so don't list one twice in different cases. Defaults to none.
-- `notify_org_admins` (Boolean) Also email every organization admin when an alert threshold is crossed. Defaults to `true`.
+- `notify_org_admins` (Boolean) Also email every organization admin when an alert threshold is crossed, on top of `notification_emails`. Set `false` to email only `notification_emails`; while that list is empty, one admin is still emailed. Defaults to `true`.
 
 
 <a id="nestedatt--routing_policy"></a>
