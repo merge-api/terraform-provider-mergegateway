@@ -139,19 +139,19 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 						MarkdownDescription: "The budget period: `daily`, `weekly`, `monthly`, `quarterly` or `yearly`.",
 						Required:            true,
 						Validators: []validator.String{stringvalidator.OneOf(
-							string(client.ProjectBudgetConfigSchemaPeriodDaily),
-							string(client.ProjectBudgetConfigSchemaPeriodWeekly),
-							string(client.ProjectBudgetConfigSchemaPeriodMonthly),
-							string(client.ProjectBudgetConfigSchemaPeriodQuarterly),
-							string(client.ProjectBudgetConfigSchemaPeriodYearly),
+							string(client.ProjectBudgetConfigV1PeriodDaily),
+							string(client.ProjectBudgetConfigV1PeriodWeekly),
+							string(client.ProjectBudgetConfigV1PeriodMonthly),
+							string(client.ProjectBudgetConfigV1PeriodQuarterly),
+							string(client.ProjectBudgetConfigV1PeriodYearly),
 						)},
 					},
 					"enforcement_mode": schema.StringAttribute{
 						MarkdownDescription: "`soft_limit` only alerts when the budget is reached; `hard_limit` also blocks requests.",
 						Required:            true,
 						Validators: []validator.String{stringvalidator.OneOf(
-							string(client.ProjectBudgetConfigSchemaEnforcementModeSoftLimit),
-							string(client.ProjectBudgetConfigSchemaEnforcementModeHardLimit),
+							string(client.ProjectBudgetConfigV1EnforcementModeSoftLimit),
+							string(client.ProjectBudgetConfigV1EnforcementModeHardLimit),
 						)},
 					},
 					"alert_thresholds": schema.SetAttribute{
@@ -525,7 +525,7 @@ func projectUpdateRequest(ctx context.Context, plan, state projectResourceModel)
 	}
 	if !plan.BudgetConfig.equal(state.BudgetConfig) {
 		if plan.BudgetConfig == nil {
-			body.BudgetConfig = nullable.NewNullNullable[client.ProjectBudgetConfigSchema]()
+			body.BudgetConfig = nullable.NewNullNullable[client.ProjectBudgetConfigV1]()
 		} else {
 			budget, d := budgetConfigToAPI(ctx, plan.BudgetConfig)
 			diags.Append(d...)
@@ -570,7 +570,7 @@ func (p *projectRoutingPolicyModel) equal(o *projectRoutingPolicyModel) bool {
 		p.PriorityOrder.Equal(o.PriorityOrder)
 }
 
-func budgetConfigToAPI(ctx context.Context, b *projectBudgetConfigModel) (client.ProjectBudgetConfigSchema, diag.Diagnostics) {
+func budgetConfigToAPI(ctx context.Context, b *projectBudgetConfigModel) (client.ProjectBudgetConfigV1, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var thresholds []int64
@@ -589,10 +589,10 @@ func budgetConfigToAPI(ctx context.Context, b *projectBudgetConfigModel) (client
 	}
 
 	notifyOrgAdmins := b.NotifyOrgAdmins.ValueBool()
-	return client.ProjectBudgetConfigSchema{
+	return client.ProjectBudgetConfigV1{
 		Amount:             b.Amount.ValueFloat64(),
-		Period:             client.ProjectBudgetConfigSchemaPeriod(b.Period.ValueString()),
-		EnforcementMode:    client.ProjectBudgetConfigSchemaEnforcementMode(b.EnforcementMode.ValueString()),
+		Period:             client.ProjectBudgetConfigV1Period(b.Period.ValueString()),
+		EnforcementMode:    client.ProjectBudgetConfigV1EnforcementMode(b.EnforcementMode.ValueString()),
 		AlertThresholds:    &alertThresholds,
 		NotificationEmails: &notificationEmails,
 		NotifyOrgAdmins:    &notifyOrgAdmins,
