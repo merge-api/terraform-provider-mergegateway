@@ -6,10 +6,7 @@
 //
 //	TF_ACC=1
 //	MERGE_GATEWAY_MANAGEMENT_KEY  a management key for a dedicated test org
-//	                              (CI uses one for a test org on dev; locally,
-//	                              scripts/seed-acceptance.sh mints one)
-//	MERGE_GATEWAY_BASE_URL        optional; defaults to the local Docker stack
-//	                              at http://localhost:8001
+//	MERGE_GATEWAY_BASE_URL        optional; defaults to http://localhost:8001
 package acceptance
 
 import (
