@@ -1,7 +1,7 @@
 # Acceptance tests against the deployed dev Gateway, with a management key for
 # a dedicated "Terraform acceptance tests" org on dev. The nightly run catches
-# dev deploys that break the provider. To run them against a local stack
-# instead, see CONTRIBUTING.md.
+# dev deploys that break the provider. To run them yourself, see
+# CONTRIBUTING.md.
 name: Acceptance Tests
 
 on:
