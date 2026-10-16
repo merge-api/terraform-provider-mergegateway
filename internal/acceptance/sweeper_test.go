@@ -31,17 +31,42 @@ var sweepPaths = []string{
 	"/v1/blocklist-rules",
 }
 
-// TestMain deletes tf-acc- resources left behind by crashed or cancelled
-// runs before the suite starts. A failed sweep stops the suite: it means the
-// API or the management key doesn't work, so every test would fail anyway.
+// TestMain checks that the management key belongs to the test org, then
+// deletes tf-acc- resources left behind by crashed or cancelled runs before
+// the suite starts. A failed check or sweep stops the suite: the tests and
+// the sweep delete resources, so they must never run against another org.
 func TestMain(m *testing.M) {
-	if os.Getenv(resource.EnvTfAcc) != "" && os.Getenv(apiKeyEnvVar) != "" {
+	if os.Getenv(resource.EnvTfAcc) != "" {
+		if err := checkTestOrg(); err != nil {
+			fmt.Fprintf(os.Stderr, "acceptance tests: %v\n", err)
+			os.Exit(1)
+		}
 		if err := sweep(); err != nil {
 			fmt.Fprintf(os.Stderr, "sweeper: %v\n", err)
 			os.Exit(1)
 		}
 	}
 	os.Exit(m.Run())
+}
+
+// checkTestOrg requires the environment the suite needs and checks that the
+// management key's organization is MERGE_GATEWAY_TEST_ORG_ID.
+func checkTestOrg() error {
+	for _, name := range []string{apiKeyEnvVar, baseURLEnvVar, testOrgIDEnvVar} {
+		if os.Getenv(name) == "" {
+			return fmt.Errorf("%s must be set for acceptance tests", name)
+		}
+	}
+	var org struct {
+		ID string `json:"id"`
+	}
+	if err := getJSON("/v1/organization", &org); err != nil {
+		return fmt.Errorf("looking up the management key's organization: %w", err)
+	}
+	if want := strings.TrimSpace(os.Getenv(testOrgIDEnvVar)); !strings.EqualFold(org.ID, want) {
+		return fmt.Errorf("the management key belongs to organization %q, not the test organization %q (%s); refusing to run", org.ID, want, testOrgIDEnvVar)
+	}
+	return nil
 }
 
 func sweep() error {

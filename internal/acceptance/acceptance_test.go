@@ -6,7 +6,8 @@
 //
 //	TF_ACC=1
 //	MERGE_GATEWAY_MANAGEMENT_KEY  a management key for a dedicated test org
-//	MERGE_GATEWAY_BASE_URL        optional; defaults to http://localhost:8001
+//	MERGE_GATEWAY_TEST_ORG_ID     that org's id; the suite stops if the key belongs to another
+//	MERGE_GATEWAY_BASE_URL        the API to test against
 package acceptance
 
 import (
@@ -31,9 +32,9 @@ import (
 )
 
 const (
-	apiKeyEnvVar   = "MERGE_GATEWAY_MANAGEMENT_KEY"
-	baseURLEnvVar  = "MERGE_GATEWAY_BASE_URL"
-	defaultBaseURL = "http://localhost:8001"
+	apiKeyEnvVar    = "MERGE_GATEWAY_MANAGEMENT_KEY"
+	baseURLEnvVar   = "MERGE_GATEWAY_BASE_URL"
+	testOrgIDEnvVar = "MERGE_GATEWAY_TEST_ORG_ID"
 
 	// namePrefix marks every resource the tests create, so the sweeper can
 	// find and delete leftovers from crashed runs.
@@ -55,10 +56,7 @@ func testAccPreCheck(t *testing.T) {
 }
 
 func baseURL() string {
-	if u := os.Getenv(baseURLEnvVar); u != "" {
-		return u
-	}
-	return defaultBaseURL
+	return os.Getenv(baseURLEnvVar)
 }
 
 // providerConfig renders the provider block. The management key is not

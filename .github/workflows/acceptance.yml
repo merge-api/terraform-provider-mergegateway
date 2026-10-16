@@ -40,11 +40,21 @@ jobs:
       TF_ACC: "1"
       MERGE_GATEWAY_BASE_URL: https://api-gateway-develop.merge.dev
       MERGE_GATEWAY_MANAGEMENT_KEY: ${{ secrets.MERGE_GATEWAY_MANAGEMENT_KEY }}
+      # The test org's id, a repo variable. The suite refuses to run if the
+      # key belongs to another org.
+      MERGE_GATEWAY_TEST_ORG_ID: ${{ vars.MERGE_GATEWAY_TEST_ORG_ID }}
     steps:
       - name: Check the management key secret
         run: |
           if [ -z "$MERGE_GATEWAY_MANAGEMENT_KEY" ]; then
             echo "::error::The MERGE_GATEWAY_MANAGEMENT_KEY repo secret is missing. Create a management key for the dev test org and run: gh secret set MERGE_GATEWAY_MANAGEMENT_KEY -R ${{ github.repository }}"
+            exit 1
+          fi
+
+      - name: Check the test org variable
+        run: |
+          if [ -z "$MERGE_GATEWAY_TEST_ORG_ID" ]; then
+            echo "::error::The MERGE_GATEWAY_TEST_ORG_ID repo variable is missing. Set it to the test org's id: gh variable set MERGE_GATEWAY_TEST_ORG_ID -R ${{ github.repository }}"
             exit 1
           fi
 
