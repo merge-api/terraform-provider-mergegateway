@@ -763,45 +763,45 @@ func (e PolicyV2ResponseStrategy) Valid() bool {
 	}
 }
 
-// Defines values for ProjectBudgetConfigSchemaEnforcementMode.
+// Defines values for ProjectBudgetConfigV1EnforcementMode.
 const (
-	ProjectBudgetConfigSchemaEnforcementModeHardLimit ProjectBudgetConfigSchemaEnforcementMode = "hard_limit"
-	ProjectBudgetConfigSchemaEnforcementModeSoftLimit ProjectBudgetConfigSchemaEnforcementMode = "soft_limit"
+	ProjectBudgetConfigV1EnforcementModeHardLimit ProjectBudgetConfigV1EnforcementMode = "hard_limit"
+	ProjectBudgetConfigV1EnforcementModeSoftLimit ProjectBudgetConfigV1EnforcementMode = "soft_limit"
 )
 
-// Valid indicates whether the value is a known member of the ProjectBudgetConfigSchemaEnforcementMode enum.
-func (e ProjectBudgetConfigSchemaEnforcementMode) Valid() bool {
+// Valid indicates whether the value is a known member of the ProjectBudgetConfigV1EnforcementMode enum.
+func (e ProjectBudgetConfigV1EnforcementMode) Valid() bool {
 	switch e {
-	case ProjectBudgetConfigSchemaEnforcementModeHardLimit:
+	case ProjectBudgetConfigV1EnforcementModeHardLimit:
 		return true
-	case ProjectBudgetConfigSchemaEnforcementModeSoftLimit:
+	case ProjectBudgetConfigV1EnforcementModeSoftLimit:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ProjectBudgetConfigSchemaPeriod.
+// Defines values for ProjectBudgetConfigV1Period.
 const (
-	ProjectBudgetConfigSchemaPeriodDaily     ProjectBudgetConfigSchemaPeriod = "daily"
-	ProjectBudgetConfigSchemaPeriodMonthly   ProjectBudgetConfigSchemaPeriod = "monthly"
-	ProjectBudgetConfigSchemaPeriodQuarterly ProjectBudgetConfigSchemaPeriod = "quarterly"
-	ProjectBudgetConfigSchemaPeriodWeekly    ProjectBudgetConfigSchemaPeriod = "weekly"
-	ProjectBudgetConfigSchemaPeriodYearly    ProjectBudgetConfigSchemaPeriod = "yearly"
+	ProjectBudgetConfigV1PeriodDaily     ProjectBudgetConfigV1Period = "daily"
+	ProjectBudgetConfigV1PeriodMonthly   ProjectBudgetConfigV1Period = "monthly"
+	ProjectBudgetConfigV1PeriodQuarterly ProjectBudgetConfigV1Period = "quarterly"
+	ProjectBudgetConfigV1PeriodWeekly    ProjectBudgetConfigV1Period = "weekly"
+	ProjectBudgetConfigV1PeriodYearly    ProjectBudgetConfigV1Period = "yearly"
 )
 
-// Valid indicates whether the value is a known member of the ProjectBudgetConfigSchemaPeriod enum.
-func (e ProjectBudgetConfigSchemaPeriod) Valid() bool {
+// Valid indicates whether the value is a known member of the ProjectBudgetConfigV1Period enum.
+func (e ProjectBudgetConfigV1Period) Valid() bool {
 	switch e {
-	case ProjectBudgetConfigSchemaPeriodDaily:
+	case ProjectBudgetConfigV1PeriodDaily:
 		return true
-	case ProjectBudgetConfigSchemaPeriodMonthly:
+	case ProjectBudgetConfigV1PeriodMonthly:
 		return true
-	case ProjectBudgetConfigSchemaPeriodQuarterly:
+	case ProjectBudgetConfigV1PeriodQuarterly:
 		return true
-	case ProjectBudgetConfigSchemaPeriodWeekly:
+	case ProjectBudgetConfigV1PeriodWeekly:
 		return true
-	case ProjectBudgetConfigSchemaPeriodYearly:
+	case ProjectBudgetConfigV1PeriodYearly:
 		return true
 	default:
 		return false
@@ -1141,81 +1141,113 @@ func (e GetOrganizationUsageParamsGroupBy) Valid() bool {
 	}
 }
 
-// APIKeySpendV1 defines model for APIKeySpendV1.
+// APIKeySpendV1 One API key's spend.
 type APIKeySpendV1 struct {
-	// ApiKeyId The key's hash.
+	// ApiKeyId The key's `hash`.
 	ApiKeyId string `json:"api_key_id"`
 
-	// ByokSpend BYOK spend at list price.
+	// ByokSpend Spend on your own provider credentials (BYOK), at list price, USD.
 	ByokSpend float64 `json:"byok_spend"`
 
-	// MergeHostedSpend Spend on Merge-managed credentials.
+	// MergeHostedSpend Spend on Merge-managed credentials, USD.
 	MergeHostedSpend float64 `json:"merge_hosted_spend"`
-	RequestCount     int     `json:"request_count"`
-	TotalSpend       float64 `json:"total_spend"`
 
-	// WebSearchSpend Server-tool (web search) cost.
+	// RequestCount Number of requests.
+	RequestCount int `json:"request_count"`
+
+	// TotalSpend All spend, USD.
+	TotalSpend float64 `json:"total_spend"`
+
+	// WebSearchSpend Server-side web search cost, USD.
 	WebSearchSpend float64 `json:"web_search_spend"`
 }
 
-// BlocklistRuleV1Create defines model for BlocklistRuleV1Create.
+// BlocklistRuleV1Create A blocklist rule to create.
+//
+// Examples: {"customer_ids":["cus_trial_4821"],"models":["openai/gpt-5.5"],"providers":[],"reason":"Trial customers can't use GPT-5.5.","rule_type":"block"}
 type BlocklistRuleV1Create struct {
-	// CustomerIds Empty strings are dropped. A block rule needs at least one non-empty list.
+	// CustomerIds Values of the `X-Customer-ID` request header the rule applies to. Empty matches every customer. Empty strings are dropped. A block rule needs at least one non-empty list.
 	CustomerIds *[]string `json:"customer_ids,omitempty"`
 
-	// Models Empty strings are dropped. A block rule needs at least one non-empty list.
+	// Models Full model ids, like `openai/gpt-5.5`. Empty strings are dropped. A block rule needs at least one non-empty list.
 	Models *[]string `json:"models,omitempty"`
 
-	// Providers Empty strings are dropped. A block rule needs at least one non-empty list.
+	// Providers Model providers, the prefix of a model id, like `anthropic`. With `models` empty too, matches every model. Empty strings are dropped. A block rule needs at least one non-empty list.
 	Providers *[]string `json:"providers,omitempty"`
-	Reason    *string   `json:"reason,omitempty"`
 
-	// RuleType block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models.
+	// Reason Why the rule exists, such as a ticket or contract clause.
+	Reason *string `json:"reason,omitempty"`
+
+	// RuleType `block` denies a request when its customer matches and its model or provider matches. `pin` lets the listed customers use only the listed providers and models, and needs `customer_ids` plus `providers` or `models`. A block always wins over a pin.
 	RuleType *BlocklistRuleV1CreateRuleType `json:"rule_type,omitempty"`
 }
 
-// BlocklistRuleV1CreateRuleType block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models.
+// BlocklistRuleV1CreateRuleType `block` denies a request when its customer matches and its model or provider matches. `pin` lets the listed customers use only the listed providers and models, and needs `customer_ids` plus `providers` or `models`. A block always wins over a pin.
 type BlocklistRuleV1CreateRuleType string
 
-// BlocklistRuleV1List Every rule, newest first. Not paginated: an organization has at most 100.
+// BlocklistRuleV1List Every rule, newest first, in one page: an organization has at most 100.
+//
+// Examples: {"next":null,"previous":null,"results":[{"created_at":"2026-06-02T17:04:00Z","customer_ids":["cus_trial_4821"],"id":"9e1c5a3f-7b2d-4a8e-b6c0-2d4f6a8c0e35","models":["openai/gpt-5.5"],"providers":[],"reason":"Trial customers can't use GPT-5.5.","rule_type":"block","updated_at":"2026-09-14T09:30:00Z"}]}
 type BlocklistRuleV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Always null: the list comes in one page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []BlocklistRuleV1Response `json:"results"`
+
+	// Results The rules.
+	Results []BlocklistRuleV1Response `json:"results"`
 }
 
-// BlocklistRuleV1Response defines model for BlocklistRuleV1Response.
+// BlocklistRuleV1Response A rule that blocks or pins models and providers for customers.
+//
+// Examples: {"created_at":"2026-06-02T17:04:00Z","customer_ids":["cus_trial_4821"],"id":"9e1c5a3f-7b2d-4a8e-b6c0-2d4f6a8c0e35","models":["openai/gpt-5.5"],"providers":[],"reason":"Trial customers can't use GPT-5.5.","rule_type":"block","updated_at":"2026-09-14T09:30:00Z"}
 type BlocklistRuleV1Response struct {
-	CreatedAt   time.Time          `json:"created_at"`
-	CustomerIds []string           `json:"customer_ids"`
-	Id          openapi_types.UUID `json:"id"`
-	Models      []string           `json:"models"`
-	Providers   []string           `json:"providers"`
-	Reason      string             `json:"reason"`
+	// CreatedAt When the rule was created.
+	CreatedAt time.Time `json:"created_at"`
 
-	// RuleType block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models.
-	RuleType  BlocklistRuleV1ResponseRuleType `json:"rule_type"`
-	UpdatedAt time.Time                       `json:"updated_at"`
+	// CustomerIds Values of the `X-Customer-ID` request header the rule applies to. Empty matches every customer.
+	CustomerIds []string `json:"customer_ids"`
+
+	// Id The rule's id.
+	Id openapi_types.UUID `json:"id"`
+
+	// Models Full model ids, like `openai/gpt-5.5`.
+	Models []string `json:"models"`
+
+	// Providers Model providers, the prefix of a model id, like `anthropic`. With `models` empty too, matches every model.
+	Providers []string `json:"providers"`
+
+	// Reason Why the rule exists, such as a ticket or contract clause.
+	Reason string `json:"reason"`
+
+	// RuleType `block` denies a request when its customer matches and its model or provider matches. `pin` lets the listed customers use only the listed providers and models, and needs `customer_ids` plus `providers` or `models`. A block always wins over a pin.
+	RuleType BlocklistRuleV1ResponseRuleType `json:"rule_type"`
+
+	// UpdatedAt When the rule last changed.
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// BlocklistRuleV1ResponseRuleType block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models.
+// BlocklistRuleV1ResponseRuleType `block` denies a request when its customer matches and its model or provider matches. `pin` lets the listed customers use only the listed providers and models, and needs `customer_ids` plus `providers` or `models`. A block always wins over a pin.
 type BlocklistRuleV1ResponseRuleType string
 
 // BlocklistRuleV1Update Only the fields sent change. A list sent replaces the whole list.
+//
+// Examples: {"models":["openai/gpt-5.5","anthropic/claude-opus-4-7"]}
 type BlocklistRuleV1Update struct {
-	// CustomerIds Omit, or send null, to keep the current value.
+	// CustomerIds Values of the `X-Customer-ID` request header the rule applies to. Empty matches every customer. Omit, or send null, to keep the current value.
 	CustomerIds nullable.Nullable[[]string] `json:"customer_ids,omitempty"`
 
-	// Models Omit, or send null, to keep the current value.
+	// Models Full model ids, like `openai/gpt-5.5`. Omit, or send null, to keep the current value.
 	Models nullable.Nullable[[]string] `json:"models,omitempty"`
 
-	// Providers Omit, or send null, to keep the current value.
+	// Providers Model providers, the prefix of a model id, like `anthropic`. With `models` empty too, matches every model. Omit, or send null, to keep the current value.
 	Providers nullable.Nullable[[]string] `json:"providers,omitempty"`
 
-	// Reason Omit, or send null, to keep the current value.
+	// Reason Why the rule exists, such as a ticket or contract clause. Omit, or send null, to keep the current value.
 	Reason nullable.Nullable[string] `json:"reason,omitempty"`
 
-	// RuleType block denies requests that match the rule. pin lets the listed customers use only the listed providers or models, and needs customer_ids plus providers or models. Omit, or send null, to keep the current value.
+	// RuleType `block` denies a request when its customer matches and its model or provider matches. `pin` lets the listed customers use only the listed providers and models, and needs `customer_ids` plus `providers` or `models`. A block always wins over a pin. Omit, or send null, to keep the current value.
 	RuleType nullable.Nullable[BlocklistRuleV1UpdateRuleType] `json:"rule_type,omitempty"`
 }
 
@@ -1277,54 +1309,80 @@ type CredentialConfigV1Request struct {
 	VertexProject nullable.Nullable[string] `json:"vertex_project,omitempty"`
 }
 
-// CredentialV1Create defines model for CredentialV1Create.
+// CredentialV1Create A provider credential to create.
+//
+// Examples: {"config":{"aws_region":"us-east-1","aws_role_arn":"arn:aws:iam::123456789012:role/merge-gateway-bedrock"},"fallback_to_managed":true,"name":"bedrock-prod","vendor":"bedrock"}
 type CredentialV1Create struct {
-	// ApiBase Custom base URL for the vendor's API.
+	// ApiBase A custom base URL for the vendor's API, such as your own proxy.
 	ApiBase nullable.Nullable[string] `json:"api_base,omitempty"`
 
 	// ApiKey The vendor API key. Required except for `vertexai` (uses config.service_account_json) and `bedrock` (can use AWS keys or a role in config instead). Never returned.
-	ApiKey nullable.Nullable[string]                    `json:"api_key,omitempty"`
+	ApiKey nullable.Nullable[string] `json:"api_key,omitempty"`
+
+	// Config Vendor-specific settings, such as the Bedrock region or the Vertex AI project.
 	Config nullable.Nullable[CredentialConfigV1Request] `json:"config,omitempty"`
 
 	// FallbackToManaged When a request with this key fails, retry it once on Merge-managed access for the same vendor, if the organization has it.
-	FallbackToManaged *bool                     `json:"fallback_to_managed,omitempty"`
-	Name              nullable.Nullable[string] `json:"name,omitempty"`
+	FallbackToManaged *bool `json:"fallback_to_managed,omitempty"`
+
+	// Name A name for the credential, shown in the dashboard.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
 
 	// Vendor The vendor's slug, like `openai`. Can't change after creation: delete the credential and create a new one to switch vendors. An organization has at most one credential per vendor.
 	Vendor string `json:"vendor"`
 }
 
-// CredentialV1List List envelope for “GET /v1/credentials“. Pass “next“ as “cursor“.
+// CredentialV1List A page of credentials, oldest first.
+//
+// Examples: {"next":null,"previous":null,"results":[{"api_base":null,"config":{"api_version":null,"aws_access_key_id":null,"aws_region":"us-east-1","aws_role_arn":"arn:aws:iam::123456789012:role/merge-gateway-bedrock","azure_deployment":null,"vertex_location":null,"vertex_project":null},"created_at":"2026-06-02T17:04:00Z","credential_hint":null,"fallback_to_managed":true,"id":"6d2a9f4c-3b1e-4d7a-8c5f-9e0b2a4c6d81","name":"bedrock-prod","updated_at":"2026-09-14T09:30:00Z","vendor":"bedrock"}]}
 type CredentialV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []CredentialV1Response    `json:"results"`
+
+	// Results The credentials on this page.
+	Results []CredentialV1Response `json:"results"`
 }
 
-// CredentialV1Response defines model for CredentialV1Response.
+// CredentialV1Response A provider credential (BYOK). Secrets are never returned.
+//
+// Examples: {"api_base":null,"config":{"api_version":null,"aws_access_key_id":null,"aws_region":"us-east-1","aws_role_arn":"arn:aws:iam::123456789012:role/merge-gateway-bedrock","azure_deployment":null,"vertex_location":null,"vertex_project":null},"created_at":"2026-06-02T17:04:00Z","credential_hint":null,"fallback_to_managed":true,"id":"6d2a9f4c-3b1e-4d7a-8c5f-9e0b2a4c6d81","name":"bedrock-prod","updated_at":"2026-09-14T09:30:00Z","vendor":"bedrock"}
 type CredentialV1Response struct {
+	// ApiBase A custom base URL for the vendor's API, such as your own proxy.
 	ApiBase nullable.Nullable[string] `json:"api_base"`
 
 	// Config The non-secret vendor settings. Settings that aren't set are null.
-	Config    CredentialConfigV1           `json:"config"`
+	Config CredentialConfigV1 `json:"config"`
+
+	// CreatedAt When the credential was created.
 	CreatedAt nullable.Nullable[time.Time] `json:"created_at"`
 
 	// CredentialHint The last 4 characters of the stored API key, like `a1b2`, to tell keys apart. null when the credential has no API key, or the key is under 12 characters (4 would give away too much of it).
 	CredentialHint nullable.Nullable[string] `json:"credential_hint"`
 
 	// FallbackToManaged When a request with this key fails, retry it once on Merge-managed access for the same vendor, if the organization has it.
-	FallbackToManaged bool                         `json:"fallback_to_managed"`
-	Id                openapi_types.UUID           `json:"id"`
-	Name              nullable.Nullable[string]    `json:"name"`
-	UpdatedAt         nullable.Nullable[time.Time] `json:"updated_at"`
+	FallbackToManaged bool `json:"fallback_to_managed"`
+
+	// Id The credential's id.
+	Id openapi_types.UUID `json:"id"`
+
+	// Name A name for the credential, shown in the dashboard.
+	Name nullable.Nullable[string] `json:"name"`
+
+	// UpdatedAt When the credential last changed.
+	UpdatedAt nullable.Nullable[time.Time] `json:"updated_at"`
 
 	// Vendor The vendor's slug, like `openai`. Can't change after creation: delete the credential and create a new one to switch vendors. An organization has at most one credential per vendor.
 	Vendor string `json:"vendor"`
 }
 
 // CredentialV1Update Only the fields sent change. null is the same as omitting a field.
+//
+// Examples: {"config":{"aws_region":"us-west-2"},"name":"bedrock-prod-us-west"}
 type CredentialV1Update struct {
-	// ApiBase null or "" keeps the current value: once set, it can't be cleared. Delete and create the credential to remove it.
+	// ApiBase A custom base URL for the vendor's API, such as your own proxy. null or "" keeps the current value: once set, it can't be cleared. Delete and create the credential to remove it.
 	ApiBase nullable.Nullable[string] `json:"api_base,omitempty"`
 
 	// ApiKey Replaces the vendor API key. Never returned.
@@ -1336,11 +1394,13 @@ type CredentialV1Update struct {
 	// FallbackToManaged When a request with this key fails, retry it once on Merge-managed access for the same vendor, if the organization has it.
 	FallbackToManaged nullable.Nullable[bool] `json:"fallback_to_managed,omitempty"`
 
-	// Name null or "" keeps the current value: once set, it can't be cleared. Delete and create the credential to remove it.
+	// Name A name for the credential, shown in the dashboard. null or "" keeps the current value: once set, it can't be cleared. Delete and create the credential to remove it.
 	Name nullable.Nullable[string] `json:"name,omitempty"`
 }
 
 // CreditsV1Response The organization's credit balance, in USD.
+//
+// Examples: {"balance_usd":415.48,"credits_expired_usd":0,"credits_purchased_usd":1700,"free_credits_usd":5,"total_spend_usd":1289.52}
 type CreditsV1Response struct {
 	// BalanceUsd Credit left. Only an enterprise contract balance can be negative.
 	BalanceUsd float64 `json:"balance_usd"`
@@ -1358,19 +1418,28 @@ type CreditsV1Response struct {
 	TotalSpendUsd float64 `json:"total_spend_usd"`
 }
 
-// DLPEntityOverrideV1 The dashboard's DLP entity override, with “action“ typed.
+// DLPEntityOverrideV1 What the project does with one entity type. A field left null inherits
+// the organization's rule.
 type DLPEntityOverrideV1 struct {
-	Action  nullable.Nullable[DLPEntityOverrideV1Action] `json:"action,omitempty"`
-	Enabled nullable.Nullable[bool]                      `json:"enabled,omitempty"`
+	// Action `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422.
+	Action nullable.Nullable[DLPEntityOverrideV1Action] `json:"action,omitempty"`
+
+	// Enabled Whether the project scans for this entity.
+	Enabled nullable.Nullable[bool] `json:"enabled,omitempty"`
 }
 
 // DLPEntityOverrideV1Action defines model for DLPEntityOverrideV1.Action.
 type DLPEntityOverrideV1Action string
 
 // DLPRuleV1Create A custom rule. It needs a pattern, keywords, or both.
+//
+// Examples: {"action":"redact","description":"Acme order numbers, like ACME-123456.","enabled":true,"entity_type":"ACME_ORDER_ID","keywords":["order","order number"],"pattern":"\\bACME-\\d{6}\\b"}
 type DLPRuleV1Create struct {
-	Action      *DLPRuleV1CreateAction `json:"action,omitempty"`
-	Description *string                `json:"description,omitempty"`
+	// Action `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422. Defaults to `log`.
+	Action *DLPRuleV1CreateAction `json:"action,omitempty"`
+
+	// Description What the rule detects.
+	Description *string `json:"description,omitempty"`
 
 	// Enabled false creates the rule switched off.
 	Enabled *bool `json:"enabled,omitempty"`
@@ -1381,33 +1450,51 @@ type DLPRuleV1Create struct {
 	// Keywords Words the rule matches. At most 50, each up to 100 characters.
 	Keywords nullable.Nullable[[]string] `json:"keywords,omitempty"`
 
-	// Pattern A regular expression the rule matches.
+	// Pattern A Python regular expression the rule matches, checked on save.
 	Pattern nullable.Nullable[string] `json:"pattern,omitempty"`
 }
 
-// DLPRuleV1CreateAction defines model for DLPRuleV1Create.Action.
+// DLPRuleV1CreateAction `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422. Defaults to `log`.
 type DLPRuleV1CreateAction string
 
-// DLPRuleV1List Every rule: the seeded catalog, then the custom rules. Not paginated.
+// DLPRuleV1List Every rule, in one page: the seeded catalog, then the custom rules.
+//
+// Examples: {"next":null,"previous":null,"results":[{"action":"redact","category":"custom","created_at":"2026-06-02T17:04:00Z","description":"Acme order numbers, like ACME-123456.","detection_method":"Custom (regex + keywords)","display_name":"ACME_ORDER_ID","enabled":true,"entity_type":"ACME_ORDER_ID","id":"4c8e2a6d-0b3f-4e7a-9d1c-5a7b9e3f2d60","is_seeded":false,"keywords":["order","order number"],"pattern":"\\bACME-\\d{6}\\b","updated_at":"2026-09-14T09:30:00Z"}]}
 type DLPRuleV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Always null: the list comes in one page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []DLPRuleV1Response       `json:"results"`
+
+	// Results The rules.
+	Results []DLPRuleV1Response `json:"results"`
 }
 
-// DLPRuleV1Response defines model for DLPRuleV1Response.
+// DLPRuleV1Response A DLP rule: a seeded one from the catalog, or a custom one.
+//
+// Examples: {"action":"redact","category":"custom","created_at":"2026-06-02T17:04:00Z","description":"Acme order numbers, like ACME-123456.","detection_method":"Custom (regex + keywords)","display_name":"ACME_ORDER_ID","enabled":true,"entity_type":"ACME_ORDER_ID","id":"4c8e2a6d-0b3f-4e7a-9d1c-5a7b9e3f2d60","is_seeded":false,"keywords":["order","order number"],"pattern":"\\bACME-\\d{6}\\b","updated_at":"2026-09-14T09:30:00Z"}
 type DLPRuleV1Response struct {
+	// Action `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422.
 	Action DLPRuleV1ResponseAction `json:"action"`
 
 	// Category custom for rules the organization creates; global and usa are seeded.
 	Category DLPRuleV1ResponseCategory `json:"category"`
 
 	// CreatedAt For a seeded rule never changed, the time of the request.
-	CreatedAt       time.Time `json:"created_at"`
-	Description     string    `json:"description"`
-	DetectionMethod string    `json:"detection_method"`
-	DisplayName     string    `json:"display_name"`
-	Enabled         bool      `json:"enabled"`
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description What the rule detects.
+	Description string `json:"description"`
+
+	// DetectionMethod How the rule finds matches, like `Pattern match and checksum`.
+	DetectionMethod string `json:"detection_method"`
+
+	// DisplayName The name the dashboard shows.
+	DisplayName string `json:"display_name"`
+
+	// Enabled Whether the rule scans requests.
+	Enabled bool `json:"enabled"`
 
 	// EntityType The rule's name. Unique among the organization's custom rules.
 	EntityType string `json:"entity_type"`
@@ -1416,21 +1503,29 @@ type DLPRuleV1Response struct {
 	Id openapi_types.UUID `json:"id"`
 
 	// IsSeeded Seeded rules can't be created or deleted, only enabled and given an action.
-	IsSeeded  bool                        `json:"is_seeded"`
-	Keywords  nullable.Nullable[[]string] `json:"keywords"`
-	Pattern   nullable.Nullable[string]   `json:"pattern"`
-	UpdatedAt time.Time                   `json:"updated_at"`
+	IsSeeded bool `json:"is_seeded"`
+
+	// Keywords Words the rule matches, if it has any.
+	Keywords nullable.Nullable[[]string] `json:"keywords"`
+
+	// Pattern The rule's regular expression, if it has one.
+	Pattern nullable.Nullable[string] `json:"pattern"`
+
+	// UpdatedAt When the rule last changed.
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// DLPRuleV1ResponseAction defines model for DLPRuleV1Response.Action.
+// DLPRuleV1ResponseAction `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422.
 type DLPRuleV1ResponseAction string
 
 // DLPRuleV1ResponseCategory custom for rules the organization creates; global and usa are seeded.
 type DLPRuleV1ResponseCategory string
 
 // DLPRuleV1Update Only the fields sent change. Seeded rules accept only enabled and action.
+//
+// Examples: {"action":"block"}
 type DLPRuleV1Update struct {
-	// Action Omit, or send null, to keep the current value.
+	// Action `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422. Omit, or send null, to keep the current value.
 	Action nullable.Nullable[DLPRuleV1UpdateAction] `json:"action,omitempty"`
 
 	// Description Seeded rules accept only enabled and action. Omit, or send null, to keep the current value.
@@ -1452,34 +1547,42 @@ type DLPRuleV1Update struct {
 // DLPRuleV1UpdateAction defines model for DLPRuleV1Update.Action.
 type DLPRuleV1UpdateAction string
 
-// ErrorDetail A structured error. Some carry extra fields, like “count“.
+// ErrorDetail A structured error. Some carry extra fields, like `count`.
 type ErrorDetail struct {
-	Code                 string                 `json:"code"`
+	// Code A stable code to branch on, like `payment_method_required`.
+	Code string `json:"code"`
+
+	// Message A human-readable explanation.
 	Message              string                 `json:"message"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // ErrorResponse The body of an error response.
 type ErrorResponse struct {
+	// Detail A message, or an object with a `code` to branch on and a `message`.
 	Detail ErrorResponse_Detail `json:"detail"`
 }
 
 // ErrorResponseDetail0 defines model for ErrorResponse.Detail.0.
 type ErrorResponseDetail0 = string
 
-// ErrorResponse_Detail defines model for ErrorResponse.Detail.
+// ErrorResponse_Detail A message, or an object with a `code` to branch on and a `message`.
 type ErrorResponse_Detail struct {
 	union json.RawMessage
 }
 
-// ExportDestinationV1Create defines model for ExportDestinationV1Create.
+// ExportDestinationV1Create An export destination to create.
+//
+// Examples: {"credential_secret":"\u003cyour Datadog API key\u003e","enabled":true,"kind":"otlp","metrics_enabled":false,"ml_app":"support-bot","name":"datadog-prod","otlp_preset":"datadog","privacy_mode":true,"sample_rate":1,"site":"datadoghq.com"}
 type ExportDestinationV1Create struct {
 	// CredentialSecret The API key or token the destination authenticates with. Never returned; responses show credential_hint instead.
 	CredentialSecret *string `json:"credential_secret,omitempty"`
 
 	// CredentialUsername grafana only: the Grafana Cloud instance ID. Not a secret, so it is returned.
 	CredentialUsername nullable.Nullable[string] `json:"credential_username,omitempty"`
-	Enabled            *bool                     `json:"enabled,omitempty"`
+
+	// Enabled Whether the gateway exports to the destination.
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Kind Can't be changed after creation.
 	Kind *ExportDestinationV1CreateKind `json:"kind,omitempty"`
@@ -1490,13 +1593,13 @@ type ExportDestinationV1Create struct {
 	// MlApp Datadog only: the ml_app tag on exported spans.
 	MlApp nullable.Nullable[string] `json:"ml_app,omitempty"`
 
-	// Name Unique in the organization.
+	// Name A name for the destination, unique in the organization.
 	Name string `json:"name"`
 
 	// OtlpEndpoint generic only: the https URL of your OTLP collector.
 	OtlpEndpoint nullable.Nullable[string] `json:"otlp_endpoint,omitempty"`
 
-	// OtlpPreset Where spans go. generic sends to any OTLP collector and needs an enterprise plan. Can't be changed after creation.
+	// OtlpPreset Where spans go: `datadog` (LLM Observability), `grafana` (Grafana Cloud Tempo) or `generic`, any OTLP/HTTP collector, which needs an Enterprise plan. Can't be changed after creation.
 	OtlpPreset *ExportDestinationV1CreateOtlpPreset `json:"otlp_preset,omitempty"`
 
 	// PrivacyMode When true, prompts and completions are left out of exported spans.
@@ -1512,21 +1615,33 @@ type ExportDestinationV1Create struct {
 // ExportDestinationV1CreateKind Can't be changed after creation.
 type ExportDestinationV1CreateKind string
 
-// ExportDestinationV1CreateOtlpPreset Where spans go. generic sends to any OTLP collector and needs an enterprise plan. Can't be changed after creation.
+// ExportDestinationV1CreateOtlpPreset Where spans go: `datadog` (LLM Observability), `grafana` (Grafana Cloud Tempo) or `generic`, any OTLP/HTTP collector, which needs an Enterprise plan. Can't be changed after creation.
 type ExportDestinationV1CreateOtlpPreset string
 
-// ExportDestinationV1List List envelope for “GET /v1/export-destinations“. Pass “next“ as “cursor“.
+// ExportDestinationV1List A page of export destinations, oldest first.
+//
+// Examples: {"next":null,"previous":null,"results":[{"consecutive_failures":0,"created_at":"2026-06-02T17:04:00Z","credential_hint":"9f2c","credential_username":null,"delivery_suspended_until":null,"enabled":true,"id":"1a7e3c5b-8d2f-4b6a-9c0e-3f5d7b9a1c24","kind":"otlp","last_error_at":null,"last_error_message":null,"last_success_at":"2026-10-15T08:12:44Z","metrics_enabled":false,"ml_app":"support-bot","name":"datadog-prod","organization_id":"3f2b8c1e-6a4d-4e7f-9b21-5c8d0e7a4f13","otlp_endpoint":null,"otlp_preset":"datadog","privacy_mode":true,"sample_rate":1,"site":"datadoghq.com","updated_at":"2026-09-14T09:30:00Z"}]}
 type ExportDestinationV1List struct {
-	Next     nullable.Nullable[string]     `json:"next"`
-	Previous nullable.Nullable[string]     `json:"previous"`
-	Results  []ExportDestinationV1Response `json:"results"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
+	Previous nullable.Nullable[string] `json:"previous"`
+
+	// Results The destinations on this page.
+	Results []ExportDestinationV1Response `json:"results"`
 }
 
-// ExportDestinationV1Response No secret field: only credential_hint.
+// ExportDestinationV1Response Where the gateway exports request telemetry, as OpenTelemetry spans. The
+// secret is never returned: `credential_hint` tells secrets apart.
+//
+// Examples: {"consecutive_failures":0,"created_at":"2026-06-02T17:04:00Z","credential_hint":"9f2c","credential_username":null,"delivery_suspended_until":null,"enabled":true,"id":"1a7e3c5b-8d2f-4b6a-9c0e-3f5d7b9a1c24","kind":"otlp","last_error_at":null,"last_error_message":null,"last_success_at":"2026-10-15T08:12:44Z","metrics_enabled":false,"ml_app":"support-bot","name":"datadog-prod","organization_id":"3f2b8c1e-6a4d-4e7f-9b21-5c8d0e7a4f13","otlp_endpoint":null,"otlp_preset":"datadog","privacy_mode":true,"sample_rate":1,"site":"datadoghq.com","updated_at":"2026-09-14T09:30:00Z"}
 type ExportDestinationV1Response struct {
 	// ConsecutiveFailures Failed deliveries in a row.
-	ConsecutiveFailures int       `json:"consecutive_failures"`
-	CreatedAt           time.Time `json:"created_at"`
+	ConsecutiveFailures int `json:"consecutive_failures"`
+
+	// CreatedAt When the destination was created.
+	CreatedAt time.Time `json:"created_at"`
 
 	// CredentialHint The last 4 characters of the stored secret, to tell secrets apart. null when the secret is under 12 characters (4 would give away too much of it).
 	CredentialHint nullable.Nullable[string] `json:"credential_hint"`
@@ -1536,27 +1651,41 @@ type ExportDestinationV1Response struct {
 
 	// DeliverySuspendedUntil Set while delivery is paused after repeated failures.
 	DeliverySuspendedUntil nullable.Nullable[time.Time] `json:"delivery_suspended_until"`
-	Enabled                bool                         `json:"enabled"`
-	Id                     openapi_types.UUID           `json:"id"`
+
+	// Enabled Whether the gateway exports to the destination.
+	Enabled bool `json:"enabled"`
+
+	// Id The destination's id.
+	Id openapi_types.UUID `json:"id"`
 
 	// Kind Can't be changed after creation.
-	Kind             ExportDestinationV1ResponseKind `json:"kind"`
-	LastErrorAt      nullable.Nullable[time.Time]    `json:"last_error_at"`
-	LastErrorMessage nullable.Nullable[string]       `json:"last_error_message"`
-	LastSuccessAt    nullable.Nullable[time.Time]    `json:"last_success_at"`
+	Kind ExportDestinationV1ResponseKind `json:"kind"`
+
+	// LastErrorAt When a delivery last failed.
+	LastErrorAt nullable.Nullable[time.Time] `json:"last_error_at"`
+
+	// LastErrorMessage Why the last failed delivery failed.
+	LastErrorMessage nullable.Nullable[string] `json:"last_error_message"`
+
+	// LastSuccessAt When a delivery last succeeded.
+	LastSuccessAt nullable.Nullable[time.Time] `json:"last_success_at"`
 
 	// MetricsEnabled Also export metrics. Datadog and Grafana Cloud bill these separately.
 	MetricsEnabled bool `json:"metrics_enabled"`
 
 	// MlApp Datadog only: the ml_app tag on exported spans.
-	MlApp          nullable.Nullable[string] `json:"ml_app"`
-	Name           string                    `json:"name"`
-	OrganizationId openapi_types.UUID        `json:"organization_id"`
+	MlApp nullable.Nullable[string] `json:"ml_app"`
+
+	// Name A name for the destination, unique in the organization.
+	Name string `json:"name"`
+
+	// OrganizationId The organization the destination belongs to.
+	OrganizationId openapi_types.UUID `json:"organization_id"`
 
 	// OtlpEndpoint generic only: the https URL of your OTLP collector.
 	OtlpEndpoint nullable.Nullable[string] `json:"otlp_endpoint"`
 
-	// OtlpPreset Also datadog-apm: the dashboard's API can create that preset, this API can't, so create doesn't accept it. Can't be changed after creation.
+	// OtlpPreset Where spans go. Besides the presets create accepts, `datadog-apm`: those destinations are created in the dashboard only. Can't be changed after creation.
 	OtlpPreset ExportDestinationV1ResponseOtlpPreset `json:"otlp_preset"`
 
 	// PrivacyMode When true, prompts and completions are left out of exported spans.
@@ -1566,17 +1695,21 @@ type ExportDestinationV1Response struct {
 	SampleRate float64 `json:"sample_rate"`
 
 	// Site datadog: a Datadog site, like datadoghq.com. grafana: a Grafana Cloud zone, like prod-us-east-0. generic: not allowed; use otlp_endpoint.
-	Site      nullable.Nullable[string] `json:"site"`
-	UpdatedAt time.Time                 `json:"updated_at"`
+	Site nullable.Nullable[string] `json:"site"`
+
+	// UpdatedAt When the destination last changed.
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // ExportDestinationV1ResponseKind Can't be changed after creation.
 type ExportDestinationV1ResponseKind string
 
-// ExportDestinationV1ResponseOtlpPreset Also datadog-apm: the dashboard's API can create that preset, this API can't, so create doesn't accept it. Can't be changed after creation.
+// ExportDestinationV1ResponseOtlpPreset Where spans go. Besides the presets create accepts, `datadog-apm`: those destinations are created in the dashboard only. Can't be changed after creation.
 type ExportDestinationV1ResponseOtlpPreset string
 
 // ExportDestinationV1Update Only the fields sent change. kind and otlp_preset can't be changed.
+//
+// Examples: {"metrics_enabled":true,"sample_rate":0.25}
 type ExportDestinationV1Update struct {
 	// CredentialSecret Replaces the stored secret. The API key or token the destination authenticates with. Never returned; responses show credential_hint instead. Omit to keep the current value. null is rejected.
 	CredentialSecret *string `json:"credential_secret,omitempty"`
@@ -1584,7 +1717,7 @@ type ExportDestinationV1Update struct {
 	// CredentialUsername grafana only: the Grafana Cloud instance ID. Not a secret, so it is returned. null clears it, where the preset doesn't need it.
 	CredentialUsername nullable.Nullable[string] `json:"credential_username,omitempty"`
 
-	// Enabled Omit to keep the current value. null is rejected.
+	// Enabled Whether the gateway exports to the destination. Omit to keep the current value. null is rejected.
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// MetricsEnabled Also export metrics. Datadog and Grafana Cloud bill these separately. Omit to keep the current value. null is rejected.
@@ -1593,7 +1726,7 @@ type ExportDestinationV1Update struct {
 	// MlApp Datadog only: the ml_app tag on exported spans. null clears it.
 	MlApp nullable.Nullable[string] `json:"ml_app,omitempty"`
 
-	// Name Omit to keep the current value. null is rejected.
+	// Name A name for the destination, unique in the organization. Omit to keep the current value. null is rejected.
 	Name *string `json:"name,omitempty"`
 
 	// OtlpEndpoint generic only: the https URL of your OTLP collector. Omit to keep the current value. null is rejected.
@@ -1609,26 +1742,45 @@ type ExportDestinationV1Update struct {
 	Site *string `json:"site,omitempty"`
 }
 
-// GuardrailV1List List envelope for “GET /v1/guardrails“. Pass “next“ as “cursor“.
+// GuardrailV1List A page of project guardrails.
+//
+// Examples: {"next":null,"previous":null,"results":[{"controls":{"effective":{"allowed_regions":["NA"],"allowed_vendors":["anthropic","bedrock"],"ignored_regions":[],"ignored_vendors":[],"vendor_routing_preference":["bedrock"],"zero_data_retention":true},"override":{"regions":{"allowed_regions":["NA"],"ignored_regions":[]},"vendors":{"allowed_vendors":["anthropic","bedrock"],"ignored_vendors":[],"vendor_routing_preference":["bedrock"]},"zero_data_retention":true},"scope":"project","scope_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","sources":{"regions":"project","vendors":"project","zero_data_retention":"project"}},"dlp_settings":{"entities":[{"category":"global","display_name":"EMAIL_ADDRESS","effective_action":"block","entity_type":"EMAIL_ADDRESS","is_seeded":true,"org_action":"redact","overridden":true},{"category":"global","display_name":"DATE_TIME","effective_action":null,"entity_type":"DATE_TIME","is_seeded":true,"org_action":"log","overridden":true},{"category":"global","display_name":"CREDIT_CARD","effective_action":"redact","entity_type":"CREDIT_CARD","is_seeded":true,"org_action":"redact","overridden":false}],"override":{"DATE_TIME":{"enabled":false},"EMAIL_ADDRESS":{"action":"block","enabled":true}}},"pi_settings":{"effective":{"pi_allowlist_patterns":["(?i)ignore the previous ticket"],"pi_block_threshold":0.7,"pi_fail_closed":false,"pi_indirect_mode":"alert","pi_input_action":"block","pi_log_full_text_on_block":false,"pi_mode":"alert","pi_output_action":"redact","pi_pass_threshold":0.3,"pi_safer_vendor_route":null,"pi_tier2a_block_threshold":0.6,"pi_tier2b_block_threshold":0.45},"inherited_fields":["pi_indirect_mode","pi_input_action","pi_output_action","pi_pass_threshold","pi_tier2a_block_threshold","pi_tier2b_block_threshold","pi_fail_closed","pi_log_full_text_on_block","pi_allowlist_patterns","pi_safer_vendor_route"],"override":{"pi_block_threshold":0.7,"pi_mode":"alert"}},"project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","project_name":"support-bot"}]}
 type GuardrailV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []GuardrailV1Response     `json:"results"`
+
+	// Results One entry per project on this page.
+	Results []GuardrailV1Response `json:"results"`
 }
 
-// GuardrailV1Response A project's guardrails: the same objects as “/v1/projects/{id}/controls“,
-// “/pi-settings“ and “/dlp-settings“.
+// GuardrailV1Response A project's guardrails in one object: the same objects as
+// `/v1/projects/{project_id}/controls`, `/pi-settings` and `/dlp-settings`.
+//
+// Examples: {"controls":{"effective":{"allowed_regions":["NA"],"allowed_vendors":["anthropic","bedrock"],"ignored_regions":[],"ignored_vendors":[],"vendor_routing_preference":["bedrock"],"zero_data_retention":true},"override":{"regions":{"allowed_regions":["NA"],"ignored_regions":[]},"vendors":{"allowed_vendors":["anthropic","bedrock"],"ignored_vendors":[],"vendor_routing_preference":["bedrock"]},"zero_data_retention":true},"scope":"project","scope_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","sources":{"regions":"project","vendors":"project","zero_data_retention":"project"}},"dlp_settings":{"entities":[{"category":"global","display_name":"EMAIL_ADDRESS","effective_action":"block","entity_type":"EMAIL_ADDRESS","is_seeded":true,"org_action":"redact","overridden":true},{"category":"global","display_name":"DATE_TIME","effective_action":null,"entity_type":"DATE_TIME","is_seeded":true,"org_action":"log","overridden":true},{"category":"global","display_name":"CREDIT_CARD","effective_action":"redact","entity_type":"CREDIT_CARD","is_seeded":true,"org_action":"redact","overridden":false}],"override":{"DATE_TIME":{"enabled":false},"EMAIL_ADDRESS":{"action":"block","enabled":true}}},"pi_settings":{"effective":{"pi_allowlist_patterns":["(?i)ignore the previous ticket"],"pi_block_threshold":0.7,"pi_fail_closed":false,"pi_indirect_mode":"alert","pi_input_action":"block","pi_log_full_text_on_block":false,"pi_mode":"alert","pi_output_action":"redact","pi_pass_threshold":0.3,"pi_safer_vendor_route":null,"pi_tier2a_block_threshold":0.6,"pi_tier2b_block_threshold":0.45},"inherited_fields":["pi_indirect_mode","pi_input_action","pi_output_action","pi_pass_threshold","pi_tier2a_block_threshold","pi_tier2b_block_threshold","pi_fail_closed","pi_log_full_text_on_block","pi_allowlist_patterns","pi_safer_vendor_route"],"override":{"pi_block_threshold":0.7,"pi_mode":"alert"}},"project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","project_name":"support-bot"}
 type GuardrailV1Response struct {
-	// Controls The ScopedControlsResponse shape, with the project's maps typed.
+	// Controls The project's vendor, region and zero-data-retention controls.
+	//
+	// Examples: {"effective":{"allowed_regions":["NA"],"allowed_vendors":["anthropic","bedrock"],"ignored_regions":[],"ignored_vendors":[],"vendor_routing_preference":["bedrock"],"zero_data_retention":true},"override":{"regions":{"allowed_regions":["NA"],"ignored_regions":[]},"vendors":{"allowed_vendors":["anthropic","bedrock"],"ignored_vendors":[],"vendor_routing_preference":["bedrock"]},"zero_data_retention":true},"scope":"project","scope_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","sources":{"regions":"project","vendors":"project","zero_data_retention":"project"}}
 	Controls ProjectControlsV1Response `json:"controls"`
 
-	// DlpSettings The dashboard's project DLP response, with ``override`` typed like the request.
+	// DlpSettings The project's DLP settings.
+	//
+	// Examples: {"entities":[{"category":"global","display_name":"EMAIL_ADDRESS","effective_action":"block","entity_type":"EMAIL_ADDRESS","is_seeded":true,"org_action":"redact","overridden":true},{"category":"global","display_name":"DATE_TIME","effective_action":null,"entity_type":"DATE_TIME","is_seeded":true,"org_action":"log","overridden":true},{"category":"global","display_name":"CREDIT_CARD","effective_action":"redact","entity_type":"CREDIT_CARD","is_seeded":true,"org_action":"redact","overridden":false}],"override":{"DATE_TIME":{"enabled":false},"EMAIL_ADDRESS":{"action":"block","enabled":true}}}
 	DlpSettings ProjectDLPSettingsV1Response `json:"dlp_settings"`
 
-	// PiSettings The dashboard's project PI response, with ``override`` typed like the request.
-	PiSettings  ProjectPISettingsV1Response `json:"pi_settings"`
-	ProjectId   openapi_types.UUID          `json:"project_id"`
-	ProjectName string                      `json:"project_name"`
+	// PiSettings The project's prompt injection settings.
+	//
+	// Examples: {"effective":{"pi_allowlist_patterns":["(?i)ignore the previous ticket"],"pi_block_threshold":0.7,"pi_fail_closed":false,"pi_indirect_mode":"alert","pi_input_action":"block","pi_log_full_text_on_block":false,"pi_mode":"alert","pi_output_action":"redact","pi_pass_threshold":0.3,"pi_safer_vendor_route":null,"pi_tier2a_block_threshold":0.6,"pi_tier2b_block_threshold":0.45},"inherited_fields":["pi_indirect_mode","pi_input_action","pi_output_action","pi_pass_threshold","pi_tier2a_block_threshold","pi_tier2b_block_threshold","pi_fail_closed","pi_log_full_text_on_block","pi_allowlist_patterns","pi_safer_vendor_route"],"override":{"pi_block_threshold":0.7,"pi_mode":"alert"}}
+	PiSettings ProjectPISettingsV1Response `json:"pi_settings"`
+
+	// ProjectId The project's id.
+	ProjectId openapi_types.UUID `json:"project_id"`
+
+	// ProjectName The project's name.
+	ProjectName string `json:"project_name"`
 }
 
 // HTTPValidationError defines model for HTTPValidationError.
@@ -1636,24 +1788,29 @@ type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
 }
 
-// KeyCreateRequest defines model for KeyCreateRequest.
+// KeyCreateRequest An API key to create.
+//
+// Examples: {"allowed_models":["anthropic/claude-sonnet-4-6","openai/*"],"limit":50,"limit_reset":"monthly","name":"customer-acme","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91"}
 type KeyCreateRequest struct {
+	// AllowedModels Canonical `provider/model` ids this key may call, where a trailing `*` matches by prefix. Omit or send null for no restriction; an empty list blocks every model.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
 
-	// Disabled Create the key disabled.
+	// Disabled Create the key disabled. A disabled key can't call the gateway.
 	Disabled *bool `json:"disabled,omitempty"`
 
-	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires. Must be in the future; a value without an offset is UTC.
+	// ExpiresAt When the key stops working. Null means it never expires. Must be in the future; a value without an offset is UTC.
 	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
-	// Limit USD spend cap over the limit_reset window. Must be above 0.
+	// Limit Spend cap in USD over the `limit_reset` window. Must be above 0. Omit for no cap.
 	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
 
-	// LimitReset The window `limit` applies to. Monthly when unset.
+	// LimitReset The window the spend cap applies to, reset at midnight UTC: `daily`, `weekly` (from Monday) or `monthly` (from the 1st). Monthly when unset.
 	LimitReset nullable.Nullable[KeyCreateRequestLimitReset] `json:"limit_reset,omitempty"`
-	Name       nullable.Nullable[string]                     `json:"name,omitempty"`
 
-	// ProjectId The project the key is scoped to. Can't be changed after creation.
+	// Name A name for the key, such as `customer-acme` or `alice@acme.com`. Shown in the dashboard and usage views.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// ProjectId Project to scope the key to. A key's project can't be changed after creation.
 	ProjectId nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
 
 	// RoutingPolicyId A routing policy to bind the key to: an org-level policy or one scoped to the key's project. Can be changed later.
@@ -1663,8 +1820,11 @@ type KeyCreateRequest struct {
 // KeyCreateRequestLimitReset defines model for KeyCreateRequest.LimitReset.
 type KeyCreateRequestLimitReset string
 
-// KeyCreateResponse defines model for KeyCreateResponse.
+// KeyCreateResponse The new API key, with the raw key in `key`.
+//
+// Examples: {"allowed_models":["anthropic/claude-sonnet-4-6","openai/*"],"budget_group_id":null,"byok_usage":0,"byok_usage_daily":0,"byok_usage_monthly":0,"byok_usage_weekly":0,"created_at":"2026-09-14T09:30:00Z","creator_user_id":null,"disabled":false,"expires_at":null,"hash":"5f3c8a1e9b2d4f6a7c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f2a4c6e8b0d1f3a","key":"mg_8Kx2pQrShT1uVwXyZ3aB4cD5eF6gH7iJ8kL9mN0oPq","label":"mg_8Kx2pQr","limit":50,"limit_remaining":50,"limit_reset":"monthly","name":"customer-acme","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","routing_policy_id":null,"updated_at":"2026-09-14T09:30:00Z","usage":0,"usage_daily":0,"usage_monthly":0,"usage_weekly":0}
 type KeyCreateResponse struct {
+	// AllowedModels Models the key may call. Null means unrestricted; an empty list blocks every model.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
 
 	// BudgetGroupId The Merge for Workforce budget group the key draws down.
@@ -1680,41 +1840,51 @@ type KeyCreateResponse struct {
 	ByokUsageMonthly float64 `json:"byok_usage_monthly"`
 
 	// ByokUsageWeekly The BYOK part of usage_weekly.
-	ByokUsageWeekly float64                      `json:"byok_usage_weekly"`
-	CreatedAt       nullable.Nullable[time.Time] `json:"created_at,omitempty"`
+	ByokUsageWeekly float64 `json:"byok_usage_weekly"`
+
+	// CreatedAt When the key was created.
+	CreatedAt nullable.Nullable[time.Time] `json:"created_at,omitempty"`
 
 	// CreatorUserId The dashboard user who created the key. Null for keys created with a management key.
 	CreatorUserId nullable.Nullable[openapi_types.UUID] `json:"creator_user_id"`
-	Disabled      bool                                  `json:"disabled"`
 
-	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires.
+	// Disabled Whether the key is disabled. A disabled key can't call the gateway but isn't deleted.
+	Disabled bool `json:"disabled"`
+
+	// ExpiresAt When the key stops working. Null means it never expires.
 	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
-	// Hash The key's id: the SHA-256 hash of the raw key.
+	// Hash Stable identifier for the key: the SHA-256 hash of the raw key, as 64 hex characters. Not the secret, so it's safe to store and log. Use it in get, update and delete calls.
 	Hash string `json:"hash"`
 
-	// Key The raw API key. Returned only once, in this response; store it now.
+	// Key The raw API key, prefixed `mg_`. Returned only once, in this response: store it now, it can't be retrieved later.
 	Key string `json:"key"`
 
-	// Label The key's first characters, for display.
-	Label string                     `json:"label"`
+	// Label Display label: the key's first characters, like `mg_8Kx2pQr`. Not the secret.
+	Label string `json:"label"`
+
+	// Limit Spend cap in USD over the `limit_reset` window. Null means no cap.
 	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
 
-	// LimitRemaining limit minus usage, never below 0.
+	// LimitRemaining Spend left in USD before the cap: `limit` minus `usage`, never below 0. Null when there's no limit.
 	LimitRemaining nullable.Nullable[float64] `json:"limit_remaining,omitempty"`
 
-	// LimitReset The window `limit` applies to. Monthly when unset.
+	// LimitReset The window the spend cap applies to, reset at midnight UTC: `daily`, `weekly` (from Monday) or `monthly` (from the 1st). Monthly when unset.
 	LimitReset nullable.Nullable[KeyCreateResponseLimitReset] `json:"limit_reset,omitempty"`
-	Name       nullable.Nullable[string]                      `json:"name,omitempty"`
 
-	// ProjectId The project the key is scoped to. Can't be changed after creation.
-	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
-	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+	// Name The key's name.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// ProjectId Project the key is scoped to, or null for an organization-wide key. Can't be changed after creation.
+	ProjectId nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+
+	// RoutingPolicyId Routing policy bound to the key, if any.
+	RoutingPolicyId nullable.Nullable[string] `json:"routing_policy_id,omitempty"`
 
 	// UpdatedAt When the key last changed.
 	UpdatedAt nullable.Nullable[time.Time] `json:"updated_at,omitempty"`
 
-	// Usage USD spend in the current limit_reset window.
+	// Usage Spend in USD in the current `limit_reset` window.
 	Usage float64 `json:"usage"`
 
 	// UsageDaily USD spend today.
@@ -1730,18 +1900,28 @@ type KeyCreateResponse struct {
 // KeyCreateResponseLimitReset defines model for KeyCreateResponse.LimitReset.
 type KeyCreateResponseLimitReset string
 
-// KeyListResponse List envelope for “GET /v1/keys“.
+// KeyListResponse A page of API keys.
+//
+// Examples: {"data":[{"allowed_models":["anthropic/claude-sonnet-4-6","openai/*"],"budget_group_id":null,"byok_usage":4.1,"byok_usage_daily":0.3,"byok_usage_monthly":4.1,"byok_usage_weekly":1.05,"created_at":"2026-06-02T17:04:00Z","creator_user_id":null,"disabled":false,"expires_at":null,"hash":"5f3c8a1e9b2d4f6a7c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f2a4c6e8b0d1f3a","label":"mg_8Kx2pQr","limit":50,"limit_remaining":37.6,"limit_reset":"monthly","name":"customer-acme","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","routing_policy_id":null,"updated_at":"2026-09-14T09:30:00Z","usage":12.4,"usage_daily":0.82,"usage_monthly":12.4,"usage_weekly":3.15}],"has_more":false,"object":"list"}
 type KeyListResponse struct {
-	Data    []KeyObject            `json:"data"`
-	HasMore *bool                  `json:"has_more,omitempty"`
-	Object  *KeyListResponseObject `json:"object,omitempty"`
+	// Data The keys on this page, newest first.
+	Data []KeyObject `json:"data"`
+
+	// HasMore True when more keys remain beyond this page. Advance `offset` until it's false.
+	HasMore *bool `json:"has_more,omitempty"`
+
+	// Object Always `list`.
+	Object *KeyListResponseObject `json:"object,omitempty"`
 }
 
-// KeyListResponseObject defines model for KeyListResponse.Object.
+// KeyListResponseObject Always `list`.
 type KeyListResponseObject string
 
-// KeyObject OpenRouter-shaped key object with usage + limit fields.
+// KeyObject An API key and its current spend.
+//
+// Examples: {"allowed_models":["anthropic/claude-sonnet-4-6","openai/*"],"budget_group_id":null,"byok_usage":4.1,"byok_usage_daily":0.3,"byok_usage_monthly":4.1,"byok_usage_weekly":1.05,"created_at":"2026-06-02T17:04:00Z","creator_user_id":null,"disabled":false,"expires_at":null,"hash":"5f3c8a1e9b2d4f6a7c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f2a4c6e8b0d1f3a","label":"mg_8Kx2pQr","limit":50,"limit_remaining":37.6,"limit_reset":"monthly","name":"customer-acme","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","routing_policy_id":null,"updated_at":"2026-09-14T09:30:00Z","usage":12.4,"usage_daily":0.82,"usage_monthly":12.4,"usage_weekly":3.15}
 type KeyObject struct {
+	// AllowedModels Models the key may call. Null means unrestricted; an empty list blocks every model.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
 
 	// BudgetGroupId The Merge for Workforce budget group the key draws down.
@@ -1757,38 +1937,48 @@ type KeyObject struct {
 	ByokUsageMonthly float64 `json:"byok_usage_monthly"`
 
 	// ByokUsageWeekly The BYOK part of usage_weekly.
-	ByokUsageWeekly float64                      `json:"byok_usage_weekly"`
-	CreatedAt       nullable.Nullable[time.Time] `json:"created_at,omitempty"`
+	ByokUsageWeekly float64 `json:"byok_usage_weekly"`
+
+	// CreatedAt When the key was created.
+	CreatedAt nullable.Nullable[time.Time] `json:"created_at,omitempty"`
 
 	// CreatorUserId The dashboard user who created the key. Null for keys created with a management key.
 	CreatorUserId nullable.Nullable[openapi_types.UUID] `json:"creator_user_id"`
-	Disabled      bool                                  `json:"disabled"`
 
-	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires.
+	// Disabled Whether the key is disabled. A disabled key can't call the gateway but isn't deleted.
+	Disabled bool `json:"disabled"`
+
+	// ExpiresAt When the key stops working. Null means it never expires.
 	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
-	// Hash The key's id: the SHA-256 hash of the raw key.
+	// Hash Stable identifier for the key: the SHA-256 hash of the raw key, as 64 hex characters. Not the secret, so it's safe to store and log. Use it in get, update and delete calls.
 	Hash string `json:"hash"`
 
-	// Label The key's first characters, for display.
-	Label string                     `json:"label"`
+	// Label Display label: the key's first characters, like `mg_8Kx2pQr`. Not the secret.
+	Label string `json:"label"`
+
+	// Limit Spend cap in USD over the `limit_reset` window. Null means no cap.
 	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
 
-	// LimitRemaining limit minus usage, never below 0.
+	// LimitRemaining Spend left in USD before the cap: `limit` minus `usage`, never below 0. Null when there's no limit.
 	LimitRemaining nullable.Nullable[float64] `json:"limit_remaining,omitempty"`
 
-	// LimitReset The window `limit` applies to. Monthly when unset.
+	// LimitReset The window the spend cap applies to, reset at midnight UTC: `daily`, `weekly` (from Monday) or `monthly` (from the 1st). Monthly when unset.
 	LimitReset nullable.Nullable[KeyObjectLimitReset] `json:"limit_reset,omitempty"`
-	Name       nullable.Nullable[string]              `json:"name,omitempty"`
 
-	// ProjectId The project the key is scoped to. Can't be changed after creation.
-	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
-	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+	// Name The key's name.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// ProjectId Project the key is scoped to, or null for an organization-wide key. Can't be changed after creation.
+	ProjectId nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+
+	// RoutingPolicyId Routing policy bound to the key, if any.
+	RoutingPolicyId nullable.Nullable[string] `json:"routing_policy_id,omitempty"`
 
 	// UpdatedAt When the key last changed.
 	UpdatedAt nullable.Nullable[time.Time] `json:"updated_at,omitempty"`
 
-	// Usage USD spend in the current limit_reset window.
+	// Usage Spend in USD in the current `limit_reset` window.
 	Usage float64 `json:"usage"`
 
 	// UsageDaily USD spend today.
@@ -1804,71 +1994,111 @@ type KeyObject struct {
 // KeyObjectLimitReset defines model for KeyObject.LimitReset.
 type KeyObjectLimitReset string
 
-// KeyUpdateRequest defines model for KeyUpdateRequest.
+// KeyUpdateRequest Only the fields sent change.
+//
+// Examples: {"disabled":true,"limit":100}
 type KeyUpdateRequest struct {
+	// AllowedModels Replaces the model allowlist. Send null to remove the restriction, or an empty list to block every model.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
 
 	// BudgetGroupId Managed by Merge for Workforce; sending this field is a 400.
 	BudgetGroupId nullable.Nullable[string] `json:"budget_group_id,omitempty"`
-	Disabled      nullable.Nullable[bool]   `json:"disabled,omitempty"`
 
-	// ExpiresAt When the key expires. From then on the data plane refuses it. Null means it never expires. Must be in the future; a value without an offset is UTC. Send null to remove the expiry; omit it to leave the expiry unchanged.
+	// Disabled Send true to disable the key, false to enable it again.
+	Disabled nullable.Nullable[bool] `json:"disabled,omitempty"`
+
+	// ExpiresAt When the key stops working. Null means it never expires. Must be in the future; a value without an offset is UTC. Send null to remove the expiry; omit it to leave the expiry unchanged.
 	ExpiresAt nullable.Nullable[time.Time] `json:"expires_at,omitempty"`
 
-	// Limit USD spend cap over the limit_reset window. Omit to keep the current limit; send null to remove it.
+	// Limit New spend cap in USD. Omit to keep the current cap; send null to remove it.
 	Limit nullable.Nullable[float64] `json:"limit,omitempty"`
 
-	// LimitReset The window `limit` applies to. Monthly when unset.
+	// LimitReset New window for the spend cap: `daily`, `weekly` or `monthly`, reset at midnight UTC.
 	LimitReset nullable.Nullable[KeyUpdateRequestLimitReset] `json:"limit_reset,omitempty"`
-	Name       nullable.Nullable[string]                     `json:"name,omitempty"`
+
+	// Name New name for the key.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
 
 	// ProjectId Can't be changed after creation; sending a value is a 400.
-	ProjectId       nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
-	RoutingPolicyId nullable.Nullable[string]             `json:"routing_policy_id,omitempty"`
+	ProjectId nullable.Nullable[openapi_types.UUID] `json:"project_id,omitempty"`
+
+	// RoutingPolicyId Routing policy to bind the key to. Send null to unbind it, so the key falls back to its project's or the organization's default.
+	RoutingPolicyId nullable.Nullable[string] `json:"routing_policy_id,omitempty"`
 }
 
 // KeyUpdateRequestLimitReset defines model for KeyUpdateRequest.LimitReset.
 type KeyUpdateRequestLimitReset string
 
-// MemberV1List List envelope for “GET /v1/members“. Pass “next“ as “cursor“.
+// MemberV1List A page of organization members.
+//
+// Examples: {"next":null,"previous":null,"results":[{"email":"jordan@acme.com","id":"2b4d6f8a-0c1e-4a3c-8e5a-7c9e1b3d5f47","name":"Jordan Lee","role":"Admin"}]}
 type MemberV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []MemberV1Response        `json:"results"`
+
+	// Results The members on this page.
+	Results []MemberV1Response `json:"results"`
 }
 
-// MemberV1Response defines model for MemberV1Response.
+// MemberV1Response A member of the organization.
+//
+// Examples: {"email":"jordan@acme.com","id":"2b4d6f8a-0c1e-4a3c-8e5a-7c9e1b3d5f47","name":"Jordan Lee","role":"Admin"}
 type MemberV1Response struct {
+	// Email The member's email address.
 	Email string `json:"email"`
 
 	// Id The membership id.
-	Id   openapi_types.UUID        `json:"id"`
+	Id openapi_types.UUID `json:"id"`
+
+	// Name The member's name, if set.
 	Name nullable.Nullable[string] `json:"name"`
 
 	// Role The member's role name, like `Admin`.
 	Role nullable.Nullable[string] `json:"role"`
 }
 
-// ModelAliasV1List List envelope for “GET /v1/model-aliases“. Pass “next“ as “cursor“.
+// ModelAliasV1List A page of model aliases.
+//
+// Examples: {"next":null,"previous":null,"results":[{"created_at":"2026-06-02T17:04:00Z","description":"The model support-bot calls by default.","full_name":"@alias/support-default","id":"7f9b1d3e-5a2c-4e6b-8d0a-4b6d8f0a2c58","is_active":true,"managed_by":null,"name":"support-default","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","target_model":"anthropic/claude-sonnet-4-6","target_policy_id":null,"target_type":"model","updated_at":"2026-09-14T09:30:00Z","vendor":"bedrock"}]}
 type ModelAliasV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []ModelAliasV1Response    `json:"results"`
+
+	// Results The aliases on this page.
+	Results []ModelAliasV1Response `json:"results"`
 }
 
-// ModelAliasV1Response defines model for ModelAliasV1Response.
+// ModelAliasV1Response A model alias: a name clients send as `model` that resolves to a model or
+// a routing policy.
+//
+// Examples: {"created_at":"2026-06-02T17:04:00Z","description":"The model support-bot calls by default.","full_name":"@alias/support-default","id":"7f9b1d3e-5a2c-4e6b-8d0a-4b6d8f0a2c58","is_active":true,"managed_by":null,"name":"support-default","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","target_model":"anthropic/claude-sonnet-4-6","target_policy_id":null,"target_type":"model","updated_at":"2026-09-14T09:30:00Z","vendor":"bedrock"}
 type ModelAliasV1Response struct {
-	CreatedAt   time.Time                 `json:"created_at"`
+	// CreatedAt When the alias was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description What the alias is for.
 	Description nullable.Nullable[string] `json:"description"`
 
 	// FullName `@alias/<name>`, the value clients send as `model`.
-	FullName string             `json:"full_name"`
-	Id       openapi_types.UUID `json:"id"`
-	IsActive bool               `json:"is_active"`
+	FullName string `json:"full_name"`
+
+	// Id The alias's id.
+	Id openapi_types.UUID `json:"id"`
+
+	// IsActive Whether the alias is active.
+	IsActive bool `json:"is_active"`
 
 	// ManagedBy `routing_policy` for the slug a routing policy owns; null for your own aliases.
 	ManagedBy nullable.Nullable[ModelAliasV1ResponseManagedBy] `json:"managed_by"`
-	Name      string                                           `json:"name"`
+
+	// Name The alias, without the `@alias/` prefix.
+	Name string `json:"name"`
 
 	// ProjectId The project the alias applies to; null for the whole organization.
 	ProjectId nullable.Nullable[openapi_types.UUID] `json:"project_id"`
@@ -1877,9 +2107,13 @@ type ModelAliasV1Response struct {
 	TargetModel nullable.Nullable[string] `json:"target_model"`
 
 	// TargetPolicyId Set when target_type is `routing_config`.
-	TargetPolicyId nullable.Nullable[string]      `json:"target_policy_id"`
-	TargetType     ModelAliasV1ResponseTargetType `json:"target_type"`
-	UpdatedAt      time.Time                      `json:"updated_at"`
+	TargetPolicyId nullable.Nullable[string] `json:"target_policy_id"`
+
+	// TargetType `model` resolves to one model; `routing_config` to a routing policy.
+	TargetType ModelAliasV1ResponseTargetType `json:"target_type"`
+
+	// UpdatedAt When the alias last changed.
+	UpdatedAt time.Time `json:"updated_at"`
 
 	// Vendor The vendor the target model is pinned to, if any.
 	Vendor nullable.Nullable[string] `json:"vendor"`
@@ -1888,21 +2122,32 @@ type ModelAliasV1Response struct {
 // ModelAliasV1ResponseManagedBy defines model for ModelAliasV1Response.ManagedBy.
 type ModelAliasV1ResponseManagedBy string
 
-// ModelAliasV1ResponseTargetType defines model for ModelAliasV1Response.TargetType.
+// ModelAliasV1ResponseTargetType `model` resolves to one model; `routing_config` to a routing policy.
 type ModelAliasV1ResponseTargetType string
 
-// ModelV1List List envelope for “GET /v1/organization/models“. Pass “next“ as “cursor“.
+// ModelV1List A page of models.
+//
+// Examples: {"next":null,"previous":null,"results":[{"context_window":200000,"display_name":"Claude Sonnet 4.6","expiration_date":null,"id":"anthropic/claude-sonnet-4-6","input_cost_per_million":3,"input_modalities":["text","image"],"max_output_tokens":64000,"output_cost_per_million":15,"output_modalities":["text"],"provider":"anthropic","replacement_model":null,"status":"available"}]}
 type ModelV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []ModelV1Response         `json:"results"`
+
+	// Results The models on this page.
+	Results []ModelV1Response `json:"results"`
 }
 
-// ModelV1Response defines model for ModelV1Response.
+// ModelV1Response A catalog model your organization can route to, with its list prices.
+//
+// Examples: {"context_window":200000,"display_name":"Claude Sonnet 4.6","expiration_date":null,"id":"anthropic/claude-sonnet-4-6","input_cost_per_million":3,"input_modalities":["text","image"],"max_output_tokens":64000,"output_cost_per_million":15,"output_modalities":["text"],"provider":"anthropic","replacement_model":null,"status":"available"}
 type ModelV1Response struct {
 	// ContextWindow Maximum input context, in tokens.
-	ContextWindow int    `json:"context_window"`
-	DisplayName   string `json:"display_name"`
+	ContextWindow int `json:"context_window"`
+
+	// DisplayName The model's name, like `Claude Sonnet 4.6`.
+	DisplayName string `json:"display_name"`
 
 	// ExpirationDate The day the model is retired. null when no date is set.
 	ExpirationDate nullable.Nullable[openapi_types.Date] `json:"expiration_date"`
@@ -1915,7 +2160,9 @@ type ModelV1Response struct {
 
 	// InputModalities What the model accepts, like `text`, `image`.
 	InputModalities []string `json:"input_modalities"`
-	MaxOutputTokens int      `json:"max_output_tokens"`
+
+	// MaxOutputTokens Maximum output, in tokens.
+	MaxOutputTokens int `json:"max_output_tokens"`
 
 	// OutputCostPerMillion List price per million output tokens (USD).
 	OutputCostPerMillion float64 `json:"output_cost_per_million"`
@@ -1928,174 +2175,262 @@ type ModelV1Response struct {
 
 	// ReplacementModel The model to move to once this one is retired.
 	ReplacementModel nullable.Nullable[string] `json:"replacement_model"`
-	Status           ModelV1ResponseStatus     `json:"status"`
+
+	// Status `deprecated` models are retired on `expiration_date`; move to `replacement_model`.
+	Status ModelV1ResponseStatus `json:"status"`
 }
 
-// ModelV1ResponseStatus defines model for ModelV1Response.Status.
+// ModelV1ResponseStatus `deprecated` models are retired on `expiration_date`; move to `replacement_model`.
 type ModelV1ResponseStatus string
 
 // OrganizationPISettingsV1 The organization's prompt injection policy. Projects inherit it unless
-// they override it at /v1/projects/{project_id}/pi-settings.
+// they override it at `/v1/projects/{project_id}/pi-settings`. A PUT replaces
+// the whole policy: a field you omit takes its default.
 //
-// PUT replaces the whole policy: an omitted field takes its default.
+// Examples: {"pi_allowlist_patterns":["(?i)ignore the previous ticket"],"pi_block_threshold":0.57,"pi_fail_closed":false,"pi_indirect_mode":"alert","pi_input_action":"block","pi_log_full_text_on_block":false,"pi_mode":"block","pi_output_action":"redact","pi_pass_threshold":0.3,"pi_safer_vendor_route":null,"pi_tier2a_block_threshold":0.6,"pi_tier2b_block_threshold":0.45}
 type OrganizationPISettingsV1 struct {
+	// PiAllowlistPatterns Regular expressions whose matching prompt segments skip screening. A project's patterns add to the organization's, never replacing them. A pattern that matches ordinary text, such as `.*`, is ignored.
 	PiAllowlistPatterns *[]string `json:"pi_allowlist_patterns,omitempty"`
-	PiBlockThreshold    *float64  `json:"pi_block_threshold,omitempty"`
-	PiFailClosed        *bool     `json:"pi_fail_closed,omitempty"`
 
-	// PiIndirectMode Indirect injection in tool results and documents.
-	PiIndirectMode       *OrganizationPISettingsV1PiIndirectMode `json:"pi_indirect_mode,omitempty"`
-	PiInputAction        *OrganizationPISettingsV1PiInputAction  `json:"pi_input_action,omitempty"`
-	PiLogFullTextOnBlock *bool                                   `json:"pi_log_full_text_on_block,omitempty"`
+	// PiBlockThreshold Direct injection: a prompt segment is blocked when its score, from 0 to 1, reaches this value. At least the organization's `pi_pass_threshold`.
+	PiBlockThreshold *float64 `json:"pi_block_threshold,omitempty"`
 
-	// PiMode Direct injection: off, alert (score only) or block.
-	PiMode                 *OrganizationPISettingsV1PiMode         `json:"pi_mode,omitempty"`
-	PiOutputAction         *OrganizationPISettingsV1PiOutputAction `json:"pi_output_action,omitempty"`
-	PiPassThreshold        *float64                                `json:"pi_pass_threshold,omitempty"`
-	PiSaferVendorRoute     nullable.Nullable[string]               `json:"pi_safer_vendor_route,omitempty"`
-	PiTier2aBlockThreshold *float64                                `json:"pi_tier2a_block_threshold,omitempty"`
-	PiTier2bBlockThreshold *float64                                `json:"pi_tier2b_block_threshold,omitempty"`
+	// PiFailClosed Reject requests, with `code: "sidecar_error"`, when screening is unavailable. false lets them through unscreened.
+	PiFailClosed *bool `json:"pi_fail_closed,omitempty"`
+
+	// PiIndirectMode Indirect injection, in tool results and documents: `off`, `alert` or `block`. A separate axis from `pi_mode`.
+	PiIndirectMode *OrganizationPISettingsV1PiIndirectMode `json:"pi_indirect_mode,omitempty"`
+
+	// PiInputAction Reserved: requests are screened as `pi_mode` says.
+	PiInputAction *OrganizationPISettingsV1PiInputAction `json:"pi_input_action,omitempty"`
+
+	// PiLogFullTextOnBlock Log the full text of blocked prompts.
+	PiLogFullTextOnBlock *bool `json:"pi_log_full_text_on_block,omitempty"`
+
+	// PiMode Direct injection, in the prompt a user sends: `off`, `alert` (score and record, never block) or `block`.
+	PiMode *OrganizationPISettingsV1PiMode `json:"pi_mode,omitempty"`
+
+	// PiOutputAction What the response-side check does with a leaked credential, such as an API key: `redact` replaces it with a placeholder, `observe` only records it. Other values behave like `observe`.
+	PiOutputAction *OrganizationPISettingsV1PiOutputAction `json:"pi_output_action,omitempty"`
+
+	// PiPassThreshold Reserved: no effect on screening yet. At most `pi_block_threshold`.
+	PiPassThreshold *float64 `json:"pi_pass_threshold,omitempty"`
+
+	// PiSaferVendorRoute Reserved for a future `route` action.
+	PiSaferVendorRoute nullable.Nullable[string] `json:"pi_safer_vendor_route,omitempty"`
+
+	// PiTier2aBlockThreshold Indirect injection: the score, from 0 to 1, at which the heuristic signal fires.
+	PiTier2aBlockThreshold *float64 `json:"pi_tier2a_block_threshold,omitempty"`
+
+	// PiTier2bBlockThreshold Indirect injection: the score, from 0 to 1, at which the similarity-to-known-attacks signal fires.
+	PiTier2bBlockThreshold *float64 `json:"pi_tier2b_block_threshold,omitempty"`
 }
 
-// OrganizationPISettingsV1PiIndirectMode Indirect injection in tool results and documents.
+// OrganizationPISettingsV1PiIndirectMode Indirect injection, in tool results and documents: `off`, `alert` or `block`. A separate axis from `pi_mode`.
 type OrganizationPISettingsV1PiIndirectMode string
 
-// OrganizationPISettingsV1PiInputAction defines model for OrganizationPISettingsV1.PiInputAction.
+// OrganizationPISettingsV1PiInputAction Reserved: requests are screened as `pi_mode` says.
 type OrganizationPISettingsV1PiInputAction string
 
-// OrganizationPISettingsV1PiMode Direct injection: off, alert (score only) or block.
+// OrganizationPISettingsV1PiMode Direct injection, in the prompt a user sends: `off`, `alert` (score and record, never block) or `block`.
 type OrganizationPISettingsV1PiMode string
 
-// OrganizationPISettingsV1PiOutputAction defines model for OrganizationPISettingsV1.PiOutputAction.
+// OrganizationPISettingsV1PiOutputAction What the response-side check does with a leaked credential, such as an API key: `redact` replaces it with a placeholder, `observe` only records it. Other values behave like `observe`.
 type OrganizationPISettingsV1PiOutputAction string
 
 // OrganizationPISettingsV1Response The organization's prompt injection policy. Every field is always returned.
+//
+// Examples: {"pi_allowlist_patterns":["(?i)ignore the previous ticket"],"pi_block_threshold":0.57,"pi_fail_closed":false,"pi_indirect_mode":"alert","pi_input_action":"block","pi_log_full_text_on_block":false,"pi_mode":"block","pi_output_action":"redact","pi_pass_threshold":0.3,"pi_safer_vendor_route":null,"pi_tier2a_block_threshold":0.6,"pi_tier2b_block_threshold":0.45}
 type OrganizationPISettingsV1Response struct {
+	// PiAllowlistPatterns Regular expressions whose matching prompt segments skip screening. A project's patterns add to the organization's, never replacing them. A pattern that matches ordinary text, such as `.*`, is ignored.
 	PiAllowlistPatterns []string `json:"pi_allowlist_patterns"`
-	PiBlockThreshold    float64  `json:"pi_block_threshold"`
-	PiFailClosed        bool     `json:"pi_fail_closed"`
 
-	// PiIndirectMode Indirect injection in tool results and documents.
-	PiIndirectMode       OrganizationPISettingsV1ResponsePiIndirectMode `json:"pi_indirect_mode"`
-	PiInputAction        OrganizationPISettingsV1ResponsePiInputAction  `json:"pi_input_action"`
-	PiLogFullTextOnBlock bool                                           `json:"pi_log_full_text_on_block"`
+	// PiBlockThreshold Direct injection: a prompt segment is blocked when its score, from 0 to 1, reaches this value. At least the organization's `pi_pass_threshold`.
+	PiBlockThreshold float64 `json:"pi_block_threshold"`
 
-	// PiMode Direct injection: off, alert (score only) or block.
-	PiMode                 OrganizationPISettingsV1ResponsePiMode         `json:"pi_mode"`
-	PiOutputAction         OrganizationPISettingsV1ResponsePiOutputAction `json:"pi_output_action"`
-	PiPassThreshold        float64                                        `json:"pi_pass_threshold"`
-	PiSaferVendorRoute     nullable.Nullable[string]                      `json:"pi_safer_vendor_route"`
-	PiTier2aBlockThreshold float64                                        `json:"pi_tier2a_block_threshold"`
-	PiTier2bBlockThreshold float64                                        `json:"pi_tier2b_block_threshold"`
+	// PiFailClosed Reject requests, with `code: "sidecar_error"`, when screening is unavailable. false lets them through unscreened.
+	PiFailClosed bool `json:"pi_fail_closed"`
+
+	// PiIndirectMode Indirect injection, in tool results and documents: `off`, `alert` or `block`. A separate axis from `pi_mode`.
+	PiIndirectMode OrganizationPISettingsV1ResponsePiIndirectMode `json:"pi_indirect_mode"`
+
+	// PiInputAction Reserved: requests are screened as `pi_mode` says.
+	PiInputAction OrganizationPISettingsV1ResponsePiInputAction `json:"pi_input_action"`
+
+	// PiLogFullTextOnBlock Log the full text of blocked prompts.
+	PiLogFullTextOnBlock bool `json:"pi_log_full_text_on_block"`
+
+	// PiMode Direct injection, in the prompt a user sends: `off`, `alert` (score and record, never block) or `block`.
+	PiMode OrganizationPISettingsV1ResponsePiMode `json:"pi_mode"`
+
+	// PiOutputAction What the response-side check does with a leaked credential, such as an API key: `redact` replaces it with a placeholder, `observe` only records it. Other values behave like `observe`.
+	PiOutputAction OrganizationPISettingsV1ResponsePiOutputAction `json:"pi_output_action"`
+
+	// PiPassThreshold Reserved: no effect on screening yet. At most `pi_block_threshold`.
+	PiPassThreshold float64 `json:"pi_pass_threshold"`
+
+	// PiSaferVendorRoute Reserved for a future `route` action.
+	PiSaferVendorRoute nullable.Nullable[string] `json:"pi_safer_vendor_route"`
+
+	// PiTier2aBlockThreshold Indirect injection: the score, from 0 to 1, at which the heuristic signal fires.
+	PiTier2aBlockThreshold float64 `json:"pi_tier2a_block_threshold"`
+
+	// PiTier2bBlockThreshold Indirect injection: the score, from 0 to 1, at which the similarity-to-known-attacks signal fires.
+	PiTier2bBlockThreshold float64 `json:"pi_tier2b_block_threshold"`
 }
 
-// OrganizationPISettingsV1ResponsePiIndirectMode Indirect injection in tool results and documents.
+// OrganizationPISettingsV1ResponsePiIndirectMode Indirect injection, in tool results and documents: `off`, `alert` or `block`. A separate axis from `pi_mode`.
 type OrganizationPISettingsV1ResponsePiIndirectMode string
 
-// OrganizationPISettingsV1ResponsePiInputAction defines model for OrganizationPISettingsV1Response.PiInputAction.
+// OrganizationPISettingsV1ResponsePiInputAction Reserved: requests are screened as `pi_mode` says.
 type OrganizationPISettingsV1ResponsePiInputAction string
 
-// OrganizationPISettingsV1ResponsePiMode Direct injection: off, alert (score only) or block.
+// OrganizationPISettingsV1ResponsePiMode Direct injection, in the prompt a user sends: `off`, `alert` (score and record, never block) or `block`.
 type OrganizationPISettingsV1ResponsePiMode string
 
-// OrganizationPISettingsV1ResponsePiOutputAction defines model for OrganizationPISettingsV1Response.PiOutputAction.
+// OrganizationPISettingsV1ResponsePiOutputAction What the response-side check does with a leaked credential, such as an API key: `redact` replaces it with a placeholder, `observe` only records it. Other values behave like `observe`.
 type OrganizationPISettingsV1ResponsePiOutputAction string
 
-// OrganizationSettingsV1Response defines model for OrganizationSettingsV1Response.
+// OrganizationSettingsV1Response The organization's settings. There's one per organization.
+//
+// Examples: {"auto_handle_model_deprecations":true,"created_at":"2026-03-11T15:20:00Z","id":"3f2b8c1e-6a4d-4e7f-9b21-5c8d0e7a4f13","log_payloads":false,"name":"Acme","slug":"acme","tag_definitions":[{"key":"team","values":["support","search","billing"]}],"vendor_restrictions":{"allowed_regions":[],"allowed_vendors":[],"byok_only":false,"customer_key_usage_default":null,"ignored_regions":["CN"],"ignored_vendors":[],"prefer_byok":true,"vendor_routing_preference":["bedrock"]},"web_search_mode":"native","zero_data_retention":true}
 type OrganizationSettingsV1Response struct {
 	// AutoHandleModelDeprecations Move routing policies off deprecated models automatically.
-	AutoHandleModelDeprecations bool               `json:"auto_handle_model_deprecations"`
-	CreatedAt                   time.Time          `json:"created_at"`
-	Id                          openapi_types.UUID `json:"id"`
+	AutoHandleModelDeprecations bool `json:"auto_handle_model_deprecations"`
+
+	// CreatedAt When the organization was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id The organization's id.
+	Id openapi_types.UUID `json:"id"`
 
 	// LogPayloads Store request and response bodies.
-	LogPayloads bool   `json:"log_payloads"`
-	Name        string `json:"name"`
+	LogPayloads bool `json:"log_payloads"`
 
-	// Slug Set when the organization is created. It does not change.
-	Slug           string            `json:"slug"`
+	// Name The organization's name.
+	Name string `json:"name"`
+
+	// Slug Set when the organization is created. It doesn't change.
+	Slug string `json:"slug"`
+
+	// TagDefinitions The request tag keys the organization uses, and the values each allows.
 	TagDefinitions []TagDefinitionV1 `json:"tag_definitions"`
 
-	// VendorRestrictions Which vendors and regions the organization's traffic may use.
-	VendorRestrictions VendorRestrictionsV1                        `json:"vendor_restrictions"`
-	WebSearchMode      OrganizationSettingsV1ResponseWebSearchMode `json:"web_search_mode"`
+	// VendorRestrictions Which vendors and regions requests may use, and whose credentials.
+	VendorRestrictions VendorRestrictionsV1 `json:"vendor_restrictions"`
+
+	// WebSearchMode How requests that use a vendor's built-in web search run: `auto` uses the vendor's search where the route can, else Merge's; `merge` always uses Merge's; `native` only the vendor's, failing with 400 where the route can't.
+	WebSearchMode OrganizationSettingsV1ResponseWebSearchMode `json:"web_search_mode"`
 
 	// ZeroDataRetention Route only to vendors that retain no data.
 	ZeroDataRetention bool `json:"zero_data_retention"`
 }
 
-// OrganizationSettingsV1ResponseWebSearchMode defines model for OrganizationSettingsV1Response.WebSearchMode.
+// OrganizationSettingsV1ResponseWebSearchMode How requests that use a vendor's built-in web search run: `auto` uses the vendor's search where the route can, else Merge's; `merge` always uses Merge's; `native` only the vendor's, failing with 400 where the route can't.
 type OrganizationSettingsV1ResponseWebSearchMode string
 
 // OrganizationSettingsV1Update Only the fields sent change.
+//
+// Examples: {"tag_definitions":[{"key":"team","values":["support","search","billing"]}],"web_search_mode":"native","zero_data_retention":true}
 type OrganizationSettingsV1Update struct {
-	// AutoHandleModelDeprecations Omit, or send null, to keep the current value.
+	// AutoHandleModelDeprecations Move routing policies off deprecated models automatically. Omit, or send null, to keep the current value.
 	AutoHandleModelDeprecations nullable.Nullable[bool] `json:"auto_handle_model_deprecations,omitempty"`
 
-	// LogPayloads Omit, or send null, to keep the current value.
+	// LogPayloads Store request and response bodies. Omit, or send null, to keep the current value.
 	LogPayloads nullable.Nullable[bool] `json:"log_payloads,omitempty"`
 
-	// Name Omit, or send null, to keep the current value.
+	// Name The organization's name. Omit, or send null, to keep the current value.
 	Name nullable.Nullable[string] `json:"name,omitempty"`
 
-	// TagDefinitions Replaces the whole list. Omit, or send null, to keep the current value.
+	// TagDefinitions The request tag keys the organization uses, and the values each allows. Replaces the whole list. Omit, or send null, to keep the current value.
 	TagDefinitions nullable.Nullable[[]TagDefinitionV1] `json:"tag_definitions,omitempty"`
 
 	// VendorRestrictions Replaces the whole object. Omit, or send null, to keep the current value.
 	VendorRestrictions nullable.Nullable[VendorRestrictionsV1] `json:"vendor_restrictions,omitempty"`
 
-	// WebSearchMode Omit, or send null, to keep the current value.
+	// WebSearchMode How requests that use a vendor's built-in web search run: `auto` uses the vendor's search where the route can, else Merge's; `merge` always uses Merge's; `native` only the vendor's, failing with 400 where the route can't. Omit, or send null, to keep the current value.
 	WebSearchMode nullable.Nullable[OrganizationSettingsV1UpdateWebSearchMode] `json:"web_search_mode,omitempty"`
 
-	// ZeroDataRetention Omit, or send null, to keep the current value.
+	// ZeroDataRetention Route only to vendors that retain no data. Omit, or send null, to keep the current value.
 	ZeroDataRetention nullable.Nullable[bool] `json:"zero_data_retention,omitempty"`
 }
 
 // OrganizationSettingsV1UpdateWebSearchMode defines model for OrganizationSettingsV1Update.WebSearchMode.
 type OrganizationSettingsV1UpdateWebSearchMode string
 
-// OrganizationUsageV1Response Org spend for the range. “projects“, “api_keys“ and “vendors“ are
-// present only for the matching “group_by“. They are never null, so the
-// None default is kept out of the schema.
+// OrganizationUsageV1Response The organization's spend for the range. `projects`, `api_keys` and
+// `vendors` are present only for the matching `group_by`.
+//
+// Examples: {"byok_spend":371.85,"end":"2026-09-30","merge_hosted_spend":902.17,"model_spend":{"anthropic/claude-sonnet-4-6":811.4,"openai/gpt-5-mini":74.5,"openai/gpt-5.5":398.62},"model_spend_granularity":"month","projects":[{"byok_spend":371.85,"merge_hosted_spend":902.17,"project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","request_count":48210,"total_spend":1284.52,"web_search_spend":10.5}],"request_count":48210,"start":"2026-09-01","total_spend":1284.52,"web_search_spend":10.5}
 type OrganizationUsageV1Response struct {
+	// ApiKeys Spend per API key. Present with `group_by=api_key`.
 	ApiKeys *[]APIKeySpendV1 `json:"api_keys,omitempty"`
 
-	// ByokSpend BYOK spend at list price.
+	// ByokSpend Spend on your own provider credentials (BYOK), at list price, USD.
 	ByokSpend float64 `json:"byok_spend"`
-	End       string  `json:"end"`
 
-	// MergeHostedSpend Spend on Merge-managed credentials.
+	// End Last day of the range, inclusive, `YYYY-MM-DD`.
+	End string `json:"end"`
+
+	// MergeHostedSpend Spend on Merge-managed credentials, USD.
 	MergeHostedSpend float64 `json:"merge_hosted_spend"`
 
-	// ModelSpend Spend per `provider/model`.
+	// ModelSpend Spend in USD per `provider/model`, with BYOK spend at list price. Covers the whole months the range overlaps.
 	ModelSpend map[string]float64 `json:"model_spend"`
 
-	// ModelSpendGranularity model_spend and vendors cover the whole months overlapping [start, end].
+	// ModelSpendGranularity `model_spend` and `vendors` cover the whole months overlapping `start` to `end`.
 	ModelSpendGranularity OrganizationUsageV1ResponseModelSpendGranularity `json:"model_spend_granularity"`
-	Projects              *[]ProjectSpendV1                                `json:"projects,omitempty"`
-	RequestCount          int                                              `json:"request_count"`
-	Start                 string                                           `json:"start"`
-	TotalSpend            float64                                          `json:"total_spend"`
-	Vendors               *map[string]float64                              `json:"vendors,omitempty"`
 
-	// WebSearchSpend Server-tool (web search) cost.
+	// Projects Spend per project. Present with `group_by=project`.
+	Projects *[]ProjectSpendV1 `json:"projects,omitempty"`
+
+	// RequestCount Number of requests.
+	RequestCount int `json:"request_count"`
+
+	// Start First day of the range, `YYYY-MM-DD`.
+	Start string `json:"start"`
+
+	// TotalSpend All spend, USD.
+	TotalSpend float64 `json:"total_spend"`
+
+	// Vendors Spend in USD per serving vendor, by month like `model_spend`. Present with `group_by=vendor`.
+	Vendors *map[string]float64 `json:"vendors,omitempty"`
+
+	// WebSearchSpend Server-side web search cost, USD.
 	WebSearchSpend float64 `json:"web_search_spend"`
 }
 
-// OrganizationUsageV1ResponseModelSpendGranularity model_spend and vendors cover the whole months overlapping [start, end].
+// OrganizationUsageV1ResponseModelSpendGranularity `model_spend` and `vendors` cover the whole months overlapping `start` to `end`.
 type OrganizationUsageV1ResponseModelSpendGranularity string
 
-// PIProtectionOverrideV1 The dashboard's PI override, with its fixed-value fields typed. Same
-// values and validation: the dashboard model's validators still run.
+// PIProtectionOverrideV1 The prompt injection fields a project sets. Fields it doesn't set
+// inherit the organization's value, and come back null.
+//
+// Examples: {"pi_block_threshold":0.7,"pi_mode":"alert"}
 type PIProtectionOverrideV1 struct {
-	PiAllowlistPatterns    nullable.Nullable[[]string]                             `json:"pi_allowlist_patterns,omitempty"`
-	PiBlockThreshold       nullable.Nullable[float64]                              `json:"pi_block_threshold,omitempty"`
-	PiFailClosed           nullable.Nullable[bool]                                 `json:"pi_fail_closed,omitempty"`
-	PiIndirectMode         nullable.Nullable[PIProtectionOverrideV1PiIndirectMode] `json:"pi_indirect_mode,omitempty"`
-	PiMode                 nullable.Nullable[PIProtectionOverrideV1PiMode]         `json:"pi_mode,omitempty"`
-	PiOutputAction         nullable.Nullable[PIProtectionOverrideV1PiOutputAction] `json:"pi_output_action,omitempty"`
-	PiTier2aBlockThreshold nullable.Nullable[float64]                              `json:"pi_tier2a_block_threshold,omitempty"`
-	PiTier2bBlockThreshold nullable.Nullable[float64]                              `json:"pi_tier2b_block_threshold,omitempty"`
+	// PiAllowlistPatterns Regular expressions whose matching prompt segments skip screening. A project's patterns add to the organization's, never replacing them. A pattern that matches ordinary text, such as `.*`, is ignored.
+	PiAllowlistPatterns nullable.Nullable[[]string] `json:"pi_allowlist_patterns,omitempty"`
+
+	// PiBlockThreshold Direct injection: a prompt segment is blocked when its score, from 0 to 1, reaches this value. At least the organization's `pi_pass_threshold`.
+	PiBlockThreshold nullable.Nullable[float64] `json:"pi_block_threshold,omitempty"`
+
+	// PiFailClosed Reject requests, with `code: "sidecar_error"`, when screening is unavailable. false lets them through unscreened.
+	PiFailClosed nullable.Nullable[bool] `json:"pi_fail_closed,omitempty"`
+
+	// PiIndirectMode Indirect injection, in tool results and documents: `off`, `alert` or `block`. A separate axis from `pi_mode`.
+	PiIndirectMode nullable.Nullable[PIProtectionOverrideV1PiIndirectMode] `json:"pi_indirect_mode,omitempty"`
+
+	// PiMode Direct injection, in the prompt a user sends: `off`, `alert` (score and record, never block) or `block`.
+	PiMode nullable.Nullable[PIProtectionOverrideV1PiMode] `json:"pi_mode,omitempty"`
+
+	// PiOutputAction What the response-side check does with a leaked credential, such as an API key: `redact` replaces it with a placeholder, `observe` only records it. Other values behave like `observe`.
+	PiOutputAction nullable.Nullable[PIProtectionOverrideV1PiOutputAction] `json:"pi_output_action,omitempty"`
+
+	// PiTier2aBlockThreshold Indirect injection: the score, from 0 to 1, at which the heuristic signal fires.
+	PiTier2aBlockThreshold nullable.Nullable[float64] `json:"pi_tier2a_block_threshold,omitempty"`
+
+	// PiTier2bBlockThreshold Indirect injection: the score, from 0 to 1, at which the similarity-to-known-attacks signal fires.
+	PiTier2bBlockThreshold nullable.Nullable[float64] `json:"pi_tier2b_block_threshold,omitempty"`
 }
 
 // PIProtectionOverrideV1PiIndirectMode defines model for PIProtectionOverrideV1.PiIndirectMode.
@@ -2107,37 +2442,46 @@ type PIProtectionOverrideV1PiMode string
 // PIProtectionOverrideV1PiOutputAction defines model for PIProtectionOverrideV1.PiOutputAction.
 type PIProtectionOverrideV1PiOutputAction string
 
-// PIProtectionSettings Per-org PI Protection settings.
-//
-// Mirrors merge_gateway.policy.pi_protection.config.PIProtectionSettings
-// field-for-field. Defaults match the dataclass on the data-plane side.
-//
-// `pi_mode` is the master switch + mode selector:
-// - "off": pi_protection module bypassed entirely
-// - "alert": score for telemetry, never block
-// - "block": block when Tier 1 score >= pi_block_threshold
-//
-// History: replaces `pi_enabled: bool` + `pi_mode: shadow|enforce` +
-// `pi_universal_floor` shape. Universal floor's block behavior was
-// removed 2026-05-11 to fully respect customer enforcement choice.
-type PIProtectionSettings struct {
-	PiAllowlistPatterns    *[]string                 `json:"pi_allowlist_patterns,omitempty"`
-	PiBlockThreshold       *float64                  `json:"pi_block_threshold,omitempty"`
-	PiFailClosed           *bool                     `json:"pi_fail_closed,omitempty"`
-	PiIndirectMode         *string                   `json:"pi_indirect_mode,omitempty"`
-	PiInputAction          *string                   `json:"pi_input_action,omitempty"`
-	PiLogFullTextOnBlock   *bool                     `json:"pi_log_full_text_on_block,omitempty"`
-	PiMode                 *string                   `json:"pi_mode,omitempty"`
-	PiOutputAction         *string                   `json:"pi_output_action,omitempty"`
-	PiPassThreshold        *float64                  `json:"pi_pass_threshold,omitempty"`
-	PiSaferVendorRoute     nullable.Nullable[string] `json:"pi_safer_vendor_route,omitempty"`
-	PiTier2aBlockThreshold *float64                  `json:"pi_tier2a_block_threshold,omitempty"`
-	PiTier2bBlockThreshold *float64                  `json:"pi_tier2b_block_threshold,omitempty"`
+// PIProtectionSettingsV1 A prompt injection policy.
+type PIProtectionSettingsV1 struct {
+	// PiAllowlistPatterns Regular expressions whose matching prompt segments skip screening. A project's patterns add to the organization's, never replacing them. A pattern that matches ordinary text, such as `.*`, is ignored.
+	PiAllowlistPatterns *[]string `json:"pi_allowlist_patterns,omitempty"`
+
+	// PiBlockThreshold Direct injection: a prompt segment is blocked when its score, from 0 to 1, reaches this value. At least the organization's `pi_pass_threshold`.
+	PiBlockThreshold *float64 `json:"pi_block_threshold,omitempty"`
+
+	// PiFailClosed Reject requests, with `code: "sidecar_error"`, when screening is unavailable. false lets them through unscreened.
+	PiFailClosed *bool `json:"pi_fail_closed,omitempty"`
+
+	// PiIndirectMode Indirect injection, in tool results and documents: `off`, `alert` or `block`. A separate axis from `pi_mode`.
+	PiIndirectMode *string `json:"pi_indirect_mode,omitempty"`
+
+	// PiInputAction Reserved: requests are screened as `pi_mode` says.
+	PiInputAction *string `json:"pi_input_action,omitempty"`
+
+	// PiLogFullTextOnBlock Log the full text of blocked prompts.
+	PiLogFullTextOnBlock *bool `json:"pi_log_full_text_on_block,omitempty"`
+
+	// PiMode Direct injection, in the prompt a user sends: `off`, `alert` (score and record, never block) or `block`.
+	PiMode *string `json:"pi_mode,omitempty"`
+
+	// PiOutputAction What the response-side check does with a leaked credential, such as an API key: `redact` replaces it with a placeholder, `observe` only records it. Other values behave like `observe`.
+	PiOutputAction *string `json:"pi_output_action,omitempty"`
+
+	// PiPassThreshold Reserved: no effect on screening yet. At most `pi_block_threshold`.
+	PiPassThreshold *float64 `json:"pi_pass_threshold,omitempty"`
+
+	// PiSaferVendorRoute Reserved for a future `route` action.
+	PiSaferVendorRoute nullable.Nullable[string] `json:"pi_safer_vendor_route,omitempty"`
+
+	// PiTier2aBlockThreshold Indirect injection: the score, from 0 to 1, at which the heuristic signal fires.
+	PiTier2aBlockThreshold *float64 `json:"pi_tier2a_block_threshold,omitempty"`
+
+	// PiTier2bBlockThreshold Indirect injection: the score, from 0 to 1, at which the similarity-to-known-attacks signal fires.
+	PiTier2bBlockThreshold *float64 `json:"pi_tier2b_block_threshold,omitempty"`
 }
 
-// PolicyV2Response The v2 policy shape built by “policy_to_v2_response“, minus
-// “is_default“ (the org surface adds it; a project's single scoped policy
-// has no default semantics).
+// PolicyV2Response A routing policy: how the gateway picks the model for a request.
 type PolicyV2Response struct {
 	// AllowedModels INTELLIGENT only. In the order they were sent.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models"`
@@ -2145,232 +2489,276 @@ type PolicyV2Response struct {
 	// AllowedProviders INTELLIGENT only. The providers of allowed_models, sorted. Always rebuilt from allowed_models; never stored.
 	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers"`
 
-	// Axis INTELLIGENT only. The optimization axis.
-	Axis        nullable.Nullable[PolicyV2ResponseAxis] `json:"axis"`
-	CreatedAt   time.Time                               `json:"created_at"`
-	Description nullable.Nullable[string]               `json:"description"`
-	Id          string                                  `json:"id"`
+	// Axis INTELLIGENT only, else null. What the router optimizes for: `COST`, `PERFORMANCE` or `CAPABILITY`.
+	Axis nullable.Nullable[PolicyV2ResponseAxis] `json:"axis"`
 
-	// Model Ready-to-send model-field string (`@alias/<slug>`).
-	Model      nullable.Nullable[string] `json:"model"`
-	ModifiedAt time.Time                 `json:"modified_at"`
-	Name       string                    `json:"name"`
+	// CreatedAt When the policy was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description What the policy is for.
+	Description nullable.Nullable[string] `json:"description"`
+
+	// Id The policy's id. It stays the same across updates.
+	Id string `json:"id"`
+
+	// Model The ready-to-send model string for this policy, like "@alias/fast-experiment". Send it as the `model` in any gateway request to route with this policy.
+	Model nullable.Nullable[string] `json:"model"`
+
+	// ModifiedAt When the policy last changed.
+	ModifiedAt time.Time `json:"modified_at"`
+
+	// Name The policy's name.
+	Name string `json:"name"`
 
 	// PriorityOrder PRIORITY only. Sorted by priority.
 	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order"`
 
-	// Slug The policy's model-field handle, when it has one.
-	Slug     nullable.Nullable[string] `json:"slug"`
-	Strategy PolicyV2ResponseStrategy  `json:"strategy"`
+	// Slug The policy's model alias as a bare name, like "fast-experiment". Null only when no alias could be made, such as an organization at its alias limit.
+	Slug nullable.Nullable[string] `json:"slug"`
+
+	// Strategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
+	Strategy PolicyV2ResponseStrategy `json:"strategy"`
 }
 
 // PolicyV2ResponseAxis defines model for PolicyV2Response.Axis.
 type PolicyV2ResponseAxis string
 
-// PolicyV2ResponseStrategy defines model for PolicyV2Response.Strategy.
+// PolicyV2ResponseStrategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
 type PolicyV2ResponseStrategy string
 
-// PriorityModel defines model for PriorityModel.
+// PriorityModel One model in a PRIORITY policy's fallback order.
 type PriorityModel struct {
-	Model    string `json:"model"`
-	Priority int    `json:"priority"`
+	// Model Canonical `provider/model` id.
+	Model string `json:"model"`
+
+	// Priority Lower tries first.
+	Priority int `json:"priority"`
 }
 
-// ProjectBudgetConfigSchema Project budgets add alert recipients on top of the shared budget shape.
-//
-// extra="forbid" matches ProjectV1Create/Update one level up: an IaC caller
-// that typos “notification_email“ should get a 422, not a config that
-// silently drops the field it cared about.
-//
-// Customer budgets reuse “BudgetConfigSchema“ and have no notification
-// routing of their own, so these fields stay on the project subclass rather
-// than the base — a field the customer API accepts but never reads would be
-// a silent no-op for callers.
-type ProjectBudgetConfigSchema struct {
-	// AlertThresholds Percentage thresholds for alerts (e.g., [50, 80, 90])
+// ProjectBudgetConfigV1 A spending budget for the project.
+type ProjectBudgetConfigV1 struct {
+	// AlertThresholds Alert percentages, like [80, 90].
 	AlertThresholds *[]int `json:"alert_thresholds,omitempty"`
 
-	// Amount Budget amount in USD
-	Amount          float64                                  `json:"amount"`
-	EnforcementMode ProjectBudgetConfigSchemaEnforcementMode `json:"enforcement_mode"`
+	// Amount Budget amount in USD.
+	Amount float64 `json:"amount"`
 
-	// NotificationEmails Addresses emailed when an alert threshold is crossed
+	// EnforcementMode `hard_limit` alerts, then refuses requests with `402 project_budget_exceeded` until the period resets or the budget is raised. `soft_limit` only alerts.
+	EnforcementMode ProjectBudgetConfigV1EnforcementMode `json:"enforcement_mode"`
+
+	// NotificationEmails Addresses emailed when a threshold is reached. Recipients don't need a Merge account.
 	NotificationEmails *[]openapi_types.Email `json:"notification_emails,omitempty"`
 
-	// NotifyOrgAdmins Also email every organization admin on threshold crossings. Adding recipients augments the audience rather than replacing it; set false to email only the named recipients
-	NotifyOrgAdmins *bool                           `json:"notify_org_admins,omitempty"`
-	Period          ProjectBudgetConfigSchemaPeriod `json:"period"`
+	// NotifyOrgAdmins Email every organization admin alongside `notification_emails`. Naming recipients adds to the audience rather than replacing it; set false to email only the named recipients. While `notification_emails` is empty, one admin is notified.
+	NotifyOrgAdmins *bool `json:"notify_org_admins,omitempty"`
+
+	// Period How often the budget resets.
+	Period ProjectBudgetConfigV1Period `json:"period"`
 }
 
-// ProjectBudgetConfigSchemaEnforcementMode defines model for ProjectBudgetConfigSchema.EnforcementMode.
-type ProjectBudgetConfigSchemaEnforcementMode string
+// ProjectBudgetConfigV1EnforcementMode `hard_limit` alerts, then refuses requests with `402 project_budget_exceeded` until the period resets or the budget is raised. `soft_limit` only alerts.
+type ProjectBudgetConfigV1EnforcementMode string
 
-// ProjectBudgetConfigSchemaPeriod defines model for ProjectBudgetConfigSchema.Period.
-type ProjectBudgetConfigSchemaPeriod string
+// ProjectBudgetConfigV1Period How often the budget resets.
+type ProjectBudgetConfigV1Period string
 
-// ProjectBudgetConfigV1Response A stored budget as read back. Same fields as ProjectBudgetConfigSchema,
-// without its write-time rules, so tightening a rule later cannot turn reads
-// of budgets saved under the old rule into 500s.
+// ProjectBudgetConfigV1Response The project's spending budget.
 type ProjectBudgetConfigV1Response struct {
-	// AlertThresholds Sorted ascending, without duplicates.
+	// AlertThresholds Alert percentages, like [80, 90], sorted ascending without duplicates.
 	AlertThresholds *[]int `json:"alert_thresholds,omitempty"`
 
-	// Amount Budget amount in USD
-	Amount          float64                                      `json:"amount"`
+	// Amount Budget amount in USD.
+	Amount float64 `json:"amount"`
+
+	// EnforcementMode `hard_limit` alerts, then refuses requests with `402 project_budget_exceeded` until the period resets or the budget is raised. `soft_limit` only alerts.
 	EnforcementMode ProjectBudgetConfigV1ResponseEnforcementMode `json:"enforcement_mode"`
 
-	// NotificationEmails In the order sent, with duplicates (ignoring case) dropped.
-	NotificationEmails *[]string                           `json:"notification_emails,omitempty"`
-	NotifyOrgAdmins    *bool                               `json:"notify_org_admins,omitempty"`
-	Period             ProjectBudgetConfigV1ResponsePeriod `json:"period"`
+	// NotificationEmails Addresses emailed when a threshold is reached, in the order sent with duplicates dropped. Recipients don't need a Merge account.
+	NotificationEmails *[]string `json:"notification_emails,omitempty"`
+
+	// NotifyOrgAdmins Email every organization admin alongside `notification_emails`. Naming recipients adds to the audience rather than replacing it; set false to email only the named recipients. While `notification_emails` is empty, one admin is notified.
+	NotifyOrgAdmins *bool `json:"notify_org_admins,omitempty"`
+
+	// Period How often the budget resets.
+	Period ProjectBudgetConfigV1ResponsePeriod `json:"period"`
 }
 
-// ProjectBudgetConfigV1ResponseEnforcementMode defines model for ProjectBudgetConfigV1Response.EnforcementMode.
+// ProjectBudgetConfigV1ResponseEnforcementMode `hard_limit` alerts, then refuses requests with `402 project_budget_exceeded` until the period resets or the budget is raised. `soft_limit` only alerts.
 type ProjectBudgetConfigV1ResponseEnforcementMode string
 
-// ProjectBudgetConfigV1ResponsePeriod defines model for ProjectBudgetConfigV1Response.Period.
+// ProjectBudgetConfigV1ResponsePeriod How often the budget resets.
 type ProjectBudgetConfigV1ResponsePeriod string
 
-// ProjectControlsEffectiveV1 The controls in force: the organization's, with the project's units
-// applied.
+// ProjectControlsEffectiveV1 The controls actually in force for the project: the organization's,
+// with the project's units applied.
 type ProjectControlsEffectiveV1 struct {
-	AllowedRegions          []string `json:"allowed_regions"`
-	AllowedVendors          []string `json:"allowed_vendors"`
-	IgnoredRegions          []string `json:"ignored_regions"`
-	IgnoredVendors          []string `json:"ignored_vendors"`
+	// AllowedRegions When non-empty, the only regions the project may route to. Vendors with no known region are excluded.
+	AllowedRegions []string `json:"allowed_regions"`
+
+	// AllowedVendors When non-empty, the only vendors the project may route to.
+	AllowedVendors []string `json:"allowed_vendors"`
+
+	// IgnoredRegions Regions the project may never route to.
+	IgnoredRegions []string `json:"ignored_regions"`
+
+	// IgnoredVendors Vendors the project may never route to.
+	IgnoredVendors []string `json:"ignored_vendors"`
+
+	// VendorRoutingPreference Vendors to try first among those that remain. Never excludes a vendor.
 	VendorRoutingPreference []string `json:"vendor_routing_preference"`
-	ZeroDataRetention       bool     `json:"zero_data_retention"`
+
+	// ZeroDataRetention Whether only zero-data-retention vendors are used.
+	ZeroDataRetention bool `json:"zero_data_retention"`
 }
 
-// ProjectControlsOverrideV1 What the project overrides, one key per unit. A unit the project
-// inherits is absent, never null.
+// ProjectControlsOverrideV1 Exactly what the project sets, one key per unit. A unit the project
+// inherits is absent, never null; an empty object means it inherits
+// everything.
 type ProjectControlsOverrideV1 struct {
-	// Regions Present when the last PUT sent ignored_regions or allowed_regions. A field it didn't send is [].
+	// Regions Present when the last PUT sent `ignored_regions` or `allowed_regions`. A field it didn't send is `[]`.
 	Regions *RegionControlsV1 `json:"regions,omitempty"`
 
-	// Vendors Present when the last PUT sent any of ignored_vendors, allowed_vendors or vendor_routing_preference. Fields it didn't send are [].
-	Vendors           *VendorControlsV1 `json:"vendors,omitempty"`
-	ZeroDataRetention *bool             `json:"zero_data_retention,omitempty"`
+	// Vendors Present when the last PUT sent any of `ignored_vendors`, `allowed_vendors` or `vendor_routing_preference`. Fields it didn't send are `[]`.
+	Vendors *VendorControlsV1 `json:"vendors,omitempty"`
+
+	// ZeroDataRetention Present when the project sets zero data retention.
+	ZeroDataRetention *bool `json:"zero_data_retention,omitempty"`
 }
 
-// ProjectControlsSourcesV1 Per unit, whether the effective value comes from the org or the project.
+// ProjectControlsSourcesV1 Per unit, whether the effective value comes from the organization (`org`)
+// or the project.
 type ProjectControlsSourcesV1 struct {
-	Regions           ProjectControlsSourcesV1Regions           `json:"regions"`
-	Vendors           ProjectControlsSourcesV1Vendors           `json:"vendors"`
+	// Regions Where the region lists come from.
+	Regions ProjectControlsSourcesV1Regions `json:"regions"`
+
+	// Vendors Where the vendor lists come from.
+	Vendors ProjectControlsSourcesV1Vendors `json:"vendors"`
+
+	// ZeroDataRetention Where the zero-data-retention setting comes from.
 	ZeroDataRetention ProjectControlsSourcesV1ZeroDataRetention `json:"zero_data_retention"`
 }
 
-// ProjectControlsSourcesV1Regions defines model for ProjectControlsSourcesV1.Regions.
+// ProjectControlsSourcesV1Regions Where the region lists come from.
 type ProjectControlsSourcesV1Regions string
 
-// ProjectControlsSourcesV1Vendors defines model for ProjectControlsSourcesV1.Vendors.
+// ProjectControlsSourcesV1Vendors Where the vendor lists come from.
 type ProjectControlsSourcesV1Vendors string
 
-// ProjectControlsSourcesV1ZeroDataRetention defines model for ProjectControlsSourcesV1.ZeroDataRetention.
+// ProjectControlsSourcesV1ZeroDataRetention Where the zero-data-retention setting comes from.
 type ProjectControlsSourcesV1ZeroDataRetention string
 
-// ProjectControlsV1Response The ScopedControlsResponse shape, with the project's maps typed.
+// ProjectControlsV1Response A project's vendor, region and zero-data-retention controls.
+//
+// Examples: {"effective":{"allowed_regions":["NA"],"allowed_vendors":["anthropic","bedrock"],"ignored_regions":[],"ignored_vendors":[],"vendor_routing_preference":["bedrock"],"zero_data_retention":true},"override":{"regions":{"allowed_regions":["NA"],"ignored_regions":[]},"vendors":{"allowed_vendors":["anthropic","bedrock"],"ignored_vendors":[],"vendor_routing_preference":["bedrock"]},"zero_data_retention":true},"scope":"project","scope_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","sources":{"regions":"project","vendors":"project","zero_data_retention":"project"}}
 type ProjectControlsV1Response struct {
-	// Effective The controls in force: the organization's, with the project's units
-	// applied.
+	// Effective The controls in force.
 	Effective ProjectControlsEffectiveV1 `json:"effective"`
 
-	// Override What the project overrides, one key per unit. A unit the project
-	// inherits is absent, never null.
+	// Override What the project sets.
 	Override ProjectControlsOverrideV1 `json:"override"`
 
-	// Scope Always "project" here.
-	Scope   string             `json:"scope"`
+	// Scope Always `project` here.
+	Scope string `json:"scope"`
+
+	// ScopeId The project's id.
 	ScopeId openapi_types.UUID `json:"scope_id"`
 
-	// Sources Per unit, whether the effective value comes from the org or the project.
+	// Sources Where each unit's effective value comes from.
 	Sources ProjectControlsSourcesV1 `json:"sources"`
 }
 
-// ProjectControlsV1Update Replaces the project's whole override. The flat fields map onto the
-// units of the response's “override“:
-//
-//   - “zero_data_retention“ → “override.zero_data_retention“
-//   - “ignored_vendors“, “allowed_vendors“, “vendor_routing_preference“ →
-//     “override.vendors“
-//   - “ignored_regions“, “allowed_regions“ → “override.regions“
+// ProjectControlsV1Update Replaces the project's whole override. The fields come in three units,
+// matching the response's `override`: `zero_data_retention`; the vendor
+// lists (`ignored_vendors`, `allowed_vendors`, `vendor_routing_preference`);
+// and the region lists (`ignored_regions`, `allowed_regions`).
 //
 // Sending any field of a unit overrides the whole unit: the unit's fields you
-// leave out become “[]“, not the organization's values. A unit with no field
-// sent inherits from the organization. A list sent as “null“ counts as sent,
-// the same as “[]“. “zero_data_retention: null“ is the same as omitting it.
+// leave out become `[]`, not the organization's values. A unit with no field
+// sent inherits from the organization. A list sent as null counts as sent,
+// the same as `[]`.
+//
+// Examples: {"allowed_regions":["NA"],"allowed_vendors":["anthropic","bedrock"],"vendor_routing_preference":["bedrock"],"zero_data_retention":true}
 type ProjectControlsV1Update struct {
-	// AllowedRegions Regions unit (override.regions). Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
+	// AllowedRegions When non-empty, the only regions the project may route to. Vendors with no known region are excluded. Each token is a vendor's `country_code` or `geo_region`, as listed by `GET /v1/organization/vendors`, like `US`, `CA` or `NA`. Case-sensitive; an unknown token is a 422.
 	AllowedRegions nullable.Nullable[[]string] `json:"allowed_regions,omitempty"`
 
-	// AllowedVendors Vendors unit (override.vendors).
+	// AllowedVendors When non-empty, the only vendors the project may route to.
 	AllowedVendors nullable.Nullable[[]string] `json:"allowed_vendors,omitempty"`
 
-	// IgnoredRegions Regions unit (override.regions). Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
+	// IgnoredRegions Regions the project may never route to. Each token is a vendor's `country_code` or `geo_region`, as listed by `GET /v1/organization/vendors`, like `US`, `CA` or `NA`. Case-sensitive; an unknown token is a 422.
 	IgnoredRegions nullable.Nullable[[]string] `json:"ignored_regions,omitempty"`
 
-	// IgnoredVendors Vendors unit (override.vendors).
+	// IgnoredVendors Vendors the project may never route to.
 	IgnoredVendors nullable.Nullable[[]string] `json:"ignored_vendors,omitempty"`
 
-	// VendorRoutingPreference Vendors unit (override.vendors).
+	// VendorRoutingPreference Vendors to try first among those that remain. Never excludes a vendor.
 	VendorRoutingPreference nullable.Nullable[[]string] `json:"vendor_routing_preference,omitempty"`
 
-	// ZeroDataRetention Omitted or null inherits the organization's value.
+	// ZeroDataRetention true routes only to vendors that retain no data. Omitted or null inherits the organization's value.
 	ZeroDataRetention nullable.Nullable[bool] `json:"zero_data_retention,omitempty"`
 }
 
-// ProjectDLPEntityState How one entity type resolves for a project.
-type ProjectDLPEntityState struct {
-	Category        string                    `json:"category"`
-	DisplayName     nullable.Nullable[string] `json:"display_name,omitempty"`
+// ProjectDLPEntityStateV1 How one entity type resolves for the project.
+type ProjectDLPEntityStateV1 struct {
+	// Category `custom` for the organization's own rules; `global` and `usa` are seeded.
+	Category string `json:"category"`
+
+	// DisplayName The name the dashboard shows.
+	DisplayName nullable.Nullable[string] `json:"display_name,omitempty"`
+
+	// EffectiveAction What the project does with it after its override. Null means not scanned.
 	EffectiveAction nullable.Nullable[string] `json:"effective_action,omitempty"`
-	EntityType      string                    `json:"entity_type"`
-	IsSeeded        bool                      `json:"is_seeded"`
-	OrgAction       nullable.Nullable[string] `json:"org_action,omitempty"`
-	Overridden      bool                      `json:"overridden"`
+
+	// EntityType The entity type, like `US_SSN`.
+	EntityType string `json:"entity_type"`
+
+	// IsSeeded Whether the entity type comes from the seeded catalog.
+	IsSeeded bool `json:"is_seeded"`
+
+	// OrgAction What the organization's rule does with it. Null means not scanned. `log` records a match and sends the prompt unchanged, `redact` replaces each match with a placeholder such as `<US_SSN>` before the prompt is sent, and `block` refuses the request with 422.
+	OrgAction nullable.Nullable[string] `json:"org_action,omitempty"`
+
+	// Overridden Whether the project overrides this entity type.
+	Overridden bool `json:"overridden"`
 }
 
-// ProjectDLPOverrideV1 Wholesale replacement of a project's DLP override, keyed by entity type.
+// ProjectDLPOverrideV1 The project's whole DLP override.
 //
-// Enveloped rather than a bare map (which is what the dashboard route takes) so
-// the request can grow a sibling field later without a breaking change. The
-// field name matches “override“ in the response.
+// Examples: {"override":{"DATE_TIME":{"enabled":false},"EMAIL_ADDRESS":{"action":"block","enabled":true}}}
 type ProjectDLPOverrideV1 struct {
+	// Override Keyed by entity type, like `US_SSN`. Each must exist in the organization's rules, seeded or custom. An empty map clears the override.
 	Override *map[string]DLPEntityOverrideV1 `json:"override,omitempty"`
 }
 
-// ProjectDLPSettingsV1Response The dashboard's project DLP response, with “override“ typed like the request.
+// ProjectDLPSettingsV1Response A project's DLP settings.
+//
+// Examples: {"entities":[{"category":"global","display_name":"EMAIL_ADDRESS","effective_action":"block","entity_type":"EMAIL_ADDRESS","is_seeded":true,"org_action":"redact","overridden":true},{"category":"global","display_name":"DATE_TIME","effective_action":null,"entity_type":"DATE_TIME","is_seeded":true,"org_action":"log","overridden":true},{"category":"global","display_name":"CREDIT_CARD","effective_action":"redact","entity_type":"CREDIT_CARD","is_seeded":true,"org_action":"redact","overridden":false}],"override":{"DATE_TIME":{"enabled":false},"EMAIL_ADDRESS":{"action":"block","enabled":true}}}
 type ProjectDLPSettingsV1Response struct {
-	Entities []ProjectDLPEntityState        `json:"entities"`
+	// Entities Every entity type in the organization's rules, with the project's override applied.
+	Entities []ProjectDLPEntityStateV1 `json:"entities"`
+
+	// Override What the project sets, keyed by entity type. Entity types it doesn't set are absent.
 	Override map[string]DLPEntityOverrideV1 `json:"override"`
 }
 
-// ProjectPISettingsV1Response The dashboard's project PI response, with “override“ typed like the request.
+// ProjectPISettingsV1Response A project's prompt injection settings.
+//
+// Examples: {"effective":{"pi_allowlist_patterns":["(?i)ignore the previous ticket"],"pi_block_threshold":0.7,"pi_fail_closed":false,"pi_indirect_mode":"alert","pi_input_action":"block","pi_log_full_text_on_block":false,"pi_mode":"alert","pi_output_action":"redact","pi_pass_threshold":0.3,"pi_safer_vendor_route":null,"pi_tier2a_block_threshold":0.6,"pi_tier2b_block_threshold":0.45},"inherited_fields":["pi_indirect_mode","pi_input_action","pi_output_action","pi_pass_threshold","pi_tier2a_block_threshold","pi_tier2b_block_threshold","pi_fail_closed","pi_log_full_text_on_block","pi_allowlist_patterns","pi_safer_vendor_route"],"override":{"pi_block_threshold":0.7,"pi_mode":"alert"}}
 type ProjectPISettingsV1Response struct {
-	// Effective Per-org PI Protection settings.
-	//
-	// Mirrors merge_gateway.policy.pi_protection.config.PIProtectionSettings
-	// field-for-field. Defaults match the dataclass on the data-plane side.
-	//
-	// `pi_mode` is the master switch + mode selector:
-	// - "off": pi_protection module bypassed entirely
-	// - "alert": score for telemetry, never block
-	// - "block": block when Tier 1 score >= pi_block_threshold
-	//
-	// History: replaces `pi_enabled: bool` + `pi_mode: shadow|enforce` +
-	// `pi_universal_floor` shape. Universal floor's block behavior was
-	// removed 2026-05-11 to fully respect customer enforcement choice.
-	Effective       PIProtectionSettings `json:"effective"`
-	InheritedFields []string             `json:"inherited_fields"`
+	// Effective The policy a request to this project runs under, when the project is pinned to an API key.
+	Effective PIProtectionSettingsV1 `json:"effective"`
 
-	// Override The dashboard's PI override, with its fixed-value fields typed. Same
-	// values and validation: the dashboard model's validators still run.
+	// InheritedFields Fields taken from the organization policy because the project doesn't set them.
+	InheritedFields []string `json:"inherited_fields"`
+
+	// Override What the project sets. Fields it doesn't set are null.
+	//
+	// Examples: {"pi_block_threshold":0.7,"pi_mode":"alert"}
 	Override PIProtectionOverrideV1 `json:"override"`
 }
 
-// ProjectPolicyV1 Project-scoped routing policy, in the shared v2 shape (same fields and
-// validation as the ERS customer policy surface). “name“ is optional here
-// and defaults to "<project name> routing policy".
+// ProjectPolicyV1 The project's own routing policy. Same fields as an organization routing
+// policy, except that `name` is optional.
 type ProjectPolicyV1 struct {
 	// AllowedModels INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
@@ -2378,7 +2766,7 @@ type ProjectPolicyV1 struct {
 	// AllowedProviders INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422.
 	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers,omitempty"`
 
-	// Axis INTELLIGENT only. Omitted or null means COST.
+	// Axis INTELLIGENT only. What the router optimizes for: `COST`, `PERFORMANCE` or `CAPABILITY`. Omitted or null means `COST`.
 	Axis nullable.Nullable[ProjectPolicyV1Axis] `json:"axis,omitempty"`
 
 	// Description Omitted or null keeps the current description when replacing a policy. Send "" to clear it.
@@ -2389,100 +2777,159 @@ type ProjectPolicyV1 struct {
 
 	// PriorityOrder PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422.
 	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order,omitempty"`
-	Strategy      ProjectPolicyV1Strategy            `json:"strategy"`
+
+	// Strategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
+	Strategy ProjectPolicyV1Strategy `json:"strategy"`
 }
 
 // ProjectPolicyV1Axis defines model for ProjectPolicyV1.Axis.
 type ProjectPolicyV1Axis string
 
-// ProjectPolicyV1Strategy defines model for ProjectPolicyV1.Strategy.
+// ProjectPolicyV1Strategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
 type ProjectPolicyV1Strategy string
 
-// ProjectSpendV1 defines model for ProjectSpendV1.
+// ProjectSpendV1 One project's spend.
 type ProjectSpendV1 struct {
-	// ByokSpend BYOK spend at list price.
+	// ByokSpend Spend on your own provider credentials (BYOK), at list price, USD.
 	ByokSpend float64 `json:"byok_spend"`
 
-	// MergeHostedSpend Spend on Merge-managed credentials.
+	// MergeHostedSpend Spend on Merge-managed credentials, USD.
 	MergeHostedSpend float64 `json:"merge_hosted_spend"`
-	ProjectId        string  `json:"project_id"`
-	RequestCount     int     `json:"request_count"`
-	TotalSpend       float64 `json:"total_spend"`
 
-	// WebSearchSpend Server-tool (web search) cost.
+	// ProjectId The project's id.
+	ProjectId string `json:"project_id"`
+
+	// RequestCount Number of requests.
+	RequestCount int `json:"request_count"`
+
+	// TotalSpend All spend, USD.
+	TotalSpend float64 `json:"total_spend"`
+
+	// WebSearchSpend Server-side web search cost, USD.
 	WebSearchSpend float64 `json:"web_search_spend"`
 }
 
-// ProjectUsageV1Response defines model for ProjectUsageV1Response.
+// ProjectUsageV1Response The project's spend for the range.
+//
+// Examples: {"byok_spend":371.85,"end":"2026-09-30","merge_hosted_spend":902.17,"model_spend":{"anthropic/claude-sonnet-4-6":811.4,"openai/gpt-5-mini":74.5,"openai/gpt-5.5":398.62},"model_spend_granularity":"month","project_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","request_count":48210,"start":"2026-09-01","total_spend":1284.52,"web_search_spend":10.5}
 type ProjectUsageV1Response struct {
-	// ByokSpend BYOK spend at list price.
+	// ByokSpend Spend on your own provider credentials (BYOK), at list price, USD.
 	ByokSpend float64 `json:"byok_spend"`
-	End       string  `json:"end"`
 
-	// MergeHostedSpend Spend on Merge-managed credentials.
+	// End Last day of the range, inclusive, `YYYY-MM-DD`.
+	End string `json:"end"`
+
+	// MergeHostedSpend Spend on Merge-managed credentials, USD.
 	MergeHostedSpend float64 `json:"merge_hosted_spend"`
 
-	// ModelSpend Spend per `provider/model`.
+	// ModelSpend Spend in USD per `provider/model`, with BYOK spend at list price. Covers the whole months the range overlaps. Months before per-project model tracking began have totals but no entries here.
 	ModelSpend map[string]float64 `json:"model_spend"`
 
-	// ModelSpendGranularity model_spend covers the whole months overlapping [start, end].
+	// ModelSpendGranularity `model_spend` covers the whole months overlapping `start` to `end`.
 	ModelSpendGranularity ProjectUsageV1ResponseModelSpendGranularity `json:"model_spend_granularity"`
-	ProjectId             openapi_types.UUID                          `json:"project_id"`
-	RequestCount          int                                         `json:"request_count"`
-	Start                 string                                      `json:"start"`
-	TotalSpend            float64                                     `json:"total_spend"`
 
-	// WebSearchSpend Server-tool (web search) cost.
+	// ProjectId The project.
+	ProjectId openapi_types.UUID `json:"project_id"`
+
+	// RequestCount Number of requests.
+	RequestCount int `json:"request_count"`
+
+	// Start First day of the range, `YYYY-MM-DD`.
+	Start string `json:"start"`
+
+	// TotalSpend All spend, USD.
+	TotalSpend float64 `json:"total_spend"`
+
+	// WebSearchSpend Server-side web search cost, USD.
 	WebSearchSpend float64 `json:"web_search_spend"`
 }
 
-// ProjectUsageV1ResponseModelSpendGranularity model_spend covers the whole months overlapping [start, end].
+// ProjectUsageV1ResponseModelSpendGranularity `model_spend` covers the whole months overlapping `start` to `end`.
 type ProjectUsageV1ResponseModelSpendGranularity string
 
-// ProjectV1Create defines model for ProjectV1Create.
+// ProjectV1Create A project to create.
+//
+// Examples: {"budget_config":{"alert_thresholds":[50,80,90],"amount":500,"enforcement_mode":"hard_limit","notification_emails":["finance@acme.com"],"notify_org_admins":true,"period":"monthly"},"description":"Customer support assistant.","name":"support-bot","routing_policy":{"description":"Claude first, GPT-5.5 as the fallback.","name":"support-bot routing policy","priority_order":[{"model":"anthropic/claude-sonnet-4-6","priority":1},{"model":"openai/gpt-5.5","priority":2}],"strategy":"PRIORITY"},"uses_organization_default_routing":false}
 type ProjectV1Create struct {
-	BudgetConfig                   nullable.Nullable[ProjectBudgetConfigSchema] `json:"budget_config,omitempty"`
-	Description                    nullable.Nullable[string]                    `json:"description,omitempty"`
-	Name                           string                                       `json:"name"`
-	RoutingPolicy                  nullable.Nullable[ProjectPolicyV1]           `json:"routing_policy,omitempty"`
-	UsesOrganizationDefaultRouting *bool                                        `json:"uses_organization_default_routing,omitempty"`
+	// BudgetConfig A spending budget for the project.
+	BudgetConfig nullable.Nullable[ProjectBudgetConfigV1] `json:"budget_config,omitempty"`
+
+	// Description What the project is for.
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+
+	// Name The project's name.
+	Name string `json:"name"`
+
+	// RoutingPolicy The project's own routing policy. Send it with `uses_organization_default_routing` false.
+	RoutingPolicy nullable.Nullable[ProjectPolicyV1] `json:"routing_policy,omitempty"`
+
+	// UsesOrganizationDefaultRouting true routes the project with the organization's default policy. false needs `routing_policy`, which becomes the project's own policy.
+	UsesOrganizationDefaultRouting *bool `json:"uses_organization_default_routing,omitempty"`
 }
 
-// ProjectV1List List envelope for “GET /v1/projects“. Pass “next“ as “cursor“.
+// ProjectV1List A page of projects, oldest first.
+//
+// Examples: {"next":null,"previous":null,"results":[{"budget_config":{"alert_thresholds":[50,80,90],"amount":500,"enforcement_mode":"hard_limit","notification_emails":["finance@acme.com"],"notify_org_admins":true,"period":"monthly"},"created_at":"2026-06-02T17:04:00Z","description":"Customer support assistant.","id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","is_active":true,"name":"support-bot","organization_id":"3f2b8c1e-6a4d-4e7f-9b21-5c8d0e7a4f13","routing_policy":{"allowed_models":null,"allowed_providers":null,"axis":null,"created_at":"2026-06-02T17:04:00Z","description":"Claude first, GPT-5.5 as the fallback.","id":"c4e1a7b2-9d3f-4a6e-8b5c-1f2d3e4a5b6c","model":null,"modified_at":"2026-06-02T17:04:00Z","name":"support-bot routing policy","priority_order":[{"model":"anthropic/claude-sonnet-4-6","priority":1},{"model":"openai/gpt-5.5","priority":2}],"slug":null,"strategy":"PRIORITY"},"slug":"support-bot","updated_at":"2026-09-14T09:30:00Z","uses_organization_default_routing":false}]}
 type ProjectV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []ProjectV1Response       `json:"results"`
+
+	// Results The projects on this page.
+	Results []ProjectV1Response `json:"results"`
 }
 
-// ProjectV1Response defines model for ProjectV1Response.
+// ProjectV1Response A project: a group of API keys with its own routing, budget and controls.
+//
+// Examples: {"budget_config":{"alert_thresholds":[50,80,90],"amount":500,"enforcement_mode":"hard_limit","notification_emails":["finance@acme.com"],"notify_org_admins":true,"period":"monthly"},"created_at":"2026-06-02T17:04:00Z","description":"Customer support assistant.","id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91","is_active":true,"name":"support-bot","organization_id":"3f2b8c1e-6a4d-4e7f-9b21-5c8d0e7a4f13","routing_policy":{"allowed_models":null,"allowed_providers":null,"axis":null,"created_at":"2026-06-02T17:04:00Z","description":"Claude first, GPT-5.5 as the fallback.","id":"c4e1a7b2-9d3f-4a6e-8b5c-1f2d3e4a5b6c","model":null,"modified_at":"2026-06-02T17:04:00Z","name":"support-bot routing policy","priority_order":[{"model":"anthropic/claude-sonnet-4-6","priority":1},{"model":"openai/gpt-5.5","priority":2}],"slug":null,"strategy":"PRIORITY"},"slug":"support-bot","updated_at":"2026-09-14T09:30:00Z","uses_organization_default_routing":false}
 type ProjectV1Response struct {
-	BudgetConfig   nullable.Nullable[ProjectBudgetConfigV1Response] `json:"budget_config"`
-	CreatedAt      time.Time                                        `json:"created_at"`
-	Description    nullable.Nullable[string]                        `json:"description"`
-	Id             openapi_types.UUID                               `json:"id"`
-	IsActive       bool                                             `json:"is_active"`
-	Name           string                                           `json:"name"`
-	OrganizationId openapi_types.UUID                               `json:"organization_id"`
+	// BudgetConfig The project's spending budget; null when it has none.
+	BudgetConfig nullable.Nullable[ProjectBudgetConfigV1Response] `json:"budget_config"`
 
-	// RoutingPolicy The project's scoped policy; null when it uses the org default.
+	// CreatedAt When the project was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description What the project is for.
+	Description nullable.Nullable[string] `json:"description"`
+
+	// Id The project's id.
+	Id openapi_types.UUID `json:"id"`
+
+	// IsActive false while the project's prompt injection, DLP and controls overrides are switched off.
+	IsActive bool `json:"is_active"`
+
+	// Name The project's name.
+	Name string `json:"name"`
+
+	// OrganizationId The organization the project belongs to.
+	OrganizationId openapi_types.UUID `json:"organization_id"`
+
+	// RoutingPolicy The project's own routing policy; null when it uses the organization default.
 	RoutingPolicy nullable.Nullable[PolicyV2Response] `json:"routing_policy"`
 
-	// Slug Derived from the name at creation. It does not change when the project is renamed.
-	Slug                           string    `json:"slug"`
-	UpdatedAt                      time.Time `json:"updated_at"`
-	UsesOrganizationDefaultRouting bool      `json:"uses_organization_default_routing"`
+	// Slug Derived from the name at creation and unique in the organization. It doesn't change when the project is renamed.
+	Slug string `json:"slug"`
+
+	// UpdatedAt When the project last changed.
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// UsesOrganizationDefaultRouting true when the project routes with the organization's default policy, having no policy of its own.
+	UsesOrganizationDefaultRouting bool `json:"uses_organization_default_routing"`
 }
 
 // ProjectV1Update Only the fields sent change.
+//
+// Examples: {"budget_config":{"alert_thresholds":[50,80,90],"amount":750,"enforcement_mode":"hard_limit","notification_emails":["finance@acme.com"],"notify_org_admins":true,"period":"monthly"},"description":"Customer support assistant, EU traffic."}
 type ProjectV1Update struct {
 	// BudgetConfig Replaces the whole budget. null removes it.
-	BudgetConfig nullable.Nullable[ProjectBudgetConfigSchema] `json:"budget_config,omitempty"`
+	BudgetConfig nullable.Nullable[ProjectBudgetConfigV1] `json:"budget_config,omitempty"`
 
 	// Description null clears it.
 	Description nullable.Nullable[string] `json:"description,omitempty"`
 
-	// IsActive Omit to keep the current value. null is rejected.
+	// IsActive false stops the project's prompt injection, DLP and controls overrides applying; true restores them. Omit to keep the current value. null is rejected.
 	IsActive *bool `json:"is_active,omitempty"`
 
 	// Name Omit to keep the current value. null is rejected.
@@ -2495,13 +2942,18 @@ type ProjectV1Update struct {
 	UsesOrganizationDefaultRouting nullable.Nullable[bool] `json:"uses_organization_default_routing,omitempty"`
 }
 
-// RegionControlsV1 defines model for RegionControlsV1.
+// RegionControlsV1 The project's region controls.
 type RegionControlsV1 struct {
+	// AllowedRegions When non-empty, the only regions the project may route to. Vendors with no known region are excluded.
 	AllowedRegions []string `json:"allowed_regions"`
+
+	// IgnoredRegions Regions the project may never route to.
 	IgnoredRegions []string `json:"ignored_regions"`
 }
 
-// RoutingPolicyV1Create defines model for RoutingPolicyV1Create.
+// RoutingPolicyV1Create A routing policy to create.
+//
+// Examples: {"allowed_models":["anthropic/claude-sonnet-4-6","openai/gpt-5.5","openai/gpt-5-mini"],"axis":"COST","description":"Cheapest capable model from Anthropic or OpenAI.","is_default":true,"name":"Cost optimized","slug":"cost-optimized","strategy":"INTELLIGENT"}
 type RoutingPolicyV1Create struct {
 	// AllowedModels INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
@@ -2509,32 +2961,52 @@ type RoutingPolicyV1Create struct {
 	// AllowedProviders INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422.
 	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers,omitempty"`
 
-	// Axis INTELLIGENT only. Omitted or null means COST.
-	Axis        nullable.Nullable[RoutingPolicyV1CreateAxis] `json:"axis,omitempty"`
-	Description nullable.Nullable[string]                    `json:"description,omitempty"`
-	IsDefault   nullable.Nullable[bool]                      `json:"is_default,omitempty"`
-	Name        string                                       `json:"name"`
+	// Axis INTELLIGENT only. What the router optimizes for: `COST`, `PERFORMANCE` or `CAPABILITY`. Omitted or null means `COST`.
+	Axis nullable.Nullable[RoutingPolicyV1CreateAxis] `json:"axis,omitempty"`
+
+	// Description What the policy is for.
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+
+	// IsDefault Make this the organization's default policy, unsetting the previous one. The organization's first policy becomes the default either way.
+	IsDefault nullable.Nullable[bool] `json:"is_default,omitempty"`
+
+	// Name The policy's name.
+	Name string `json:"name"`
 
 	// PriorityOrder PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422.
 	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order,omitempty"`
-	Slug          nullable.Nullable[string]          `json:"slug,omitempty"`
-	Strategy      RoutingPolicyV1CreateStrategy      `json:"strategy"`
+
+	// Slug The policy's model alias, as a lowercase bare name. Omitted: derived from the name, or "default" when the policy becomes the organization default. A taken alias gets a suffix ("fast", "fast-2").
+	Slug nullable.Nullable[string] `json:"slug,omitempty"`
+
+	// Strategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
+	Strategy RoutingPolicyV1CreateStrategy `json:"strategy"`
 }
 
 // RoutingPolicyV1CreateAxis defines model for RoutingPolicyV1Create.Axis.
 type RoutingPolicyV1CreateAxis string
 
-// RoutingPolicyV1CreateStrategy defines model for RoutingPolicyV1Create.Strategy.
+// RoutingPolicyV1CreateStrategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
 type RoutingPolicyV1CreateStrategy string
 
-// RoutingPolicyV1List List envelope for “GET /v1/routing-policies“ (never paginated).
+// RoutingPolicyV1List Every organization routing policy, in one page.
+//
+// Examples: {"next":null,"previous":null,"results":[{"allowed_models":["anthropic/claude-sonnet-4-6","openai/gpt-5.5","openai/gpt-5-mini"],"allowed_providers":["anthropic","openai"],"axis":"COST","created_at":"2026-06-02T17:04:00Z","description":"Cheapest capable model from Anthropic or OpenAI.","id":"e7d3c9a1-5b2f-4c8e-a6d4-0f1b3c5e7a92","is_default":true,"model":"@alias/cost-optimized","modified_at":"2026-09-14T09:30:00Z","name":"Cost optimized","priority_order":null,"slug":"cost-optimized","strategy":"INTELLIGENT"}]}
 type RoutingPolicyV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Always null: the list comes in one page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []RoutingPolicyV1Response `json:"results"`
+
+	// Results The policies.
+	Results []RoutingPolicyV1Response `json:"results"`
 }
 
-// RoutingPolicyV1Response defines model for RoutingPolicyV1Response.
+// RoutingPolicyV1Response An organization routing policy: how the gateway picks the model for a
+// request.
+//
+// Examples: {"allowed_models":["anthropic/claude-sonnet-4-6","openai/gpt-5.5","openai/gpt-5-mini"],"allowed_providers":["anthropic","openai"],"axis":"COST","created_at":"2026-06-02T17:04:00Z","description":"Cheapest capable model from Anthropic or OpenAI.","id":"e7d3c9a1-5b2f-4c8e-a6d4-0f1b3c5e7a92","is_default":true,"model":"@alias/cost-optimized","modified_at":"2026-09-14T09:30:00Z","name":"Cost optimized","priority_order":null,"slug":"cost-optimized","strategy":"INTELLIGENT"}
 type RoutingPolicyV1Response struct {
 	// AllowedModels INTELLIGENT only. In the order they were sent.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models"`
@@ -2542,35 +3014,49 @@ type RoutingPolicyV1Response struct {
 	// AllowedProviders INTELLIGENT only. The providers of allowed_models, sorted. Always rebuilt from allowed_models; never stored.
 	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers"`
 
-	// Axis INTELLIGENT only. The optimization axis.
-	Axis        nullable.Nullable[RoutingPolicyV1ResponseAxis] `json:"axis"`
-	CreatedAt   time.Time                                      `json:"created_at"`
-	Description nullable.Nullable[string]                      `json:"description"`
-	Id          string                                         `json:"id"`
+	// Axis INTELLIGENT only, else null. What the router optimizes for: `COST`, `PERFORMANCE` or `CAPABILITY`.
+	Axis nullable.Nullable[RoutingPolicyV1ResponseAxis] `json:"axis"`
 
-	// IsDefault Whether this is the org's default policy.
+	// CreatedAt When the policy was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description What the policy is for.
+	Description nullable.Nullable[string] `json:"description"`
+
+	// Id The policy's id. It stays the same across updates.
+	Id string `json:"id"`
+
+	// IsDefault Whether this is the organization's default policy.
 	IsDefault bool `json:"is_default"`
 
-	// Model Ready-to-send model-field string (`@alias/<slug>`).
-	Model      nullable.Nullable[string] `json:"model"`
-	ModifiedAt time.Time                 `json:"modified_at"`
-	Name       string                    `json:"name"`
+	// Model The ready-to-send model string for this policy, like "@alias/fast-experiment". Send it as the `model` in any gateway request to route with this policy.
+	Model nullable.Nullable[string] `json:"model"`
+
+	// ModifiedAt When the policy last changed.
+	ModifiedAt time.Time `json:"modified_at"`
+
+	// Name The policy's name.
+	Name string `json:"name"`
 
 	// PriorityOrder PRIORITY only. Sorted by priority.
 	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order"`
 
-	// Slug The policy's model-field handle, when it has one.
-	Slug     nullable.Nullable[string]       `json:"slug"`
+	// Slug The policy's model alias as a bare name, like "fast-experiment". Null only when no alias could be made, such as an organization at its alias limit.
+	Slug nullable.Nullable[string] `json:"slug"`
+
+	// Strategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
 	Strategy RoutingPolicyV1ResponseStrategy `json:"strategy"`
 }
 
 // RoutingPolicyV1ResponseAxis defines model for RoutingPolicyV1Response.Axis.
 type RoutingPolicyV1ResponseAxis string
 
-// RoutingPolicyV1ResponseStrategy defines model for RoutingPolicyV1Response.Strategy.
+// RoutingPolicyV1ResponseStrategy `PRIORITY` tries `priority_order` in turn; `INTELLIGENT` picks among `allowed_models` per request, optimizing for `axis`.
 type RoutingPolicyV1ResponseStrategy string
 
 // RoutingPolicyV1Update Only the fields sent change. null is the same as omitting a field.
+//
+// Examples: {"description":"Claude first, GPT-5.5 as the fallback.","priority_order":[{"model":"anthropic/claude-sonnet-4-6","priority":1},{"model":"openai/gpt-5.5","priority":2}],"strategy":"PRIORITY"}
 type RoutingPolicyV1Update struct {
 	// AllowedModels INTELLIGENT only. Kept in the order sent. A model listed twice is a 422. Models with no capability tier are dropped, so the response can list fewer. Used only when strategy is sent.
 	AllowedModels nullable.Nullable[[]string] `json:"allowed_models,omitempty"`
@@ -2578,7 +3064,7 @@ type RoutingPolicyV1Update struct {
 	// AllowedProviders INTELLIGENT only, optional. Not stored: responses rebuild it from allowed_models. If sent non-empty, it must name the same providers as allowed_models (order and repeats don't matter), or the request fails with 422. Checked only when strategy is sent.
 	AllowedProviders nullable.Nullable[[]string] `json:"allowed_providers,omitempty"`
 
-	// Axis INTELLIGENT only. Omitted or null means COST. Used only when strategy is sent.
+	// Axis INTELLIGENT only. What the router optimizes for: `COST`, `PERFORMANCE` or `CAPABILITY`. Omitted or null means `COST`. Used only when strategy is sent.
 	Axis nullable.Nullable[RoutingPolicyV1UpdateAxis] `json:"axis,omitempty"`
 
 	// Description null keeps the current description. Send "" to clear it.
@@ -2593,7 +3079,7 @@ type RoutingPolicyV1Update struct {
 	// PriorityOrder PRIORITY only. The priority values are kept as sent; responses list the entries sorted by priority. A model listed twice is a 422. Used only when strategy is sent.
 	PriorityOrder nullable.Nullable[[]PriorityModel] `json:"priority_order,omitempty"`
 
-	// Slug Renames the slug. null keeps the current one.
+	// Slug Renames the policy's model alias. Renaming the policy never changes its alias, since clients send it, so this field is the only way to change it. An alias already in use returns 409, and clients still sending the old alias get 404. null keeps the current one.
 	Slug nullable.Nullable[string] `json:"slug,omitempty"`
 
 	// Strategy Send with its fields to replace the routing. Omitted or null leaves the routing as it is, and allowed_providers, allowed_models, priority_order and axis are ignored.
@@ -2606,33 +3092,47 @@ type RoutingPolicyV1UpdateAxis string
 // RoutingPolicyV1UpdateStrategy defines model for RoutingPolicyV1Update.Strategy.
 type RoutingPolicyV1UpdateStrategy string
 
-// ScopeModelsResponse defines model for ScopeModelsResponse.
+// ScopeModelsResponse The models a project or customer can route to.
+//
+// Examples: {"gated_model_ids":[],"key_usage_mode":null,"models":[{"model":"anthropic/claude-sonnet-4-6","provider":"anthropic","vendors":["anthropic","bedrock"]},{"model":"openai/gpt-5.5","provider":"openai","vendors":["openai"]}],"restrictions_active":true,"scope":"project","scope_id":"8b6f2d4a-1c3e-4b5a-9f7d-2e0c6a8b4d91"}
 type ScopeModelsResponse struct {
-	GatedModelIds      *[]string                 `json:"gated_model_ids,omitempty"`
-	KeyUsageMode       nullable.Nullable[string] `json:"key_usage_mode,omitempty"`
-	Models             []ScopeRoutableModel      `json:"models"`
-	RestrictionsActive bool                      `json:"restrictions_active"`
+	// GatedModelIds Models the controls allow but whose vendor your organization hasn't been granted access to. Routing refuses them until access is granted; you can request it.
+	GatedModelIds *[]string `json:"gated_model_ids,omitempty"`
 
-	// Scope "project" or "customer"
-	Scope   string             `json:"scope"`
+	// KeyUsageMode Whose provider credentials a customer's requests use. Always null for a project: that preference is organization-wide.
+	KeyUsageMode nullable.Nullable[string] `json:"key_usage_mode,omitempty"`
+
+	// Models Models the scope can route to, sorted by id.
+	Models []ScopeRoutableModel `json:"models"`
+
+	// RestrictionsActive false when the effective controls restrict nothing; `models` is then the whole active catalog.
+	RestrictionsActive bool `json:"restrictions_active"`
+
+	// Scope `project` or `customer`.
+	Scope string `json:"scope"`
+
+	// ScopeId The project's or customer's id.
 	ScopeId openapi_types.UUID `json:"scope_id"`
 }
 
-// ScopeRoutableModel defines model for ScopeRoutableModel.
+// ScopeRoutableModel A model the scope can route to.
 type ScopeRoutableModel struct {
-	// Model Canonical model id, `provider/model`
+	// Model Canonical model id, `provider/model`.
 	Model string `json:"model"`
 
-	// Provider The model's author (provider slug)
+	// Provider The model's author, like `anthropic`.
 	Provider string `json:"provider"`
 
-	// Vendors Execution hosts that can serve this model for the scope, after its vendor / region / ZDR controls and key-usage mode. Sorted.
+	// Vendors Vendors that can serve this model for the scope after its vendor, region and zero-data-retention controls and its key-usage mode. Sorted.
 	Vendors []string `json:"vendors"`
 }
 
 // TagDefinitionV1 A request tag key and the values it allows.
 type TagDefinitionV1 struct {
-	Key    string   `json:"key"`
+	// Key The tag's key.
+	Key string `json:"key"`
+
+	// Values The values requests may send for the key.
 	Values []string `json:"values"`
 }
 
@@ -2656,48 +3156,75 @@ type ValidationError_Loc_Item struct {
 	union json.RawMessage
 }
 
-// VendorControlsV1 defines model for VendorControlsV1.
+// VendorControlsV1 The project's vendor controls.
 type VendorControlsV1 struct {
-	AllowedVendors          []string `json:"allowed_vendors"`
-	IgnoredVendors          []string `json:"ignored_vendors"`
+	// AllowedVendors When non-empty, the only vendors the project may route to.
+	AllowedVendors []string `json:"allowed_vendors"`
+
+	// IgnoredVendors Vendors the project may never route to.
+	IgnoredVendors []string `json:"ignored_vendors"`
+
+	// VendorRoutingPreference Vendors to try first among those that remain. Never excludes a vendor.
 	VendorRoutingPreference []string `json:"vendor_routing_preference"`
 }
 
-// VendorRestrictionsV1 Which vendors and regions the organization's traffic may use.
+// VendorRestrictionsV1 Which vendors and regions the organization's traffic may use, and whose
+// provider credentials it uses.
 type VendorRestrictionsV1 struct {
-	// AllowedRegions Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
+	// AllowedRegions When non-empty, the only regions the organization may route to. Each token is a vendor's `country_code` or `geo_region`, as listed by `GET /v1/organization/vendors`, like `US`, `CA` or `NA`. Case-sensitive; an unknown token is a 422.
 	AllowedRegions *[]string `json:"allowed_regions,omitempty"`
-	AllowedVendors *[]string `json:"allowed_vendors,omitempty"`
-	ByokOnly       *bool     `json:"byok_only,omitempty"`
 
-	// CustomerKeyUsageDefault Default key usage for end customers without their own setting. null means customers follow prefer_byok and byok_only.
+	// AllowedVendors When non-empty, the only vendors the organization may route to.
+	AllowedVendors *[]string `json:"allowed_vendors,omitempty"`
+
+	// ByokOnly For requests not linked to a customer, use only the organization's own provider credentials. Also turns off managed fallback on every credential.
+	ByokOnly *bool `json:"byok_only,omitempty"`
+
+	// CustomerKeyUsageDefault Whose credentials requests linked to a customer use, for customers without their own setting: `use_any` (no preference), `prefer_byok` (the customer's, then the organization's, then Merge's), `byok_only` (the customer's or the organization's) or `customer_only` (the customer's only). null means customers follow `prefer_byok` and `byok_only` above.
 	CustomerKeyUsageDefault nullable.Nullable[VendorRestrictionsV1CustomerKeyUsageDefault] `json:"customer_key_usage_default,omitempty"`
 
-	// IgnoredRegions Each token is an active vendor's country_code or geo_region, as listed by GET /v1/organization/vendors (e.g. "US", "CA", "NA"). Case-sensitive. An unknown token is a 422.
-	IgnoredRegions          *[]string `json:"ignored_regions,omitempty"`
-	IgnoredVendors          *[]string `json:"ignored_vendors,omitempty"`
-	PreferByok              *bool     `json:"prefer_byok,omitempty"`
+	// IgnoredRegions Regions the organization may never route to. Each token is a vendor's `country_code` or `geo_region`, as listed by `GET /v1/organization/vendors`, like `US`, `CA` or `NA`. Case-sensitive; an unknown token is a 422.
+	IgnoredRegions *[]string `json:"ignored_regions,omitempty"`
+
+	// IgnoredVendors Vendors the organization may never route to.
+	IgnoredVendors *[]string `json:"ignored_vendors,omitempty"`
+
+	// PreferByok For requests not linked to a customer, use the organization's own provider credentials first, then Merge-managed ones.
+	PreferByok *bool `json:"prefer_byok,omitempty"`
+
+	// VendorRoutingPreference Vendors to try first among those that remain. Never excludes a vendor.
 	VendorRoutingPreference *[]string `json:"vendor_routing_preference,omitempty"`
 }
 
 // VendorRestrictionsV1CustomerKeyUsageDefault defines model for VendorRestrictionsV1.CustomerKeyUsageDefault.
 type VendorRestrictionsV1CustomerKeyUsageDefault string
 
-// VendorV1List List envelope for “GET /v1/organization/vendors“. Pass “next“ as “cursor“.
+// VendorV1List A page of vendors.
+//
+// Examples: {"next":null,"previous":null,"results":[{"allow_byok":true,"country_code":"US","display_name":"Amazon Bedrock","geo_region":"NA","slug":"bedrock","vendor_type":"hosted"}]}
 type VendorV1List struct {
-	Next     nullable.Nullable[string] `json:"next"`
+	// Next Cursor for the next page: pass it as `cursor`. Null on the last page.
+	Next nullable.Nullable[string] `json:"next"`
+
+	// Previous Always null: paging only goes forward.
 	Previous nullable.Nullable[string] `json:"previous"`
-	Results  []VendorV1Response        `json:"results"`
+
+	// Results The vendors on this page.
+	Results []VendorV1Response `json:"results"`
 }
 
-// VendorV1Response defines model for VendorV1Response.
+// VendorV1Response A vendor that serves models: the model creator's own API or a cloud host.
+//
+// Examples: {"allow_byok":true,"country_code":"US","display_name":"Amazon Bedrock","geo_region":"NA","slug":"bedrock","vendor_type":"hosted"}
 type VendorV1Response struct {
 	// AllowByok Whether you can add your own credential for it.
 	AllowByok bool `json:"allow_byok"`
 
 	// CountryCode ISO 3166-1 alpha-2 code of its home country.
 	CountryCode nullable.Nullable[string] `json:"country_code"`
-	DisplayName string                    `json:"display_name"`
+
+	// DisplayName The vendor's name, like `Amazon Bedrock`.
+	DisplayName string `json:"display_name"`
 
 	// GeoRegion The region token used by region controls.
 	GeoRegion nullable.Nullable[string] `json:"geo_region"`
@@ -2719,8 +3246,11 @@ type UpdateBlocklistRule422JSONResponseBody struct {
 
 // ListCredentialsParams defines parameters for ListCredentials.
 type ListCredentialsParams struct {
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // CreateDlpRule422JSONResponseBody defines parameters for CreateDlpRule.
@@ -2740,8 +3270,11 @@ type UpdateDlpRule422JSONResponseBody struct {
 
 // ListExportDestinationsParams defines parameters for ListExportDestinations.
 type ListExportDestinationsParams struct {
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // CreateExportDestination422JSONResponseBody defines parameters for CreateExportDestination.
@@ -2756,15 +3289,20 @@ type UpdateExportDestination422JSONResponseBody struct {
 
 // ListGuardrailsParams defines parameters for ListGuardrails.
 type ListGuardrailsParams struct {
-	// Cursor The `next` value from the previous page.
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListKeysParams defines parameters for ListKeys.
 type ListKeysParams struct {
+	// Offset Number of keys to skip.
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
-	Limit  *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of keys to return (at most 100).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// ProjectId Only keys scoped to this project.
 	ProjectId *openapi_types.UUID `form:"project_id,omitempty" json:"project_id,omitempty"`
@@ -2775,9 +3313,11 @@ type ListKeysParams struct {
 
 // ListMembersParams defines parameters for ListMembers.
 type ListMembersParams struct {
-	// Cursor The `next` value from the previous page.
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListModelAliasesParams defines parameters for ListModelAliases.
@@ -2785,9 +3325,11 @@ type ListModelAliasesParams struct {
 	// ProjectId Only this project's aliases.
 	ProjectId *openapi_types.UUID `form:"project_id,omitempty" json:"project_id,omitempty"`
 
-	// Cursor The `next` value from the previous page.
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // UpdateOrganizationSettings422JSONResponseBody defines parameters for UpdateOrganizationSettings.
@@ -2806,18 +3348,22 @@ type ListModelsParams struct {
 	// OutputModality Only models that return this output, like `audio`.
 	OutputModality *string `form:"output_modality,omitempty" json:"output_modality,omitempty"`
 
-	// Cursor The `next` value from the previous page.
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // GetOrganizationUsageParams defines parameters for GetOrganizationUsage.
 type GetOrganizationUsageParams struct {
-	// Start YYYY-MM-DD (default: month start)
+	// Start First day of the range, `YYYY-MM-DD`, inclusive. Defaults to the 1st of this month.
 	Start *string `form:"start,omitempty" json:"start,omitempty"`
 
-	// End YYYY-MM-DD (default: today)
-	End     *string                            `form:"end,omitempty" json:"end,omitempty"`
+	// End Last day of the range, `YYYY-MM-DD`, inclusive. Defaults to today.
+	End *string `form:"end,omitempty" json:"end,omitempty"`
+
+	// GroupBy Also break spend down by project, API key or vendor.
 	GroupBy *GetOrganizationUsageParamsGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
 }
 
@@ -2826,15 +3372,20 @@ type GetOrganizationUsageParamsGroupBy string
 
 // ListVendorsParams defines parameters for ListVendors.
 type ListVendorsParams struct {
-	// Cursor The `next` value from the previous page.
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListProjectsParams defines parameters for ListProjects.
 type ListProjectsParams struct {
+	// Cursor The `next` value from the previous page. Omit it for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Limit Maximum number of results to return, at most 100. Defaults to 20.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // UpdateProjectControls422JSONResponseBody defines parameters for UpdateProjectControls.
@@ -2854,16 +3405,16 @@ type UpdateProjectPiSettings422JSONResponseBody struct {
 
 // GetProjectUsageParams defines parameters for GetProjectUsage.
 type GetProjectUsageParams struct {
-	// Start YYYY-MM-DD (default: month start)
+	// Start First day of the range, `YYYY-MM-DD`, inclusive. Defaults to the 1st of this month.
 	Start *string `form:"start,omitempty" json:"start,omitempty"`
 
-	// End YYYY-MM-DD (default: today)
+	// End Last day of the range, `YYYY-MM-DD`, inclusive. Defaults to today.
 	End *string `form:"end,omitempty" json:"end,omitempty"`
 }
 
 // ListRoutingPoliciesParams defines parameters for ListRoutingPolicies.
 type ListRoutingPoliciesParams struct {
-	// IncludeInline Also list policies the gateway materialised from requests' priority_order lists. Hidden by default.
+	// IncludeInline Also list policies the gateway created from requests' `priority_order` lists. Hidden by default.
 	IncludeInline *bool `form:"include_inline,omitempty" json:"include_inline,omitempty"`
 }
 
@@ -3890,16 +4441,17 @@ type ClientInterface interface {
 
 	// ListBlocklistRules List Blocklist Rules
 	//
-	// List the organization's blocklist rules, newest first.
-	//
-	// Returns all of them (at most 100), so no cursor pagination.
+	// List the organization's blocklist rules, newest first, all in one page:
+	// an organization has at most 100.
 	//
 	// Corresponds with GET /v1/blocklist-rules (the `ListBlocklistRules` operationId).
 	ListBlocklistRules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateBlocklistRuleWithBody Create Blocklist Rule
 	//
-	// Create a blocklist rule and sync it to the gateway.
+	// Create a rule that blocks or pins models and providers for customers,
+	// or for everyone. An organization can have up to 100 rules; changes apply
+	// to new requests within seconds.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3908,7 +4460,9 @@ type ClientInterface interface {
 
 	// CreateBlocklistRule Create Blocklist Rule
 	//
-	// Create a blocklist rule and sync it to the gateway.
+	// Create a rule that blocks or pins models and providers for customers,
+	// or for everyone. An organization can have up to 100 rules; changes apply
+	// to new requests within seconds.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3917,21 +4471,22 @@ type ClientInterface interface {
 
 	// DeleteBlocklistRule Delete Blocklist Rule
 	//
-	// Delete a blocklist rule and sync the change to the gateway.
+	// Delete a blocklist rule. Requests it denied are allowed again within
+	// seconds.
 	//
 	// Corresponds with DELETE /v1/blocklist-rules/{rule_id} (the `DeleteBlocklistRule` operationId).
 	DeleteBlocklistRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBlocklistRule Get Blocklist Rule
 	//
-	// Get one blocklist rule.
+	// Return a blocklist rule.
 	//
 	// Corresponds with GET /v1/blocklist-rules/{rule_id} (the `GetBlocklistRule` operationId).
 	GetBlocklistRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateBlocklistRuleWithBody Update Blocklist Rule
 	//
-	// Update a blocklist rule and sync it to the gateway.
+	// Update the fields you send. A list you send replaces the whole list.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3940,7 +4495,7 @@ type ClientInterface interface {
 
 	// UpdateBlocklistRule Update Blocklist Rule
 	//
-	// Update a blocklist rule and sync it to the gateway.
+	// Update the fields you send. A list you send replaces the whole list.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3949,15 +4504,19 @@ type ClientInterface interface {
 
 	// ListCredentials List Credentials
 	//
-	// List the organization's BYOK credentials (keyset-paginated by created_at, id).
+	// List the organization's provider credentials (BYOK), oldest first.
+	// Secrets are never returned; `credential_hint` tells keys apart.
 	//
 	// Corresponds with GET /v1/credentials (the `ListCredentials` operationId).
 	ListCredentials(ctx context.Context, params *ListCredentialsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateCredentialWithBody Create Credential
 	//
-	// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-	// and 409s if the organization already has one for the vendor.
+	// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+	// with it as your organization's key usage settings decide. An organization
+	// has one credential per vendor, so a second one is a 409. The key isn't
+	// tested on save: send a request to a model on that vendor to check it.
+	// Needs a Pro or Enterprise plan.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3966,8 +4525,11 @@ type ClientInterface interface {
 
 	// CreateCredential Create Credential
 	//
-	// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-	// and 409s if the organization already has one for the vendor.
+	// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+	// with it as your organization's key usage settings decide. An organization
+	// has one credential per vendor, so a second one is a 409. The key isn't
+	// tested on save: send a request to a model on that vendor to check it.
+	// Needs a Pro or Enterprise plan.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3976,21 +4538,22 @@ type ClientInterface interface {
 
 	// DeleteCredential Delete Credential
 	//
-	// Delete a BYOK credential.
+	// Delete a provider credential and its stored secrets.
 	//
 	// Corresponds with DELETE /v1/credentials/{credential_id} (the `DeleteCredential` operationId).
 	DeleteCredential(ctx context.Context, credentialId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCredential Get Credential
 	//
-	// Get one BYOK credential.
+	// Return a provider credential. Secrets are never returned.
 	//
 	// Corresponds with GET /v1/credentials/{credential_id} (the `GetCredential` operationId).
 	GetCredential(ctx context.Context, credentialId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateCredentialWithBody Update Credential
 	//
-	// Update a BYOK credential in place. The vendor can't change.
+	// Update the fields you send. Send `api_key` to rotate the key. The vendor
+	// can't change: delete the credential and create a new one to switch vendors.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3999,7 +4562,8 @@ type ClientInterface interface {
 
 	// UpdateCredential Update Credential
 	//
-	// Update a BYOK credential in place. The vendor can't change.
+	// Update the fields you send. Send `api_key` to rotate the key. The vendor
+	// can't change: delete the credential and create a new one to switch vendors.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4017,17 +4581,17 @@ type ClientInterface interface {
 
 	// ListDlpRules List DLP Rules
 	//
-	// List the organization's DLP rules.
-	//
-	// Returns all of them (the seeded catalog, then the custom rules), like the
-	// dashboard, so no cursor pagination.
+	// List the organization's DLP rules, all in one page: every seeded rule
+	// in the catalog, then your custom rules. Seeded rules start disabled.
 	//
 	// Corresponds with GET /v1/dlp-rules (the `ListDlpRules` operationId).
 	ListDlpRules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateDlpRuleWithBody Create DLP Rule
 	//
-	// Create a custom DLP rule and sync it to the gateway.
+	// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+	// starts enabled. Its `entity_type` is the name projects and customers use
+	// to override it.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4036,7 +4600,9 @@ type ClientInterface interface {
 
 	// CreateDlpRule Create DLP Rule
 	//
-	// Create a custom DLP rule and sync it to the gateway.
+	// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+	// starts enabled. Its `entity_type` is the name projects and customers use
+	// to override it.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4045,21 +4611,23 @@ type ClientInterface interface {
 
 	// DeleteDlpRule Delete DLP Rule
 	//
-	// Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
+	// Delete a custom DLP rule. Seeded rules can't be deleted (422); disable
+	// them instead.
 	//
 	// Corresponds with DELETE /v1/dlp-rules/{rule_id} (the `DeleteDlpRule` operationId).
 	DeleteDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDlpRule Get DLP Rule
 	//
-	// Get one DLP rule, seeded or custom.
+	// Return a DLP rule, seeded or custom.
 	//
 	// Corresponds with GET /v1/dlp-rules/{rule_id} (the `GetDlpRule` operationId).
 	GetDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateDlpRuleWithBody Update DLP Rule
 	//
-	// Update a DLP rule and sync it to the gateway.
+	// Update the fields you send. Seeded rules accept only `enabled` and
+	// `action`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4068,7 +4636,8 @@ type ClientInterface interface {
 
 	// UpdateDlpRule Update DLP Rule
 	//
-	// Update a DLP rule and sync it to the gateway.
+	// Update the fields you send. Seeded rules accept only `enabled` and
+	// `action`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4077,16 +4646,19 @@ type ClientInterface interface {
 
 	// ListExportDestinations List Export Destinations
 	//
-	// List export destinations (keyset-paginated by created_at, id).
-	//
-	// 404 when telemetry export is not enabled for the organization.
+	// List the organization's export destinations, oldest first. Each enabled
+	// destination gets all of the organization's traffic. Returns 404 when
+	// telemetry export isn't enabled for the organization.
 	//
 	// Corresponds with GET /v1/export-destinations (the `ListExportDestinations` operationId).
 	ListExportDestinations(ctx context.Context, params *ListExportDestinationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateExportDestinationWithBody Create Export Destination
 	//
-	// Create an export destination. The generic preset needs an enterprise plan (403).
+	// Create a destination for the gateway's request telemetry: Datadog,
+	// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+	// Enterprise plan). Each enabled destination gets all of the organization's
+	// traffic, so a second one copies rather than splits it.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4095,7 +4667,10 @@ type ClientInterface interface {
 
 	// CreateExportDestination Create Export Destination
 	//
-	// Create an export destination. The generic preset needs an enterprise plan (403).
+	// Create a destination for the gateway's request telemetry: Datadog,
+	// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+	// Enterprise plan). Each enabled destination gets all of the organization's
+	// traffic, so a second one copies rather than splits it.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4104,21 +4679,22 @@ type ClientInterface interface {
 
 	// DeleteExportDestination Delete Export Destination
 	//
-	// Delete an export destination.
+	// Delete an export destination. The gateway stops exporting to it.
 	//
 	// Corresponds with DELETE /v1/export-destinations/{destination_id} (the `DeleteExportDestination` operationId).
 	DeleteExportDestination(ctx context.Context, destinationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetExportDestination Get Export Destination
 	//
-	// Get an export destination.
+	// Return an export destination, with its recent delivery status.
 	//
 	// Corresponds with GET /v1/export-destinations/{destination_id} (the `GetExportDestination` operationId).
 	GetExportDestination(ctx context.Context, destinationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateExportDestinationWithBody Update Export Destination
 	//
-	// Update an export destination. Sending credential_secret rotates the stored secret.
+	// Update the fields you send. Send `credential_secret` to rotate the
+	// secret. `kind` and `otlp_preset` can't change.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4127,7 +4703,8 @@ type ClientInterface interface {
 
 	// UpdateExportDestination Update Export Destination
 	//
-	// Update an export destination. Sending credential_secret rotates the stored secret.
+	// Update the fields you send. Send `credential_secret` to rotate the
+	// secret. `kind` and `otlp_preset` can't change.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4136,7 +4713,8 @@ type ClientInterface interface {
 
 	// ListGuardrails List Guardrails
 	//
-	// List every project's guardrails: controls, PI and DLP settings.
+	// List every project's guardrails: its controls, prompt injection settings
+	// and DLP settings, in one object per project.
 	//
 	// Needs `view_security_rules` or `manage_security_rules`, and
 	// `view_org_settings` or `manage_org_settings`.
@@ -4156,16 +4734,21 @@ type ClientInterface interface {
 
 	// ListKeys List Keys
 	//
-	// List the org's regular API keys (excludes the internal tester key).
-	//
-	// Page through with ``offset``/``limit`` while ``has_more`` is true.
+	// Return the organization's API keys, newest first, with their current
+	// usage. The management key's organization is implied by the key itself. A
+	// page holds at most 100 keys; while `has_more` is true, advance `offset` to
+	// read the rest. Filter with `project_id` or `disabled`.
 	//
 	// Corresponds with GET /v1/keys (the `ListKeys` operationId).
 	ListKeys(ctx context.Context, params *ListKeysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateKeyWithBody Create Key
 	//
-	// Create a regular API key. The raw key is returned only here.
+	// Mint a new API key, optionally scoped to a project, capped with `limit`
+	// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+	// policy, or set to expire with `expires_at`. The raw key is returned once,
+	// in the `key` field. Needs a payment method on file, except on the Free
+	// plan.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4174,7 +4757,11 @@ type ClientInterface interface {
 
 	// CreateKey Create Key
 	//
-	// Create a regular API key. The raw key is returned only here.
+	// Mint a new API key, optionally scoped to a project, capped with `limit`
+	// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+	// policy, or set to expire with `expires_at`. The raw key is returned once,
+	// in the `key` field. Needs a payment method on file, except on the Free
+	// plan.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4183,21 +4770,25 @@ type ClientInterface interface {
 
 	// DeleteKey Delete Key
 	//
-	// Delete a key.
+	// Revoke a key immediately. Its historical spend is retained for
+	// reporting. To stop a key without losing it, set `disabled` instead.
 	//
 	// Corresponds with DELETE /v1/keys/{key_hash} (the `DeleteKey` operationId).
 	DeleteKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetKey Get Key
 	//
-	// Get a single key with usage.
+	// Return a single key with its current usage.
 	//
 	// Corresponds with GET /v1/keys/{key_hash} (the `GetKey` operationId).
 	GetKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateKeyWithBody Update Key
 	//
-	// Update a key's name / disabled state / spend limit / expiry.
+	// Update a key's name, disabled state, spend limit, model allowlist,
+	// routing policy binding or expiry. Only the fields you send change; send
+	// null to remove a limit, allowlist, binding or expiry. A key's project
+	// can't be changed.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4206,7 +4797,10 @@ type ClientInterface interface {
 
 	// UpdateKey Update Key
 	//
-	// Update a key's name / disabled state / spend limit / expiry.
+	// Update a key's name, disabled state, spend limit, model allowlist,
+	// routing policy binding or expiry. Only the fields you send change; send
+	// null to remove a limit, allowlist, binding or expiry. A key's project
+	// can't be changed.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4251,14 +4845,17 @@ type ClientInterface interface {
 
 	// GetOrganizationSettings Get Organization Settings
 	//
-	// Get the organization's settings.
+	// Return the organization's settings: its name, request tags, payload
+	// logging, zero data retention, web search mode, model deprecation handling,
+	// and vendor and region restrictions. There's one per organization.
 	//
 	// Corresponds with GET /v1/organization (the `GetOrganizationSettings` operationId).
 	GetOrganizationSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateOrganizationSettingsWithBody Update Organization Settings
 	//
-	// Update the organization's settings and sync them to the gateway.
+	// Update the settings you send. `tag_definitions` and
+	// `vendor_restrictions` replace the whole value.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4267,7 +4864,8 @@ type ClientInterface interface {
 
 	// UpdateOrganizationSettings Update Organization Settings
 	//
-	// Update the organization's settings and sync them to the gateway.
+	// Update the settings you send. `tag_definitions` and
+	// `vendor_restrictions` replace the whole value.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4294,21 +4892,24 @@ type ClientInterface interface {
 
 	// ResetOrganizationPiSettings Reset Organization PI Settings
 	//
-	// Reset the organization's prompt injection policy to the defaults (PI off).
+	// Reset the organization's prompt injection policy to the defaults,
+	// which turn screening off.
 	//
 	// Corresponds with DELETE /v1/organization/pi-settings (the `ResetOrganizationPiSettings` operationId).
 	ResetOrganizationPiSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetOrganizationPiSettings Get Organization PI Settings
 	//
-	// Get the organization's prompt injection policy.
+	// Return the organization's prompt injection policy, which projects
+	// inherit unless they override it. There's one per organization.
 	//
 	// Corresponds with GET /v1/organization/pi-settings (the `GetOrganizationPiSettings` operationId).
 	GetOrganizationPiSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateOrganizationPiSettingsWithBody Update Organization PI Settings
 	//
-	// Replace the organization's prompt injection policy and sync it to the gateway.
+	// Replace the organization's prompt injection policy as a whole: a field
+	// you omit takes its default.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4317,7 +4918,8 @@ type ClientInterface interface {
 
 	// UpdateOrganizationPiSettings Update Organization PI Settings
 	//
-	// Replace the organization's prompt injection policy and sync it to the gateway.
+	// Replace the organization's prompt injection policy as a whole: a field
+	// you omit takes its default.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4326,7 +4928,9 @@ type ClientInterface interface {
 
 	// GetOrganizationUsage Get Organization Usage
 	//
-	// Org spend rollup for the range, with optional per-dimension breakdown.
+	// Organization-wide spend for a date range: totals by day, a per-model
+	// breakdown by month, and optionally a breakdown by project, API key or
+	// vendor.
 	//
 	// Corresponds with GET /v1/organization/usage (the `GetOrganizationUsage` operationId).
 	GetOrganizationUsage(ctx context.Context, params *GetOrganizationUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4351,14 +4955,17 @@ type ClientInterface interface {
 
 	// ListProjects List Projects
 	//
-	// List projects (keyset-paginated by created_at, id).
+	// List the organization's projects, oldest first, each with its routing
+	// policy and budget. Pass `next` as `cursor` to read the next page.
 	//
 	// Corresponds with GET /v1/projects (the `ListProjects` operationId).
 	ListProjects(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateProjectWithBody Create Project
 	//
-	// Create a project.
+	// Create a project, optionally with its own routing policy and a spending
+	// budget. Without a routing policy, the project routes with the
+	// organization's default.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4367,7 +4974,9 @@ type ClientInterface interface {
 
 	// CreateProject Create Project
 	//
-	// Create a project.
+	// Create a project, optionally with its own routing policy and a spending
+	// budget. Without a routing policy, the project routes with the
+	// organization's default.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4376,24 +4985,25 @@ type ClientInterface interface {
 
 	// DeleteProject Delete Project
 	//
-	// Delete a project. Blocked (409) while active project-scoped API keys
-	// exist; fails closed (503) if the data plane is unreachable. The project's
-	// PI, DLP and controls overrides stop applying in the gateway.
+	// Delete the project with its own routing policy and budget. Refused with
+	// 409 while the project has active API keys; delete or disable them first.
 	//
 	// Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
 	DeleteProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProject Get Project
 	//
-	// Get a single project.
+	// Return a project with its routing policy and budget.
 	//
 	// Corresponds with GET /v1/projects/{project_id} (the `GetProject` operationId).
 	GetProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateProjectWithBody Update Project
 	//
-	// Update a project. Setting is_active to false stops the project's PI, DLP
-	// and controls overrides applying in the gateway; true restores them.
+	// Update the fields you send. `routing_policy` replaces the project's
+	// own policy in place, keeping its id; `uses_organization_default_routing`
+	// true deletes it. Setting `is_active` to false stops the project's prompt
+	// injection, DLP and controls overrides applying; true restores them.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4402,8 +5012,10 @@ type ClientInterface interface {
 
 	// UpdateProject Update Project
 	//
-	// Update a project. Setting is_active to false stops the project's PI, DLP
-	// and controls overrides applying in the gateway; true restores them.
+	// Update the fields you send. `routing_policy` replaces the project's
+	// own policy in place, keeping its id; `uses_organization_default_routing`
+	// true deletes it. Setting `is_active` to false stops the project's prompt
+	// injection, DLP and controls overrides applying; true restores them.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4412,21 +5024,29 @@ type ClientInterface interface {
 
 	// DeleteProjectControls Delete Project Controls
 	//
-	// Clear the override so the project inherits the organization's controls.
+	// Clear the project's override so it inherits the organization's
+	// controls again.
 	//
 	// Corresponds with DELETE /v1/projects/{project_id}/controls (the `DeleteProjectControls` operationId).
 	DeleteProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectControls Get Project Controls
 	//
-	// Return the project's control override and the resulting effective controls.
+	// Return the project's zero-data-retention, vendor and region override,
+	// and the controls actually in force for it: the organization's, with the
+	// project's units applied.
 	//
 	// Corresponds with GET /v1/projects/{project_id}/controls (the `GetProjectControls` operationId).
 	GetProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateProjectControlsWithBody Update Project Controls
 	//
-	// Replace the project's control override with exactly the fields sent.
+	// Replace the project's override with exactly the fields you send; omit a
+	// unit to inherit it. A management key can only tighten the organization's
+	// controls (narrow an allowlist, add to a denylist, turn zero data
+	// retention on); anything that loosens them is refused with 403
+	// `scoped_controls_loosening_forbidden`. Loosening is available in the
+	// dashboard.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4435,7 +5055,12 @@ type ClientInterface interface {
 
 	// UpdateProjectControls Update Project Controls
 	//
-	// Replace the project's control override with exactly the fields sent.
+	// Replace the project's override with exactly the fields you send; omit a
+	// unit to inherit it. A management key can only tighten the organization's
+	// controls (narrow an allowlist, add to a denylist, turn zero data
+	// retention on); anything that loosens them is refused with 403
+	// `scoped_controls_loosening_forbidden`. Loosening is available in the
+	// dashboard.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4444,7 +5069,8 @@ type ClientInterface interface {
 
 	// DeleteProjectDlpSettings Delete Project DLP Settings
 	//
-	// Clear the override so the project inherits the org's DLP rules.
+	// Clear the override so the project inherits the organization's DLP rules
+	// as a whole.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -4453,7 +5079,7 @@ type ClientInterface interface {
 
 	// GetProjectDlpSettings Get Project DLP Settings
 	//
-	// Return the project's DLP override plus the resolved per-entity outcome.
+	// Return the project's DLP override, keyed by entity type, and how every entity type in the organization's rules resolves for the project. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
@@ -4462,7 +5088,7 @@ type ClientInterface interface {
 
 	// UpdateProjectDlpSettingsWithBody Update Project DLP Settings
 	//
-	// Replace the project's DLP override wholesale + sync to the data plane.
+	// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -4473,7 +5099,7 @@ type ClientInterface interface {
 
 	// UpdateProjectDlpSettings Update Project DLP Settings
 	//
-	// Replace the project's DLP override wholesale + sync to the data plane.
+	// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -4484,14 +5110,18 @@ type ClientInterface interface {
 
 	// ListProjectModels List Project Models
 	//
-	// Models this project can route to under its effective controls.
+	// The models this project can route to: the active catalog filtered by
+	// the project's effective controls (its vendor, region and zero data
+	// retention overrides over the organization's), the organization's BYOK-only
+	// setting, and its vendor access.
 	//
 	// Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
 	ListProjectModels(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteProjectPiSettings Delete Project PI Settings
 	//
-	// Clear the override so the project inherits the org PI policy wholesale.
+	// Clear the override so the project inherits the organization's prompt
+	// injection policy as a whole.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -4500,7 +5130,7 @@ type ClientInterface interface {
 
 	// GetProjectPiSettings Get Project PI Settings
 	//
-	// Return the project's PI override, the effective policy, and what it inherits.
+	// Return the project's prompt injection override, the effective policy after merging it with the organization's, and which fields are inherited. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
@@ -4509,11 +5139,7 @@ type ClientInterface interface {
 
 	// UpdateProjectPiSettingsWithBody Update Project PI Settings
 	//
-	// Replace the project's PI override wholesale + sync to the data plane.
-	//
-	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
-	// field back to inheritance. An empty body therefore means "inherit
-	// everything", the same as DELETE.
+	// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -4524,11 +5150,7 @@ type ClientInterface interface {
 
 	// UpdateProjectPiSettings Update Project PI Settings
 	//
-	// Replace the project's PI override wholesale + sync to the data plane.
-	//
-	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
-	// field back to inheritance. An empty body therefore means "inherit
-	// everything", the same as DELETE.
+	// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -4539,32 +5161,27 @@ type ClientInterface interface {
 
 	// GetProjectUsage Get Project Usage
 	//
-	// Project spend totals (day-granular) plus a per-model breakdown.
-	//
-	// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
-	// so like the org endpoint it is month-granular over the months the range
-	// overlaps. The monthly project rows only accrue from when the data plane
-	// started writing them — earlier months report totals but an empty map.
+	// Spend totals for one project over a date range, plus a per-model
+	// breakdown. Totals are by day; the per-model breakdown is by month and
+	// covers the whole months the range overlaps.
 	//
 	// Corresponds with GET /v1/projects/{project_id}/usage (the `GetProjectUsage` operationId).
 	GetProjectUsage(ctx context.Context, projectId openapi_types.UUID, params *GetProjectUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListRoutingPolicies List Routing Policies
 	//
-	// List the org's standalone routing policies. Accepts a management key or a
-	// gateway API key.
-	//
-	// Returns all of them (an org has a handful, like the ERS customer surface),
-	// so no cursor pagination.
+	// List the organization's routing policies, all in one page. Policies
+	// that belong to a project or a customer aren't included. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 	//
 	// Corresponds with GET /v1/routing-policies (the `ListRoutingPolicies` operationId).
 	ListRoutingPolicies(ctx context.Context, params *ListRoutingPoliciesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateRoutingPolicyWithBody Create Routing Policy
 	//
-	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default. Needs a
-	// management key: a gateway API key gets 403.
+	// Create an organization routing policy. Clients use it by sending its
+	// `model` (`@alias/<slug>`) as the model. The organization's first policy
+	// becomes the default automatically; otherwise send `is_default` true to make
+	// it the default. Needs a management key.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4573,9 +5190,10 @@ type ClientInterface interface {
 
 	// CreateRoutingPolicy Create Routing Policy
 	//
-	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default. Needs a
-	// management key: a gateway API key gets 403.
+	// Create an organization routing policy. Clients use it by sending its
+	// `model` (`@alias/<slug>`) as the model. The organization's first policy
+	// becomes the default automatically; otherwise send `is_default` true to make
+	// it the default. Needs a management key.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4584,26 +5202,26 @@ type ClientInterface interface {
 
 	// DeleteRoutingPolicy Delete Routing Policy
 	//
-	// Delete an org routing policy. Deleting the default leaves the org with no
-	// default until another is set (requests fall back to per-request model pins).
-	// Refused (409, with the count) while any API key is bound to the policy:
-	// unbind or delete those keys first. Needs a management key: a gateway API
-	// key gets 403.
+	// Delete a routing policy. Deleting the default leaves the organization
+	// with no default until another is set, so requests must name a model.
+	// Refused with 409 while API keys are bound to the policy; unbind or delete
+	// them first. Needs a management key.
 	//
 	// Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
 	DeleteRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetRoutingPolicy Get Routing Policy
 	//
-	// Get one org routing policy. Accepts a management key or a gateway API key.
+	// Return an organization routing policy. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 	//
 	// Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
 	GetRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateRoutingPolicyWithBody Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs). Needs a
-	// management key: a gateway API key gets 403.
+	// Update the fields you send. The policy is updated in place, so its id
+	// stays the same. To change the routing, send `strategy` with its fields.
+	// Needs a management key.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4612,8 +5230,9 @@ type ClientInterface interface {
 
 	// UpdateRoutingPolicy Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs). Needs a
-	// management key: a gateway API key gets 403.
+	// Update the fields you send. The policy is updated in place, so its id
+	// stays the same. To change the routing, send `strategy` with its fields.
+	// Needs a management key.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4622,8 +5241,8 @@ type ClientInterface interface {
 
 	// SetDefaultRoutingPolicy Set Default Routing Policy
 	//
-	// Make this policy the org's default (unsets the previous default). Needs a
-	// management key: a gateway API key gets 403.
+	// Make this policy the organization's default, unsetting the previous
+	// default. Needs a management key.
 	//
 	// Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
 	SetDefaultRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4631,9 +5250,8 @@ type ClientInterface interface {
 
 // ListBlocklistRules List Blocklist Rules
 //
-// List the organization's blocklist rules, newest first.
-//
-// Returns all of them (at most 100), so no cursor pagination.
+// List the organization's blocklist rules, newest first, all in one page:
+// an organization has at most 100.
 //
 // Corresponds with GET /v1/blocklist-rules (the `ListBlocklistRules` operationId).
 func (c *Client) ListBlocklistRules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4650,7 +5268,9 @@ func (c *Client) ListBlocklistRules(ctx context.Context, reqEditors ...RequestEd
 
 // CreateBlocklistRuleWithBody Create Blocklist Rule
 //
-// Create a blocklist rule and sync it to the gateway.
+// Create a rule that blocks or pins models and providers for customers,
+// or for everyone. An organization can have up to 100 rules; changes apply
+// to new requests within seconds.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4669,7 +5289,9 @@ func (c *Client) CreateBlocklistRuleWithBody(ctx context.Context, contentType st
 
 // CreateBlocklistRule Create Blocklist Rule
 //
-// Create a blocklist rule and sync it to the gateway.
+// Create a rule that blocks or pins models and providers for customers,
+// or for everyone. An organization can have up to 100 rules; changes apply
+// to new requests within seconds.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4688,7 +5310,8 @@ func (c *Client) CreateBlocklistRule(ctx context.Context, body CreateBlocklistRu
 
 // DeleteBlocklistRule Delete Blocklist Rule
 //
-// Delete a blocklist rule and sync the change to the gateway.
+// Delete a blocklist rule. Requests it denied are allowed again within
+// seconds.
 //
 // Corresponds with DELETE /v1/blocklist-rules/{rule_id} (the `DeleteBlocklistRule` operationId).
 func (c *Client) DeleteBlocklistRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4705,7 +5328,7 @@ func (c *Client) DeleteBlocklistRule(ctx context.Context, ruleId openapi_types.U
 
 // GetBlocklistRule Get Blocklist Rule
 //
-// Get one blocklist rule.
+// Return a blocklist rule.
 //
 // Corresponds with GET /v1/blocklist-rules/{rule_id} (the `GetBlocklistRule` operationId).
 func (c *Client) GetBlocklistRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4722,7 +5345,7 @@ func (c *Client) GetBlocklistRule(ctx context.Context, ruleId openapi_types.UUID
 
 // UpdateBlocklistRuleWithBody Update Blocklist Rule
 //
-// Update a blocklist rule and sync it to the gateway.
+// Update the fields you send. A list you send replaces the whole list.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4741,7 +5364,7 @@ func (c *Client) UpdateBlocklistRuleWithBody(ctx context.Context, ruleId openapi
 
 // UpdateBlocklistRule Update Blocklist Rule
 //
-// Update a blocklist rule and sync it to the gateway.
+// Update the fields you send. A list you send replaces the whole list.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4760,7 +5383,8 @@ func (c *Client) UpdateBlocklistRule(ctx context.Context, ruleId openapi_types.U
 
 // ListCredentials List Credentials
 //
-// List the organization's BYOK credentials (keyset-paginated by created_at, id).
+// List the organization's provider credentials (BYOK), oldest first.
+// Secrets are never returned; `credential_hint` tells keys apart.
 //
 // Corresponds with GET /v1/credentials (the `ListCredentials` operationId).
 func (c *Client) ListCredentials(ctx context.Context, params *ListCredentialsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4777,8 +5401,11 @@ func (c *Client) ListCredentials(ctx context.Context, params *ListCredentialsPar
 
 // CreateCredentialWithBody Create Credential
 //
-// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-// and 409s if the organization already has one for the vendor.
+// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+// with it as your organization's key usage settings decide. An organization
+// has one credential per vendor, so a second one is a 409. The key isn't
+// tested on save: send a request to a model on that vendor to check it.
+// Needs a Pro or Enterprise plan.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4797,8 +5424,11 @@ func (c *Client) CreateCredentialWithBody(ctx context.Context, contentType strin
 
 // CreateCredential Create Credential
 //
-// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-// and 409s if the organization already has one for the vendor.
+// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+// with it as your organization's key usage settings decide. An organization
+// has one credential per vendor, so a second one is a 409. The key isn't
+// tested on save: send a request to a model on that vendor to check it.
+// Needs a Pro or Enterprise plan.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4817,7 +5447,7 @@ func (c *Client) CreateCredential(ctx context.Context, body CreateCredentialJSON
 
 // DeleteCredential Delete Credential
 //
-// Delete a BYOK credential.
+// Delete a provider credential and its stored secrets.
 //
 // Corresponds with DELETE /v1/credentials/{credential_id} (the `DeleteCredential` operationId).
 func (c *Client) DeleteCredential(ctx context.Context, credentialId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4834,7 +5464,7 @@ func (c *Client) DeleteCredential(ctx context.Context, credentialId openapi_type
 
 // GetCredential Get Credential
 //
-// Get one BYOK credential.
+// Return a provider credential. Secrets are never returned.
 //
 // Corresponds with GET /v1/credentials/{credential_id} (the `GetCredential` operationId).
 func (c *Client) GetCredential(ctx context.Context, credentialId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4851,7 +5481,8 @@ func (c *Client) GetCredential(ctx context.Context, credentialId openapi_types.U
 
 // UpdateCredentialWithBody Update Credential
 //
-// Update a BYOK credential in place. The vendor can't change.
+// Update the fields you send. Send `api_key` to rotate the key. The vendor
+// can't change: delete the credential and create a new one to switch vendors.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4870,7 +5501,8 @@ func (c *Client) UpdateCredentialWithBody(ctx context.Context, credentialId open
 
 // UpdateCredential Update Credential
 //
-// Update a BYOK credential in place. The vendor can't change.
+// Update the fields you send. Send `api_key` to rotate the key. The vendor
+// can't change: delete the credential and create a new one to switch vendors.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4908,10 +5540,8 @@ func (c *Client) GetCredits(ctx context.Context, reqEditors ...RequestEditorFn) 
 
 // ListDlpRules List DLP Rules
 //
-// List the organization's DLP rules.
-//
-// Returns all of them (the seeded catalog, then the custom rules), like the
-// dashboard, so no cursor pagination.
+// List the organization's DLP rules, all in one page: every seeded rule
+// in the catalog, then your custom rules. Seeded rules start disabled.
 //
 // Corresponds with GET /v1/dlp-rules (the `ListDlpRules` operationId).
 func (c *Client) ListDlpRules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4928,7 +5558,9 @@ func (c *Client) ListDlpRules(ctx context.Context, reqEditors ...RequestEditorFn
 
 // CreateDlpRuleWithBody Create DLP Rule
 //
-// Create a custom DLP rule and sync it to the gateway.
+// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+// starts enabled. Its `entity_type` is the name projects and customers use
+// to override it.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4947,7 +5579,9 @@ func (c *Client) CreateDlpRuleWithBody(ctx context.Context, contentType string, 
 
 // CreateDlpRule Create DLP Rule
 //
-// Create a custom DLP rule and sync it to the gateway.
+// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+// starts enabled. Its `entity_type` is the name projects and customers use
+// to override it.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4966,7 +5600,8 @@ func (c *Client) CreateDlpRule(ctx context.Context, body CreateDlpRuleJSONReques
 
 // DeleteDlpRule Delete DLP Rule
 //
-// Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
+// Delete a custom DLP rule. Seeded rules can't be deleted (422); disable
+// them instead.
 //
 // Corresponds with DELETE /v1/dlp-rules/{rule_id} (the `DeleteDlpRule` operationId).
 func (c *Client) DeleteDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4983,7 +5618,7 @@ func (c *Client) DeleteDlpRule(ctx context.Context, ruleId openapi_types.UUID, r
 
 // GetDlpRule Get DLP Rule
 //
-// Get one DLP rule, seeded or custom.
+// Return a DLP rule, seeded or custom.
 //
 // Corresponds with GET /v1/dlp-rules/{rule_id} (the `GetDlpRule` operationId).
 func (c *Client) GetDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5000,7 +5635,8 @@ func (c *Client) GetDlpRule(ctx context.Context, ruleId openapi_types.UUID, reqE
 
 // UpdateDlpRuleWithBody Update DLP Rule
 //
-// Update a DLP rule and sync it to the gateway.
+// Update the fields you send. Seeded rules accept only `enabled` and
+// `action`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5019,7 +5655,8 @@ func (c *Client) UpdateDlpRuleWithBody(ctx context.Context, ruleId openapi_types
 
 // UpdateDlpRule Update DLP Rule
 //
-// Update a DLP rule and sync it to the gateway.
+// Update the fields you send. Seeded rules accept only `enabled` and
+// `action`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5038,9 +5675,9 @@ func (c *Client) UpdateDlpRule(ctx context.Context, ruleId openapi_types.UUID, b
 
 // ListExportDestinations List Export Destinations
 //
-// List export destinations (keyset-paginated by created_at, id).
-//
-// 404 when telemetry export is not enabled for the organization.
+// List the organization's export destinations, oldest first. Each enabled
+// destination gets all of the organization's traffic. Returns 404 when
+// telemetry export isn't enabled for the organization.
 //
 // Corresponds with GET /v1/export-destinations (the `ListExportDestinations` operationId).
 func (c *Client) ListExportDestinations(ctx context.Context, params *ListExportDestinationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5057,7 +5694,10 @@ func (c *Client) ListExportDestinations(ctx context.Context, params *ListExportD
 
 // CreateExportDestinationWithBody Create Export Destination
 //
-// Create an export destination. The generic preset needs an enterprise plan (403).
+// Create a destination for the gateway's request telemetry: Datadog,
+// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+// Enterprise plan). Each enabled destination gets all of the organization's
+// traffic, so a second one copies rather than splits it.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5076,7 +5716,10 @@ func (c *Client) CreateExportDestinationWithBody(ctx context.Context, contentTyp
 
 // CreateExportDestination Create Export Destination
 //
-// Create an export destination. The generic preset needs an enterprise plan (403).
+// Create a destination for the gateway's request telemetry: Datadog,
+// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+// Enterprise plan). Each enabled destination gets all of the organization's
+// traffic, so a second one copies rather than splits it.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5095,7 +5738,7 @@ func (c *Client) CreateExportDestination(ctx context.Context, body CreateExportD
 
 // DeleteExportDestination Delete Export Destination
 //
-// Delete an export destination.
+// Delete an export destination. The gateway stops exporting to it.
 //
 // Corresponds with DELETE /v1/export-destinations/{destination_id} (the `DeleteExportDestination` operationId).
 func (c *Client) DeleteExportDestination(ctx context.Context, destinationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5112,7 +5755,7 @@ func (c *Client) DeleteExportDestination(ctx context.Context, destinationId open
 
 // GetExportDestination Get Export Destination
 //
-// Get an export destination.
+// Return an export destination, with its recent delivery status.
 //
 // Corresponds with GET /v1/export-destinations/{destination_id} (the `GetExportDestination` operationId).
 func (c *Client) GetExportDestination(ctx context.Context, destinationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5129,7 +5772,8 @@ func (c *Client) GetExportDestination(ctx context.Context, destinationId openapi
 
 // UpdateExportDestinationWithBody Update Export Destination
 //
-// Update an export destination. Sending credential_secret rotates the stored secret.
+// Update the fields you send. Send `credential_secret` to rotate the
+// secret. `kind` and `otlp_preset` can't change.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5148,7 +5792,8 @@ func (c *Client) UpdateExportDestinationWithBody(ctx context.Context, destinatio
 
 // UpdateExportDestination Update Export Destination
 //
-// Update an export destination. Sending credential_secret rotates the stored secret.
+// Update the fields you send. Send `credential_secret` to rotate the
+// secret. `kind` and `otlp_preset` can't change.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5167,7 +5812,8 @@ func (c *Client) UpdateExportDestination(ctx context.Context, destinationId open
 
 // ListGuardrails List Guardrails
 //
-// List every project's guardrails: controls, PI and DLP settings.
+// List every project's guardrails: its controls, prompt injection settings
+// and DLP settings, in one object per project.
 //
 // Needs `view_security_rules` or `manage_security_rules`, and
 // `view_org_settings` or `manage_org_settings`.
@@ -5207,9 +5853,10 @@ func (c *Client) GetGuardrail(ctx context.Context, projectId openapi_types.UUID,
 
 // ListKeys List Keys
 //
-// List the org's regular API keys (excludes the internal tester key).
-//
-// Page through with “offset“/“limit“ while “has_more“ is true.
+// Return the organization's API keys, newest first, with their current
+// usage. The management key's organization is implied by the key itself. A
+// page holds at most 100 keys; while `has_more` is true, advance `offset` to
+// read the rest. Filter with `project_id` or `disabled`.
 //
 // Corresponds with GET /v1/keys (the `ListKeys` operationId).
 func (c *Client) ListKeys(ctx context.Context, params *ListKeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5226,7 +5873,11 @@ func (c *Client) ListKeys(ctx context.Context, params *ListKeysParams, reqEditor
 
 // CreateKeyWithBody Create Key
 //
-// Create a regular API key. The raw key is returned only here.
+// Mint a new API key, optionally scoped to a project, capped with `limit`
+// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+// policy, or set to expire with `expires_at`. The raw key is returned once,
+// in the `key` field. Needs a payment method on file, except on the Free
+// plan.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5245,7 +5896,11 @@ func (c *Client) CreateKeyWithBody(ctx context.Context, contentType string, body
 
 // CreateKey Create Key
 //
-// Create a regular API key. The raw key is returned only here.
+// Mint a new API key, optionally scoped to a project, capped with `limit`
+// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+// policy, or set to expire with `expires_at`. The raw key is returned once,
+// in the `key` field. Needs a payment method on file, except on the Free
+// plan.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5264,7 +5919,8 @@ func (c *Client) CreateKey(ctx context.Context, body CreateKeyJSONRequestBody, r
 
 // DeleteKey Delete Key
 //
-// Delete a key.
+// Revoke a key immediately. Its historical spend is retained for
+// reporting. To stop a key without losing it, set `disabled` instead.
 //
 // Corresponds with DELETE /v1/keys/{key_hash} (the `DeleteKey` operationId).
 func (c *Client) DeleteKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5281,7 +5937,7 @@ func (c *Client) DeleteKey(ctx context.Context, keyHash string, reqEditors ...Re
 
 // GetKey Get Key
 //
-// Get a single key with usage.
+// Return a single key with its current usage.
 //
 // Corresponds with GET /v1/keys/{key_hash} (the `GetKey` operationId).
 func (c *Client) GetKey(ctx context.Context, keyHash string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5298,7 +5954,10 @@ func (c *Client) GetKey(ctx context.Context, keyHash string, reqEditors ...Reque
 
 // UpdateKeyWithBody Update Key
 //
-// Update a key's name / disabled state / spend limit / expiry.
+// Update a key's name, disabled state, spend limit, model allowlist,
+// routing policy binding or expiry. Only the fields you send change; send
+// null to remove a limit, allowlist, binding or expiry. A key's project
+// can't be changed.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5317,7 +5976,10 @@ func (c *Client) UpdateKeyWithBody(ctx context.Context, keyHash string, contentT
 
 // UpdateKey Update Key
 //
-// Update a key's name / disabled state / spend limit / expiry.
+// Update a key's name, disabled state, spend limit, model allowlist,
+// routing policy binding or expiry. Only the fields you send change; send
+// null to remove a limit, allowlist, binding or expiry. A key's project
+// can't be changed.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5412,7 +6074,9 @@ func (c *Client) GetModelAlias(ctx context.Context, aliasId openapi_types.UUID, 
 
 // GetOrganizationSettings Get Organization Settings
 //
-// Get the organization's settings.
+// Return the organization's settings: its name, request tags, payload
+// logging, zero data retention, web search mode, model deprecation handling,
+// and vendor and region restrictions. There's one per organization.
 //
 // Corresponds with GET /v1/organization (the `GetOrganizationSettings` operationId).
 func (c *Client) GetOrganizationSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5429,7 +6093,8 @@ func (c *Client) GetOrganizationSettings(ctx context.Context, reqEditors ...Requ
 
 // UpdateOrganizationSettingsWithBody Update Organization Settings
 //
-// Update the organization's settings and sync them to the gateway.
+// Update the settings you send. `tag_definitions` and
+// `vendor_restrictions` replace the whole value.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5448,7 +6113,8 @@ func (c *Client) UpdateOrganizationSettingsWithBody(ctx context.Context, content
 
 // UpdateOrganizationSettings Update Organization Settings
 //
-// Update the organization's settings and sync them to the gateway.
+// Update the settings you send. `tag_definitions` and
+// `vendor_restrictions` replace the whole value.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5505,7 +6171,8 @@ func (c *Client) GetModel(ctx context.Context, modelId string, reqEditors ...Req
 
 // ResetOrganizationPiSettings Reset Organization PI Settings
 //
-// Reset the organization's prompt injection policy to the defaults (PI off).
+// Reset the organization's prompt injection policy to the defaults,
+// which turn screening off.
 //
 // Corresponds with DELETE /v1/organization/pi-settings (the `ResetOrganizationPiSettings` operationId).
 func (c *Client) ResetOrganizationPiSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5522,7 +6189,8 @@ func (c *Client) ResetOrganizationPiSettings(ctx context.Context, reqEditors ...
 
 // GetOrganizationPiSettings Get Organization PI Settings
 //
-// Get the organization's prompt injection policy.
+// Return the organization's prompt injection policy, which projects
+// inherit unless they override it. There's one per organization.
 //
 // Corresponds with GET /v1/organization/pi-settings (the `GetOrganizationPiSettings` operationId).
 func (c *Client) GetOrganizationPiSettings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5539,7 +6207,8 @@ func (c *Client) GetOrganizationPiSettings(ctx context.Context, reqEditors ...Re
 
 // UpdateOrganizationPiSettingsWithBody Update Organization PI Settings
 //
-// Replace the organization's prompt injection policy and sync it to the gateway.
+// Replace the organization's prompt injection policy as a whole: a field
+// you omit takes its default.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5558,7 +6227,8 @@ func (c *Client) UpdateOrganizationPiSettingsWithBody(ctx context.Context, conte
 
 // UpdateOrganizationPiSettings Update Organization PI Settings
 //
-// Replace the organization's prompt injection policy and sync it to the gateway.
+// Replace the organization's prompt injection policy as a whole: a field
+// you omit takes its default.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5577,7 +6247,9 @@ func (c *Client) UpdateOrganizationPiSettings(ctx context.Context, body UpdateOr
 
 // GetOrganizationUsage Get Organization Usage
 //
-// Org spend rollup for the range, with optional per-dimension breakdown.
+// Organization-wide spend for a date range: totals by day, a per-model
+// breakdown by month, and optionally a breakdown by project, API key or
+// vendor.
 //
 // Corresponds with GET /v1/organization/usage (the `GetOrganizationUsage` operationId).
 func (c *Client) GetOrganizationUsage(ctx context.Context, params *GetOrganizationUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5632,7 +6304,8 @@ func (c *Client) GetVendor(ctx context.Context, slug string, reqEditors ...Reque
 
 // ListProjects List Projects
 //
-// List projects (keyset-paginated by created_at, id).
+// List the organization's projects, oldest first, each with its routing
+// policy and budget. Pass `next` as `cursor` to read the next page.
 //
 // Corresponds with GET /v1/projects (the `ListProjects` operationId).
 func (c *Client) ListProjects(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5649,7 +6322,9 @@ func (c *Client) ListProjects(ctx context.Context, params *ListProjectsParams, r
 
 // CreateProjectWithBody Create Project
 //
-// Create a project.
+// Create a project, optionally with its own routing policy and a spending
+// budget. Without a routing policy, the project routes with the
+// organization's default.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5668,7 +6343,9 @@ func (c *Client) CreateProjectWithBody(ctx context.Context, contentType string, 
 
 // CreateProject Create Project
 //
-// Create a project.
+// Create a project, optionally with its own routing policy and a spending
+// budget. Without a routing policy, the project routes with the
+// organization's default.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5687,9 +6364,8 @@ func (c *Client) CreateProject(ctx context.Context, body CreateProjectJSONReques
 
 // DeleteProject Delete Project
 //
-// Delete a project. Blocked (409) while active project-scoped API keys
-// exist; fails closed (503) if the data plane is unreachable. The project's
-// PI, DLP and controls overrides stop applying in the gateway.
+// Delete the project with its own routing policy and budget. Refused with
+// 409 while the project has active API keys; delete or disable them first.
 //
 // Corresponds with DELETE /v1/projects/{project_id} (the `DeleteProject` operationId).
 func (c *Client) DeleteProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5706,7 +6382,7 @@ func (c *Client) DeleteProject(ctx context.Context, projectId openapi_types.UUID
 
 // GetProject Get Project
 //
-// Get a single project.
+// Return a project with its routing policy and budget.
 //
 // Corresponds with GET /v1/projects/{project_id} (the `GetProject` operationId).
 func (c *Client) GetProject(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5723,8 +6399,10 @@ func (c *Client) GetProject(ctx context.Context, projectId openapi_types.UUID, r
 
 // UpdateProjectWithBody Update Project
 //
-// Update a project. Setting is_active to false stops the project's PI, DLP
-// and controls overrides applying in the gateway; true restores them.
+// Update the fields you send. `routing_policy` replaces the project's
+// own policy in place, keeping its id; `uses_organization_default_routing`
+// true deletes it. Setting `is_active` to false stops the project's prompt
+// injection, DLP and controls overrides applying; true restores them.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5743,8 +6421,10 @@ func (c *Client) UpdateProjectWithBody(ctx context.Context, projectId openapi_ty
 
 // UpdateProject Update Project
 //
-// Update a project. Setting is_active to false stops the project's PI, DLP
-// and controls overrides applying in the gateway; true restores them.
+// Update the fields you send. `routing_policy` replaces the project's
+// own policy in place, keeping its id; `uses_organization_default_routing`
+// true deletes it. Setting `is_active` to false stops the project's prompt
+// injection, DLP and controls overrides applying; true restores them.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5763,7 +6443,8 @@ func (c *Client) UpdateProject(ctx context.Context, projectId openapi_types.UUID
 
 // DeleteProjectControls Delete Project Controls
 //
-// Clear the override so the project inherits the organization's controls.
+// Clear the project's override so it inherits the organization's
+// controls again.
 //
 // Corresponds with DELETE /v1/projects/{project_id}/controls (the `DeleteProjectControls` operationId).
 func (c *Client) DeleteProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5780,7 +6461,9 @@ func (c *Client) DeleteProjectControls(ctx context.Context, projectId openapi_ty
 
 // GetProjectControls Get Project Controls
 //
-// Return the project's control override and the resulting effective controls.
+// Return the project's zero-data-retention, vendor and region override,
+// and the controls actually in force for it: the organization's, with the
+// project's units applied.
 //
 // Corresponds with GET /v1/projects/{project_id}/controls (the `GetProjectControls` operationId).
 func (c *Client) GetProjectControls(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5797,7 +6480,12 @@ func (c *Client) GetProjectControls(ctx context.Context, projectId openapi_types
 
 // UpdateProjectControlsWithBody Update Project Controls
 //
-// Replace the project's control override with exactly the fields sent.
+// Replace the project's override with exactly the fields you send; omit a
+// unit to inherit it. A management key can only tighten the organization's
+// controls (narrow an allowlist, add to a denylist, turn zero data
+// retention on); anything that loosens them is refused with 403
+// `scoped_controls_loosening_forbidden`. Loosening is available in the
+// dashboard.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5816,7 +6504,12 @@ func (c *Client) UpdateProjectControlsWithBody(ctx context.Context, projectId op
 
 // UpdateProjectControls Update Project Controls
 //
-// Replace the project's control override with exactly the fields sent.
+// Replace the project's override with exactly the fields you send; omit a
+// unit to inherit it. A management key can only tighten the organization's
+// controls (narrow an allowlist, add to a denylist, turn zero data
+// retention on); anything that loosens them is refused with 403
+// `scoped_controls_loosening_forbidden`. Loosening is available in the
+// dashboard.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5835,7 +6528,8 @@ func (c *Client) UpdateProjectControls(ctx context.Context, projectId openapi_ty
 
 // DeleteProjectDlpSettings Delete Project DLP Settings
 //
-// Clear the override so the project inherits the org's DLP rules.
+// Clear the override so the project inherits the organization's DLP rules
+// as a whole.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -5854,7 +6548,7 @@ func (c *Client) DeleteProjectDlpSettings(ctx context.Context, projectId openapi
 
 // GetProjectDlpSettings Get Project DLP Settings
 //
-// Return the project's DLP override plus the resolved per-entity outcome.
+// Return the project's DLP override, keyed by entity type, and how every entity type in the organization's rules resolves for the project. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
@@ -5873,7 +6567,7 @@ func (c *Client) GetProjectDlpSettings(ctx context.Context, projectId openapi_ty
 
 // UpdateProjectDlpSettingsWithBody Update Project DLP Settings
 //
-// Replace the project's DLP override wholesale + sync to the data plane.
+// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -5894,7 +6588,7 @@ func (c *Client) UpdateProjectDlpSettingsWithBody(ctx context.Context, projectId
 
 // UpdateProjectDlpSettings Update Project DLP Settings
 //
-// Replace the project's DLP override wholesale + sync to the data plane.
+// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -5915,7 +6609,10 @@ func (c *Client) UpdateProjectDlpSettings(ctx context.Context, projectId openapi
 
 // ListProjectModels List Project Models
 //
-// Models this project can route to under its effective controls.
+// The models this project can route to: the active catalog filtered by
+// the project's effective controls (its vendor, region and zero data
+// retention overrides over the organization's), the organization's BYOK-only
+// setting, and its vendor access.
 //
 // Corresponds with GET /v1/projects/{project_id}/models (the `ListProjectModels` operationId).
 func (c *Client) ListProjectModels(ctx context.Context, projectId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5932,7 +6629,8 @@ func (c *Client) ListProjectModels(ctx context.Context, projectId openapi_types.
 
 // DeleteProjectPiSettings Delete Project PI Settings
 //
-// Clear the override so the project inherits the org PI policy wholesale.
+// Clear the override so the project inherits the organization's prompt
+// injection policy as a whole.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -5951,7 +6649,7 @@ func (c *Client) DeleteProjectPiSettings(ctx context.Context, projectId openapi_
 
 // GetProjectPiSettings Get Project PI Settings
 //
-// Return the project's PI override, the effective policy, and what it inherits.
+// Return the project's prompt injection override, the effective policy after merging it with the organization's, and which fields are inherited. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
@@ -5970,11 +6668,7 @@ func (c *Client) GetProjectPiSettings(ctx context.Context, projectId openapi_typ
 
 // UpdateProjectPiSettingsWithBody Update Project PI Settings
 //
-// Replace the project's PI override wholesale + sync to the data plane.
-//
-// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
-// field back to inheritance. An empty body therefore means "inherit
-// everything", the same as DELETE.
+// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -5995,11 +6689,7 @@ func (c *Client) UpdateProjectPiSettingsWithBody(ctx context.Context, projectId 
 
 // UpdateProjectPiSettings Update Project PI Settings
 //
-// Replace the project's PI override wholesale + sync to the data plane.
-//
-// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
-// field back to inheritance. An empty body therefore means "inherit
-// everything", the same as DELETE.
+// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -6020,12 +6710,9 @@ func (c *Client) UpdateProjectPiSettings(ctx context.Context, projectId openapi_
 
 // GetProjectUsage Get Project Usage
 //
-// Project spend totals (day-granular) plus a per-model breakdown.
-//
-// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
-// so like the org endpoint it is month-granular over the months the range
-// overlaps. The monthly project rows only accrue from when the data plane
-// started writing them — earlier months report totals but an empty map.
+// Spend totals for one project over a date range, plus a per-model
+// breakdown. Totals are by day; the per-model breakdown is by month and
+// covers the whole months the range overlaps.
 //
 // Corresponds with GET /v1/projects/{project_id}/usage (the `GetProjectUsage` operationId).
 func (c *Client) GetProjectUsage(ctx context.Context, projectId openapi_types.UUID, params *GetProjectUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6042,11 +6729,8 @@ func (c *Client) GetProjectUsage(ctx context.Context, projectId openapi_types.UU
 
 // ListRoutingPolicies List Routing Policies
 //
-// List the org's standalone routing policies. Accepts a management key or a
-// gateway API key.
-//
-// Returns all of them (an org has a handful, like the ERS customer surface),
-// so no cursor pagination.
+// List the organization's routing policies, all in one page. Policies
+// that belong to a project or a customer aren't included. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 //
 // Corresponds with GET /v1/routing-policies (the `ListRoutingPolicies` operationId).
 func (c *Client) ListRoutingPolicies(ctx context.Context, params *ListRoutingPoliciesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6063,9 +6747,10 @@ func (c *Client) ListRoutingPolicies(ctx context.Context, params *ListRoutingPol
 
 // CreateRoutingPolicyWithBody Create Routing Policy
 //
-// Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default. Needs a
-// management key: a gateway API key gets 403.
+// Create an organization routing policy. Clients use it by sending its
+// `model` (`@alias/<slug>`) as the model. The organization's first policy
+// becomes the default automatically; otherwise send `is_default` true to make
+// it the default. Needs a management key.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6084,9 +6769,10 @@ func (c *Client) CreateRoutingPolicyWithBody(ctx context.Context, contentType st
 
 // CreateRoutingPolicy Create Routing Policy
 //
-// Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default. Needs a
-// management key: a gateway API key gets 403.
+// Create an organization routing policy. Clients use it by sending its
+// `model` (`@alias/<slug>`) as the model. The organization's first policy
+// becomes the default automatically; otherwise send `is_default` true to make
+// it the default. Needs a management key.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6105,11 +6791,10 @@ func (c *Client) CreateRoutingPolicy(ctx context.Context, body CreateRoutingPoli
 
 // DeleteRoutingPolicy Delete Routing Policy
 //
-// Delete an org routing policy. Deleting the default leaves the org with no
-// default until another is set (requests fall back to per-request model pins).
-// Refused (409, with the count) while any API key is bound to the policy:
-// unbind or delete those keys first. Needs a management key: a gateway API
-// key gets 403.
+// Delete a routing policy. Deleting the default leaves the organization
+// with no default until another is set, so requests must name a model.
+// Refused with 409 while API keys are bound to the policy; unbind or delete
+// them first. Needs a management key.
 //
 // Corresponds with DELETE /v1/routing-policies/{policy_id} (the `DeleteRoutingPolicy` operationId).
 func (c *Client) DeleteRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6126,7 +6811,7 @@ func (c *Client) DeleteRoutingPolicy(ctx context.Context, policyId openapi_types
 
 // GetRoutingPolicy Get Routing Policy
 //
-// Get one org routing policy. Accepts a management key or a gateway API key.
+// Return an organization routing policy. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 //
 // Corresponds with GET /v1/routing-policies/{policy_id} (the `GetRoutingPolicy` operationId).
 func (c *Client) GetRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6143,8 +6828,9 @@ func (c *Client) GetRoutingPolicy(ctx context.Context, policyId openapi_types.UU
 
 // UpdateRoutingPolicyWithBody Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs). Needs a
-// management key: a gateway API key gets 403.
+// Update the fields you send. The policy is updated in place, so its id
+// stays the same. To change the routing, send `strategy` with its fields.
+// Needs a management key.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6163,8 +6849,9 @@ func (c *Client) UpdateRoutingPolicyWithBody(ctx context.Context, policyId opena
 
 // UpdateRoutingPolicy Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs). Needs a
-// management key: a gateway API key gets 403.
+// Update the fields you send. The policy is updated in place, so its id
+// stays the same. To change the routing, send `strategy` with its fields.
+// Needs a management key.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6183,8 +6870,8 @@ func (c *Client) UpdateRoutingPolicy(ctx context.Context, policyId openapi_types
 
 // SetDefaultRoutingPolicy Set Default Routing Policy
 //
-// Make this policy the org's default (unsets the previous default). Needs a
-// management key: a gateway API key gets 403.
+// Make this policy the organization's default, unsetting the previous
+// default. Needs a management key.
 //
 // Corresponds with POST /v1/routing-policies/{policy_id}/set-default (the `SetDefaultRoutingPolicy` operationId).
 func (c *Client) SetDefaultRoutingPolicy(ctx context.Context, policyId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9026,9 +9713,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListBlocklistRulesWithResponse List Blocklist Rules
 	//
-	// List the organization's blocklist rules, newest first.
-	//
-	// Returns all of them (at most 100), so no cursor pagination.
+	// List the organization's blocklist rules, newest first, all in one page:
+	// an organization has at most 100.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9037,7 +9723,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateBlocklistRuleWithBodyWithResponse Create Blocklist Rule
 	//
-	// Create a blocklist rule and sync it to the gateway.
+	// Create a rule that blocks or pins models and providers for customers,
+	// or for everyone. An organization can have up to 100 rules; changes apply
+	// to new requests within seconds.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9046,7 +9734,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateBlocklistRuleWithResponse Create Blocklist Rule
 	//
-	// Create a blocklist rule and sync it to the gateway.
+	// Create a rule that blocks or pins models and providers for customers,
+	// or for everyone. An organization can have up to 100 rules; changes apply
+	// to new requests within seconds.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9055,7 +9745,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteBlocklistRuleWithResponse Delete Blocklist Rule
 	//
-	// Delete a blocklist rule and sync the change to the gateway.
+	// Delete a blocklist rule. Requests it denied are allowed again within
+	// seconds.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9064,7 +9755,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetBlocklistRuleWithResponse Get Blocklist Rule
 	//
-	// Get one blocklist rule.
+	// Return a blocklist rule.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9073,7 +9764,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateBlocklistRuleWithBodyWithResponse Update Blocklist Rule
 	//
-	// Update a blocklist rule and sync it to the gateway.
+	// Update the fields you send. A list you send replaces the whole list.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9082,7 +9773,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateBlocklistRuleWithResponse Update Blocklist Rule
 	//
-	// Update a blocklist rule and sync it to the gateway.
+	// Update the fields you send. A list you send replaces the whole list.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9091,7 +9782,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListCredentialsWithResponse List Credentials
 	//
-	// List the organization's BYOK credentials (keyset-paginated by created_at, id).
+	// List the organization's provider credentials (BYOK), oldest first.
+	// Secrets are never returned; `credential_hint` tells keys apart.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9100,8 +9792,11 @@ type ClientWithResponsesInterface interface {
 
 	// CreateCredentialWithBodyWithResponse Create Credential
 	//
-	// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-	// and 409s if the organization already has one for the vendor.
+	// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+	// with it as your organization's key usage settings decide. An organization
+	// has one credential per vendor, so a second one is a 409. The key isn't
+	// tested on save: send a request to a model on that vendor to check it.
+	// Needs a Pro or Enterprise plan.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9110,8 +9805,11 @@ type ClientWithResponsesInterface interface {
 
 	// CreateCredentialWithResponse Create Credential
 	//
-	// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-	// and 409s if the organization already has one for the vendor.
+	// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+	// with it as your organization's key usage settings decide. An organization
+	// has one credential per vendor, so a second one is a 409. The key isn't
+	// tested on save: send a request to a model on that vendor to check it.
+	// Needs a Pro or Enterprise plan.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9120,7 +9818,7 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteCredentialWithResponse Delete Credential
 	//
-	// Delete a BYOK credential.
+	// Delete a provider credential and its stored secrets.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9129,7 +9827,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetCredentialWithResponse Get Credential
 	//
-	// Get one BYOK credential.
+	// Return a provider credential. Secrets are never returned.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9138,7 +9836,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateCredentialWithBodyWithResponse Update Credential
 	//
-	// Update a BYOK credential in place. The vendor can't change.
+	// Update the fields you send. Send `api_key` to rotate the key. The vendor
+	// can't change: delete the credential and create a new one to switch vendors.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9147,7 +9846,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateCredentialWithResponse Update Credential
 	//
-	// Update a BYOK credential in place. The vendor can't change.
+	// Update the fields you send. Send `api_key` to rotate the key. The vendor
+	// can't change: delete the credential and create a new one to switch vendors.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9167,10 +9867,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListDlpRulesWithResponse List DLP Rules
 	//
-	// List the organization's DLP rules.
-	//
-	// Returns all of them (the seeded catalog, then the custom rules), like the
-	// dashboard, so no cursor pagination.
+	// List the organization's DLP rules, all in one page: every seeded rule
+	// in the catalog, then your custom rules. Seeded rules start disabled.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9179,7 +9877,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateDlpRuleWithBodyWithResponse Create DLP Rule
 	//
-	// Create a custom DLP rule and sync it to the gateway.
+	// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+	// starts enabled. Its `entity_type` is the name projects and customers use
+	// to override it.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9188,7 +9888,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateDlpRuleWithResponse Create DLP Rule
 	//
-	// Create a custom DLP rule and sync it to the gateway.
+	// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+	// starts enabled. Its `entity_type` is the name projects and customers use
+	// to override it.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9197,7 +9899,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteDlpRuleWithResponse Delete DLP Rule
 	//
-	// Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
+	// Delete a custom DLP rule. Seeded rules can't be deleted (422); disable
+	// them instead.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9206,7 +9909,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetDlpRuleWithResponse Get DLP Rule
 	//
-	// Get one DLP rule, seeded or custom.
+	// Return a DLP rule, seeded or custom.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9215,7 +9918,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateDlpRuleWithBodyWithResponse Update DLP Rule
 	//
-	// Update a DLP rule and sync it to the gateway.
+	// Update the fields you send. Seeded rules accept only `enabled` and
+	// `action`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9224,7 +9928,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateDlpRuleWithResponse Update DLP Rule
 	//
-	// Update a DLP rule and sync it to the gateway.
+	// Update the fields you send. Seeded rules accept only `enabled` and
+	// `action`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9233,9 +9938,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListExportDestinationsWithResponse List Export Destinations
 	//
-	// List export destinations (keyset-paginated by created_at, id).
-	//
-	// 404 when telemetry export is not enabled for the organization.
+	// List the organization's export destinations, oldest first. Each enabled
+	// destination gets all of the organization's traffic. Returns 404 when
+	// telemetry export isn't enabled for the organization.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9244,7 +9949,10 @@ type ClientWithResponsesInterface interface {
 
 	// CreateExportDestinationWithBodyWithResponse Create Export Destination
 	//
-	// Create an export destination. The generic preset needs an enterprise plan (403).
+	// Create a destination for the gateway's request telemetry: Datadog,
+	// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+	// Enterprise plan). Each enabled destination gets all of the organization's
+	// traffic, so a second one copies rather than splits it.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9253,7 +9961,10 @@ type ClientWithResponsesInterface interface {
 
 	// CreateExportDestinationWithResponse Create Export Destination
 	//
-	// Create an export destination. The generic preset needs an enterprise plan (403).
+	// Create a destination for the gateway's request telemetry: Datadog,
+	// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+	// Enterprise plan). Each enabled destination gets all of the organization's
+	// traffic, so a second one copies rather than splits it.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9262,7 +9973,7 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteExportDestinationWithResponse Delete Export Destination
 	//
-	// Delete an export destination.
+	// Delete an export destination. The gateway stops exporting to it.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9271,7 +9982,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetExportDestinationWithResponse Get Export Destination
 	//
-	// Get an export destination.
+	// Return an export destination, with its recent delivery status.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9280,7 +9991,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateExportDestinationWithBodyWithResponse Update Export Destination
 	//
-	// Update an export destination. Sending credential_secret rotates the stored secret.
+	// Update the fields you send. Send `credential_secret` to rotate the
+	// secret. `kind` and `otlp_preset` can't change.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9289,7 +10001,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateExportDestinationWithResponse Update Export Destination
 	//
-	// Update an export destination. Sending credential_secret rotates the stored secret.
+	// Update the fields you send. Send `credential_secret` to rotate the
+	// secret. `kind` and `otlp_preset` can't change.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9298,7 +10011,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListGuardrailsWithResponse List Guardrails
 	//
-	// List every project's guardrails: controls, PI and DLP settings.
+	// List every project's guardrails: its controls, prompt injection settings
+	// and DLP settings, in one object per project.
 	//
 	// Needs `view_security_rules` or `manage_security_rules`, and
 	// `view_org_settings` or `manage_org_settings`.
@@ -9322,9 +10036,10 @@ type ClientWithResponsesInterface interface {
 
 	// ListKeysWithResponse List Keys
 	//
-	// List the org's regular API keys (excludes the internal tester key).
-	//
-	// Page through with ``offset``/``limit`` while ``has_more`` is true.
+	// Return the organization's API keys, newest first, with their current
+	// usage. The management key's organization is implied by the key itself. A
+	// page holds at most 100 keys; while `has_more` is true, advance `offset` to
+	// read the rest. Filter with `project_id` or `disabled`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9333,7 +10048,11 @@ type ClientWithResponsesInterface interface {
 
 	// CreateKeyWithBodyWithResponse Create Key
 	//
-	// Create a regular API key. The raw key is returned only here.
+	// Mint a new API key, optionally scoped to a project, capped with `limit`
+	// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+	// policy, or set to expire with `expires_at`. The raw key is returned once,
+	// in the `key` field. Needs a payment method on file, except on the Free
+	// plan.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9342,7 +10061,11 @@ type ClientWithResponsesInterface interface {
 
 	// CreateKeyWithResponse Create Key
 	//
-	// Create a regular API key. The raw key is returned only here.
+	// Mint a new API key, optionally scoped to a project, capped with `limit`
+	// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+	// policy, or set to expire with `expires_at`. The raw key is returned once,
+	// in the `key` field. Needs a payment method on file, except on the Free
+	// plan.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9351,7 +10074,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteKeyWithResponse Delete Key
 	//
-	// Delete a key.
+	// Revoke a key immediately. Its historical spend is retained for
+	// reporting. To stop a key without losing it, set `disabled` instead.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9360,7 +10084,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetKeyWithResponse Get Key
 	//
-	// Get a single key with usage.
+	// Return a single key with its current usage.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9369,7 +10093,10 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateKeyWithBodyWithResponse Update Key
 	//
-	// Update a key's name / disabled state / spend limit / expiry.
+	// Update a key's name, disabled state, spend limit, model allowlist,
+	// routing policy binding or expiry. Only the fields you send change; send
+	// null to remove a limit, allowlist, binding or expiry. A key's project
+	// can't be changed.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9378,7 +10105,10 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateKeyWithResponse Update Key
 	//
-	// Update a key's name / disabled state / spend limit / expiry.
+	// Update a key's name, disabled state, spend limit, model allowlist,
+	// routing policy binding or expiry. Only the fields you send change; send
+	// null to remove a limit, allowlist, binding or expiry. A key's project
+	// can't be changed.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9431,7 +10161,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetOrganizationSettingsWithResponse Get Organization Settings
 	//
-	// Get the organization's settings.
+	// Return the organization's settings: its name, request tags, payload
+	// logging, zero data retention, web search mode, model deprecation handling,
+	// and vendor and region restrictions. There's one per organization.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9440,7 +10172,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateOrganizationSettingsWithBodyWithResponse Update Organization Settings
 	//
-	// Update the organization's settings and sync them to the gateway.
+	// Update the settings you send. `tag_definitions` and
+	// `vendor_restrictions` replace the whole value.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9449,7 +10182,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateOrganizationSettingsWithResponse Update Organization Settings
 	//
-	// Update the organization's settings and sync them to the gateway.
+	// Update the settings you send. `tag_definitions` and
+	// `vendor_restrictions` replace the whole value.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9480,7 +10214,8 @@ type ClientWithResponsesInterface interface {
 
 	// ResetOrganizationPiSettingsWithResponse Reset Organization PI Settings
 	//
-	// Reset the organization's prompt injection policy to the defaults (PI off).
+	// Reset the organization's prompt injection policy to the defaults,
+	// which turn screening off.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9489,7 +10224,8 @@ type ClientWithResponsesInterface interface {
 
 	// GetOrganizationPiSettingsWithResponse Get Organization PI Settings
 	//
-	// Get the organization's prompt injection policy.
+	// Return the organization's prompt injection policy, which projects
+	// inherit unless they override it. There's one per organization.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9498,7 +10234,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateOrganizationPiSettingsWithBodyWithResponse Update Organization PI Settings
 	//
-	// Replace the organization's prompt injection policy and sync it to the gateway.
+	// Replace the organization's prompt injection policy as a whole: a field
+	// you omit takes its default.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9507,7 +10244,8 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateOrganizationPiSettingsWithResponse Update Organization PI Settings
 	//
-	// Replace the organization's prompt injection policy and sync it to the gateway.
+	// Replace the organization's prompt injection policy as a whole: a field
+	// you omit takes its default.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9516,7 +10254,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetOrganizationUsageWithResponse Get Organization Usage
 	//
-	// Org spend rollup for the range, with optional per-dimension breakdown.
+	// Organization-wide spend for a date range: totals by day, a per-model
+	// breakdown by month, and optionally a breakdown by project, API key or
+	// vendor.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9547,7 +10287,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListProjectsWithResponse List Projects
 	//
-	// List projects (keyset-paginated by created_at, id).
+	// List the organization's projects, oldest first, each with its routing
+	// policy and budget. Pass `next` as `cursor` to read the next page.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9556,7 +10297,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateProjectWithBodyWithResponse Create Project
 	//
-	// Create a project.
+	// Create a project, optionally with its own routing policy and a spending
+	// budget. Without a routing policy, the project routes with the
+	// organization's default.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9565,7 +10308,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateProjectWithResponse Create Project
 	//
-	// Create a project.
+	// Create a project, optionally with its own routing policy and a spending
+	// budget. Without a routing policy, the project routes with the
+	// organization's default.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9574,9 +10319,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteProjectWithResponse Delete Project
 	//
-	// Delete a project. Blocked (409) while active project-scoped API keys
-	// exist; fails closed (503) if the data plane is unreachable. The project's
-	// PI, DLP and controls overrides stop applying in the gateway.
+	// Delete the project with its own routing policy and budget. Refused with
+	// 409 while the project has active API keys; delete or disable them first.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9585,7 +10329,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetProjectWithResponse Get Project
 	//
-	// Get a single project.
+	// Return a project with its routing policy and budget.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9594,8 +10338,10 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectWithBodyWithResponse Update Project
 	//
-	// Update a project. Setting is_active to false stops the project's PI, DLP
-	// and controls overrides applying in the gateway; true restores them.
+	// Update the fields you send. `routing_policy` replaces the project's
+	// own policy in place, keeping its id; `uses_organization_default_routing`
+	// true deletes it. Setting `is_active` to false stops the project's prompt
+	// injection, DLP and controls overrides applying; true restores them.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9604,8 +10350,10 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectWithResponse Update Project
 	//
-	// Update a project. Setting is_active to false stops the project's PI, DLP
-	// and controls overrides applying in the gateway; true restores them.
+	// Update the fields you send. `routing_policy` replaces the project's
+	// own policy in place, keeping its id; `uses_organization_default_routing`
+	// true deletes it. Setting `is_active` to false stops the project's prompt
+	// injection, DLP and controls overrides applying; true restores them.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9614,7 +10362,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteProjectControlsWithResponse Delete Project Controls
 	//
-	// Clear the override so the project inherits the organization's controls.
+	// Clear the project's override so it inherits the organization's
+	// controls again.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9623,7 +10372,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetProjectControlsWithResponse Get Project Controls
 	//
-	// Return the project's control override and the resulting effective controls.
+	// Return the project's zero-data-retention, vendor and region override,
+	// and the controls actually in force for it: the organization's, with the
+	// project's units applied.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9632,7 +10383,12 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectControlsWithBodyWithResponse Update Project Controls
 	//
-	// Replace the project's control override with exactly the fields sent.
+	// Replace the project's override with exactly the fields you send; omit a
+	// unit to inherit it. A management key can only tighten the organization's
+	// controls (narrow an allowlist, add to a denylist, turn zero data
+	// retention on); anything that loosens them is refused with 403
+	// `scoped_controls_loosening_forbidden`. Loosening is available in the
+	// dashboard.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9641,7 +10397,12 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectControlsWithResponse Update Project Controls
 	//
-	// Replace the project's control override with exactly the fields sent.
+	// Replace the project's override with exactly the fields you send; omit a
+	// unit to inherit it. A management key can only tighten the organization's
+	// controls (narrow an allowlist, add to a denylist, turn zero data
+	// retention on); anything that loosens them is refused with 403
+	// `scoped_controls_loosening_forbidden`. Loosening is available in the
+	// dashboard.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9650,7 +10411,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteProjectDlpSettingsWithResponse Delete Project DLP Settings
 	//
-	// Clear the override so the project inherits the org's DLP rules.
+	// Clear the override so the project inherits the organization's DLP rules
+	// as a whole.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -9661,7 +10423,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetProjectDlpSettingsWithResponse Get Project DLP Settings
 	//
-	// Return the project's DLP override plus the resolved per-entity outcome.
+	// Return the project's DLP override, keyed by entity type, and how every entity type in the organization's rules resolves for the project. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
@@ -9672,7 +10434,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectDlpSettingsWithBodyWithResponse Update Project DLP Settings
 	//
-	// Replace the project's DLP override wholesale + sync to the data plane.
+	// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -9683,7 +10445,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectDlpSettingsWithResponse Update Project DLP Settings
 	//
-	// Replace the project's DLP override wholesale + sync to the data plane.
+	// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -9694,7 +10456,10 @@ type ClientWithResponsesInterface interface {
 
 	// ListProjectModelsWithResponse List Project Models
 	//
-	// Models this project can route to under its effective controls.
+	// The models this project can route to: the active catalog filtered by
+	// the project's effective controls (its vendor, region and zero data
+	// retention overrides over the organization's), the organization's BYOK-only
+	// setting, and its vendor access.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9703,7 +10468,8 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteProjectPiSettingsWithResponse Delete Project PI Settings
 	//
-	// Clear the override so the project inherits the org PI policy wholesale.
+	// Clear the override so the project inherits the organization's prompt
+	// injection policy as a whole.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -9714,7 +10480,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetProjectPiSettingsWithResponse Get Project PI Settings
 	//
-	// Return the project's PI override, the effective policy, and what it inherits.
+	// Return the project's prompt injection override, the effective policy after merging it with the organization's, and which fields are inherited. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 	//
@@ -9725,11 +10491,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectPiSettingsWithBodyWithResponse Update Project PI Settings
 	//
-	// Replace the project's PI override wholesale + sync to the data plane.
-	//
-	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
-	// field back to inheritance. An empty body therefore means "inherit
-	// everything", the same as DELETE.
+	// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -9740,11 +10502,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateProjectPiSettingsWithResponse Update Project PI Settings
 	//
-	// Replace the project's PI override wholesale + sync to the data plane.
-	//
-	// Sparse: unset fields inherit the org value, and an explicit ``null`` clears a
-	// field back to inheritance. An empty body therefore means "inherit
-	// everything", the same as DELETE.
+	// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 	//
 	// Needs `manage_security_rules` or `manage_projects`.
 	//
@@ -9755,12 +10513,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetProjectUsageWithResponse Get Project Usage
 	//
-	// Project spend totals (day-granular) plus a per-model breakdown.
-	//
-	// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
-	// so like the org endpoint it is month-granular over the months the range
-	// overlaps. The monthly project rows only accrue from when the data plane
-	// started writing them — earlier months report totals but an empty map.
+	// Spend totals for one project over a date range, plus a per-model
+	// breakdown. Totals are by day; the per-model breakdown is by month and
+	// covers the whole months the range overlaps.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9769,11 +10524,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListRoutingPoliciesWithResponse List Routing Policies
 	//
-	// List the org's standalone routing policies. Accepts a management key or a
-	// gateway API key.
-	//
-	// Returns all of them (an org has a handful, like the ERS customer surface),
-	// so no cursor pagination.
+	// List the organization's routing policies, all in one page. Policies
+	// that belong to a project or a customer aren't included. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9782,9 +10534,10 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRoutingPolicyWithBodyWithResponse Create Routing Policy
 	//
-	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default. Needs a
-	// management key: a gateway API key gets 403.
+	// Create an organization routing policy. Clients use it by sending its
+	// `model` (`@alias/<slug>`) as the model. The organization's first policy
+	// becomes the default automatically; otherwise send `is_default` true to make
+	// it the default. Needs a management key.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9793,9 +10546,10 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRoutingPolicyWithResponse Create Routing Policy
 	//
-	// Create an org routing policy. The org's first policy becomes the default
-	// automatically; otherwise pass is_default=true to make it the default. Needs a
-	// management key: a gateway API key gets 403.
+	// Create an organization routing policy. Clients use it by sending its
+	// `model` (`@alias/<slug>`) as the model. The organization's first policy
+	// becomes the default automatically; otherwise send `is_default` true to make
+	// it the default. Needs a management key.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9804,11 +10558,10 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteRoutingPolicyWithResponse Delete Routing Policy
 	//
-	// Delete an org routing policy. Deleting the default leaves the org with no
-	// default until another is set (requests fall back to per-request model pins).
-	// Refused (409, with the count) while any API key is bound to the policy:
-	// unbind or delete those keys first. Needs a management key: a gateway API
-	// key gets 403.
+	// Delete a routing policy. Deleting the default leaves the organization
+	// with no default until another is set, so requests must name a model.
+	// Refused with 409 while API keys are bound to the policy; unbind or delete
+	// them first. Needs a management key.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9817,7 +10570,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetRoutingPolicyWithResponse Get Routing Policy
 	//
-	// Get one org routing policy. Accepts a management key or a gateway API key.
+	// Return an organization routing policy. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -9826,8 +10579,9 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateRoutingPolicyWithBodyWithResponse Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs). Needs a
-	// management key: a gateway API key gets 403.
+	// Update the fields you send. The policy is updated in place, so its id
+	// stays the same. To change the routing, send `strategy` with its fields.
+	// Needs a management key.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9836,8 +10590,9 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateRoutingPolicyWithResponse Update Routing Policy
 	//
-	// Update an org routing policy in place (stable id for IaC diffs). Needs a
-	// management key: a gateway API key gets 403.
+	// Update the fields you send. The policy is updated in place, so its id
+	// stays the same. To change the routing, send `strategy` with its fields.
+	// Needs a management key.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9846,8 +10601,8 @@ type ClientWithResponsesInterface interface {
 
 	// SetDefaultRoutingPolicyWithResponse Set Default Routing Policy
 	//
-	// Make this policy the org's default (unsets the previous default). Needs a
-	// management key: a gateway API key gets 403.
+	// Make this policy the organization's default, unsetting the previous
+	// default. Needs a management key.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -14441,9 +15196,8 @@ func (r SetDefaultRoutingPolicyResponse) ContentType() string {
 
 // ListBlocklistRulesWithResponse List Blocklist Rules
 //
-// List the organization's blocklist rules, newest first.
-//
-// Returns all of them (at most 100), so no cursor pagination.
+// List the organization's blocklist rules, newest first, all in one page:
+// an organization has at most 100.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14458,7 +15212,9 @@ func (c *ClientWithResponses) ListBlocklistRulesWithResponse(ctx context.Context
 
 // CreateBlocklistRuleWithBodyWithResponse Create Blocklist Rule
 //
-// Create a blocklist rule and sync it to the gateway.
+// Create a rule that blocks or pins models and providers for customers,
+// or for everyone. An organization can have up to 100 rules; changes apply
+// to new requests within seconds.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14473,7 +15229,9 @@ func (c *ClientWithResponses) CreateBlocklistRuleWithBodyWithResponse(ctx contex
 
 // CreateBlocklistRuleWithResponse Create Blocklist Rule
 //
-// Create a blocklist rule and sync it to the gateway.
+// Create a rule that blocks or pins models and providers for customers,
+// or for everyone. An organization can have up to 100 rules; changes apply
+// to new requests within seconds.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14488,7 +15246,8 @@ func (c *ClientWithResponses) CreateBlocklistRuleWithResponse(ctx context.Contex
 
 // DeleteBlocklistRuleWithResponse Delete Blocklist Rule
 //
-// Delete a blocklist rule and sync the change to the gateway.
+// Delete a blocklist rule. Requests it denied are allowed again within
+// seconds.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14503,7 +15262,7 @@ func (c *ClientWithResponses) DeleteBlocklistRuleWithResponse(ctx context.Contex
 
 // GetBlocklistRuleWithResponse Get Blocklist Rule
 //
-// Get one blocklist rule.
+// Return a blocklist rule.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14518,7 +15277,7 @@ func (c *ClientWithResponses) GetBlocklistRuleWithResponse(ctx context.Context, 
 
 // UpdateBlocklistRuleWithBodyWithResponse Update Blocklist Rule
 //
-// Update a blocklist rule and sync it to the gateway.
+// Update the fields you send. A list you send replaces the whole list.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14533,7 +15292,7 @@ func (c *ClientWithResponses) UpdateBlocklistRuleWithBodyWithResponse(ctx contex
 
 // UpdateBlocklistRuleWithResponse Update Blocklist Rule
 //
-// Update a blocklist rule and sync it to the gateway.
+// Update the fields you send. A list you send replaces the whole list.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14548,7 +15307,8 @@ func (c *ClientWithResponses) UpdateBlocklistRuleWithResponse(ctx context.Contex
 
 // ListCredentialsWithResponse List Credentials
 //
-// List the organization's BYOK credentials (keyset-paginated by created_at, id).
+// List the organization's provider credentials (BYOK), oldest first.
+// Secrets are never returned; `credential_hint` tells keys apart.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14563,8 +15323,11 @@ func (c *ClientWithResponses) ListCredentialsWithResponse(ctx context.Context, p
 
 // CreateCredentialWithBodyWithResponse Create Credential
 //
-// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-// and 409s if the organization already has one for the vendor.
+// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+// with it as your organization's key usage settings decide. An organization
+// has one credential per vendor, so a second one is a 409. The key isn't
+// tested on save: send a request to a model on that vendor to check it.
+// Needs a Pro or Enterprise plan.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14579,8 +15342,11 @@ func (c *ClientWithResponses) CreateCredentialWithBodyWithResponse(ctx context.C
 
 // CreateCredentialWithResponse Create Credential
 //
-// Create a BYOK credential. Needs a Pro or Enterprise plan (403 otherwise),
-// and 409s if the organization already has one for the vendor.
+// Add your own API key for a vendor (BYOK). The gateway calls the vendor
+// with it as your organization's key usage settings decide. An organization
+// has one credential per vendor, so a second one is a 409. The key isn't
+// tested on save: send a request to a model on that vendor to check it.
+// Needs a Pro or Enterprise plan.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14595,7 +15361,7 @@ func (c *ClientWithResponses) CreateCredentialWithResponse(ctx context.Context, 
 
 // DeleteCredentialWithResponse Delete Credential
 //
-// Delete a BYOK credential.
+// Delete a provider credential and its stored secrets.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14610,7 +15376,7 @@ func (c *ClientWithResponses) DeleteCredentialWithResponse(ctx context.Context, 
 
 // GetCredentialWithResponse Get Credential
 //
-// Get one BYOK credential.
+// Return a provider credential. Secrets are never returned.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14625,7 +15391,8 @@ func (c *ClientWithResponses) GetCredentialWithResponse(ctx context.Context, cre
 
 // UpdateCredentialWithBodyWithResponse Update Credential
 //
-// Update a BYOK credential in place. The vendor can't change.
+// Update the fields you send. Send `api_key` to rotate the key. The vendor
+// can't change: delete the credential and create a new one to switch vendors.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14640,7 +15407,8 @@ func (c *ClientWithResponses) UpdateCredentialWithBodyWithResponse(ctx context.C
 
 // UpdateCredentialWithResponse Update Credential
 //
-// Update a BYOK credential in place. The vendor can't change.
+// Update the fields you send. Send `api_key` to rotate the key. The vendor
+// can't change: delete the credential and create a new one to switch vendors.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14672,10 +15440,8 @@ func (c *ClientWithResponses) GetCreditsWithResponse(ctx context.Context, reqEdi
 
 // ListDlpRulesWithResponse List DLP Rules
 //
-// List the organization's DLP rules.
-//
-// Returns all of them (the seeded catalog, then the custom rules), like the
-// dashboard, so no cursor pagination.
+// List the organization's DLP rules, all in one page: every seeded rule
+// in the catalog, then your custom rules. Seeded rules start disabled.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14690,7 +15456,9 @@ func (c *ClientWithResponses) ListDlpRulesWithResponse(ctx context.Context, reqE
 
 // CreateDlpRuleWithBodyWithResponse Create DLP Rule
 //
-// Create a custom DLP rule and sync it to the gateway.
+// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+// starts enabled. Its `entity_type` is the name projects and customers use
+// to override it.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14705,7 +15473,9 @@ func (c *ClientWithResponses) CreateDlpRuleWithBodyWithResponse(ctx context.Cont
 
 // CreateDlpRuleWithResponse Create DLP Rule
 //
-// Create a custom DLP rule and sync it to the gateway.
+// Create a custom DLP rule. It needs a `pattern`, `keywords`, or both, and
+// starts enabled. Its `entity_type` is the name projects and customers use
+// to override it.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14720,7 +15490,8 @@ func (c *ClientWithResponses) CreateDlpRuleWithResponse(ctx context.Context, bod
 
 // DeleteDlpRuleWithResponse Delete DLP Rule
 //
-// Delete a custom DLP rule. Seeded rules can't be deleted (422): disable them.
+// Delete a custom DLP rule. Seeded rules can't be deleted (422); disable
+// them instead.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14735,7 +15506,7 @@ func (c *ClientWithResponses) DeleteDlpRuleWithResponse(ctx context.Context, rul
 
 // GetDlpRuleWithResponse Get DLP Rule
 //
-// Get one DLP rule, seeded or custom.
+// Return a DLP rule, seeded or custom.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14750,7 +15521,8 @@ func (c *ClientWithResponses) GetDlpRuleWithResponse(ctx context.Context, ruleId
 
 // UpdateDlpRuleWithBodyWithResponse Update DLP Rule
 //
-// Update a DLP rule and sync it to the gateway.
+// Update the fields you send. Seeded rules accept only `enabled` and
+// `action`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14765,7 +15537,8 @@ func (c *ClientWithResponses) UpdateDlpRuleWithBodyWithResponse(ctx context.Cont
 
 // UpdateDlpRuleWithResponse Update DLP Rule
 //
-// Update a DLP rule and sync it to the gateway.
+// Update the fields you send. Seeded rules accept only `enabled` and
+// `action`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14780,9 +15553,9 @@ func (c *ClientWithResponses) UpdateDlpRuleWithResponse(ctx context.Context, rul
 
 // ListExportDestinationsWithResponse List Export Destinations
 //
-// List export destinations (keyset-paginated by created_at, id).
-//
-// 404 when telemetry export is not enabled for the organization.
+// List the organization's export destinations, oldest first. Each enabled
+// destination gets all of the organization's traffic. Returns 404 when
+// telemetry export isn't enabled for the organization.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14797,7 +15570,10 @@ func (c *ClientWithResponses) ListExportDestinationsWithResponse(ctx context.Con
 
 // CreateExportDestinationWithBodyWithResponse Create Export Destination
 //
-// Create an export destination. The generic preset needs an enterprise plan (403).
+// Create a destination for the gateway's request telemetry: Datadog,
+// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+// Enterprise plan). Each enabled destination gets all of the organization's
+// traffic, so a second one copies rather than splits it.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14812,7 +15588,10 @@ func (c *ClientWithResponses) CreateExportDestinationWithBodyWithResponse(ctx co
 
 // CreateExportDestinationWithResponse Create Export Destination
 //
-// Create an export destination. The generic preset needs an enterprise plan (403).
+// Create a destination for the gateway's request telemetry: Datadog,
+// Grafana Cloud, or any OTLP/HTTP collector (`generic`, which needs an
+// Enterprise plan). Each enabled destination gets all of the organization's
+// traffic, so a second one copies rather than splits it.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14827,7 +15606,7 @@ func (c *ClientWithResponses) CreateExportDestinationWithResponse(ctx context.Co
 
 // DeleteExportDestinationWithResponse Delete Export Destination
 //
-// Delete an export destination.
+// Delete an export destination. The gateway stops exporting to it.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14842,7 +15621,7 @@ func (c *ClientWithResponses) DeleteExportDestinationWithResponse(ctx context.Co
 
 // GetExportDestinationWithResponse Get Export Destination
 //
-// Get an export destination.
+// Return an export destination, with its recent delivery status.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14857,7 +15636,8 @@ func (c *ClientWithResponses) GetExportDestinationWithResponse(ctx context.Conte
 
 // UpdateExportDestinationWithBodyWithResponse Update Export Destination
 //
-// Update an export destination. Sending credential_secret rotates the stored secret.
+// Update the fields you send. Send `credential_secret` to rotate the
+// secret. `kind` and `otlp_preset` can't change.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14872,7 +15652,8 @@ func (c *ClientWithResponses) UpdateExportDestinationWithBodyWithResponse(ctx co
 
 // UpdateExportDestinationWithResponse Update Export Destination
 //
-// Update an export destination. Sending credential_secret rotates the stored secret.
+// Update the fields you send. Send `credential_secret` to rotate the
+// secret. `kind` and `otlp_preset` can't change.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14887,7 +15668,8 @@ func (c *ClientWithResponses) UpdateExportDestinationWithResponse(ctx context.Co
 
 // ListGuardrailsWithResponse List Guardrails
 //
-// List every project's guardrails: controls, PI and DLP settings.
+// List every project's guardrails: its controls, prompt injection settings
+// and DLP settings, in one object per project.
 //
 // Needs `view_security_rules` or `manage_security_rules`, and
 // `view_org_settings` or `manage_org_settings`.
@@ -14923,9 +15705,10 @@ func (c *ClientWithResponses) GetGuardrailWithResponse(ctx context.Context, proj
 
 // ListKeysWithResponse List Keys
 //
-// List the org's regular API keys (excludes the internal tester key).
-//
-// Page through with “offset“/“limit“ while “has_more“ is true.
+// Return the organization's API keys, newest first, with their current
+// usage. The management key's organization is implied by the key itself. A
+// page holds at most 100 keys; while `has_more` is true, advance `offset` to
+// read the rest. Filter with `project_id` or `disabled`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14940,7 +15723,11 @@ func (c *ClientWithResponses) ListKeysWithResponse(ctx context.Context, params *
 
 // CreateKeyWithBodyWithResponse Create Key
 //
-// Create a regular API key. The raw key is returned only here.
+// Mint a new API key, optionally scoped to a project, capped with `limit`
+// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+// policy, or set to expire with `expires_at`. The raw key is returned once,
+// in the `key` field. Needs a payment method on file, except on the Free
+// plan.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14955,7 +15742,11 @@ func (c *ClientWithResponses) CreateKeyWithBodyWithResponse(ctx context.Context,
 
 // CreateKeyWithResponse Create Key
 //
-// Create a regular API key. The raw key is returned only here.
+// Mint a new API key, optionally scoped to a project, capped with `limit`
+// and `limit_reset`, restricted with `allowed_models`, bound to a routing
+// policy, or set to expire with `expires_at`. The raw key is returned once,
+// in the `key` field. Needs a payment method on file, except on the Free
+// plan.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14970,7 +15761,8 @@ func (c *ClientWithResponses) CreateKeyWithResponse(ctx context.Context, body Cr
 
 // DeleteKeyWithResponse Delete Key
 //
-// Delete a key.
+// Revoke a key immediately. Its historical spend is retained for
+// reporting. To stop a key without losing it, set `disabled` instead.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14985,7 +15777,7 @@ func (c *ClientWithResponses) DeleteKeyWithResponse(ctx context.Context, keyHash
 
 // GetKeyWithResponse Get Key
 //
-// Get a single key with usage.
+// Return a single key with its current usage.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15000,7 +15792,10 @@ func (c *ClientWithResponses) GetKeyWithResponse(ctx context.Context, keyHash st
 
 // UpdateKeyWithBodyWithResponse Update Key
 //
-// Update a key's name / disabled state / spend limit / expiry.
+// Update a key's name, disabled state, spend limit, model allowlist,
+// routing policy binding or expiry. Only the fields you send change; send
+// null to remove a limit, allowlist, binding or expiry. A key's project
+// can't be changed.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15015,7 +15810,10 @@ func (c *ClientWithResponses) UpdateKeyWithBodyWithResponse(ctx context.Context,
 
 // UpdateKeyWithResponse Update Key
 //
-// Update a key's name / disabled state / spend limit / expiry.
+// Update a key's name, disabled state, spend limit, model allowlist,
+// routing policy binding or expiry. Only the fields you send change; send
+// null to remove a limit, allowlist, binding or expiry. A key's project
+// can't be changed.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15098,7 +15896,9 @@ func (c *ClientWithResponses) GetModelAliasWithResponse(ctx context.Context, ali
 
 // GetOrganizationSettingsWithResponse Get Organization Settings
 //
-// Get the organization's settings.
+// Return the organization's settings: its name, request tags, payload
+// logging, zero data retention, web search mode, model deprecation handling,
+// and vendor and region restrictions. There's one per organization.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15113,7 +15913,8 @@ func (c *ClientWithResponses) GetOrganizationSettingsWithResponse(ctx context.Co
 
 // UpdateOrganizationSettingsWithBodyWithResponse Update Organization Settings
 //
-// Update the organization's settings and sync them to the gateway.
+// Update the settings you send. `tag_definitions` and
+// `vendor_restrictions` replace the whole value.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15128,7 +15929,8 @@ func (c *ClientWithResponses) UpdateOrganizationSettingsWithBodyWithResponse(ctx
 
 // UpdateOrganizationSettingsWithResponse Update Organization Settings
 //
-// Update the organization's settings and sync them to the gateway.
+// Update the settings you send. `tag_definitions` and
+// `vendor_restrictions` replace the whole value.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15177,7 +15979,8 @@ func (c *ClientWithResponses) GetModelWithResponse(ctx context.Context, modelId 
 
 // ResetOrganizationPiSettingsWithResponse Reset Organization PI Settings
 //
-// Reset the organization's prompt injection policy to the defaults (PI off).
+// Reset the organization's prompt injection policy to the defaults,
+// which turn screening off.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15192,7 +15995,8 @@ func (c *ClientWithResponses) ResetOrganizationPiSettingsWithResponse(ctx contex
 
 // GetOrganizationPiSettingsWithResponse Get Organization PI Settings
 //
-// Get the organization's prompt injection policy.
+// Return the organization's prompt injection policy, which projects
+// inherit unless they override it. There's one per organization.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15207,7 +16011,8 @@ func (c *ClientWithResponses) GetOrganizationPiSettingsWithResponse(ctx context.
 
 // UpdateOrganizationPiSettingsWithBodyWithResponse Update Organization PI Settings
 //
-// Replace the organization's prompt injection policy and sync it to the gateway.
+// Replace the organization's prompt injection policy as a whole: a field
+// you omit takes its default.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15222,7 +16027,8 @@ func (c *ClientWithResponses) UpdateOrganizationPiSettingsWithBodyWithResponse(c
 
 // UpdateOrganizationPiSettingsWithResponse Update Organization PI Settings
 //
-// Replace the organization's prompt injection policy and sync it to the gateway.
+// Replace the organization's prompt injection policy as a whole: a field
+// you omit takes its default.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15237,7 +16043,9 @@ func (c *ClientWithResponses) UpdateOrganizationPiSettingsWithResponse(ctx conte
 
 // GetOrganizationUsageWithResponse Get Organization Usage
 //
-// Org spend rollup for the range, with optional per-dimension breakdown.
+// Organization-wide spend for a date range: totals by day, a per-model
+// breakdown by month, and optionally a breakdown by project, API key or
+// vendor.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15286,7 +16094,8 @@ func (c *ClientWithResponses) GetVendorWithResponse(ctx context.Context, slug st
 
 // ListProjectsWithResponse List Projects
 //
-// List projects (keyset-paginated by created_at, id).
+// List the organization's projects, oldest first, each with its routing
+// policy and budget. Pass `next` as `cursor` to read the next page.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15301,7 +16110,9 @@ func (c *ClientWithResponses) ListProjectsWithResponse(ctx context.Context, para
 
 // CreateProjectWithBodyWithResponse Create Project
 //
-// Create a project.
+// Create a project, optionally with its own routing policy and a spending
+// budget. Without a routing policy, the project routes with the
+// organization's default.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15316,7 +16127,9 @@ func (c *ClientWithResponses) CreateProjectWithBodyWithResponse(ctx context.Cont
 
 // CreateProjectWithResponse Create Project
 //
-// Create a project.
+// Create a project, optionally with its own routing policy and a spending
+// budget. Without a routing policy, the project routes with the
+// organization's default.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15331,9 +16144,8 @@ func (c *ClientWithResponses) CreateProjectWithResponse(ctx context.Context, bod
 
 // DeleteProjectWithResponse Delete Project
 //
-// Delete a project. Blocked (409) while active project-scoped API keys
-// exist; fails closed (503) if the data plane is unreachable. The project's
-// PI, DLP and controls overrides stop applying in the gateway.
+// Delete the project with its own routing policy and budget. Refused with
+// 409 while the project has active API keys; delete or disable them first.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15348,7 +16160,7 @@ func (c *ClientWithResponses) DeleteProjectWithResponse(ctx context.Context, pro
 
 // GetProjectWithResponse Get Project
 //
-// Get a single project.
+// Return a project with its routing policy and budget.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15363,8 +16175,10 @@ func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, projec
 
 // UpdateProjectWithBodyWithResponse Update Project
 //
-// Update a project. Setting is_active to false stops the project's PI, DLP
-// and controls overrides applying in the gateway; true restores them.
+// Update the fields you send. `routing_policy` replaces the project's
+// own policy in place, keeping its id; `uses_organization_default_routing`
+// true deletes it. Setting `is_active` to false stops the project's prompt
+// injection, DLP and controls overrides applying; true restores them.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15379,8 +16193,10 @@ func (c *ClientWithResponses) UpdateProjectWithBodyWithResponse(ctx context.Cont
 
 // UpdateProjectWithResponse Update Project
 //
-// Update a project. Setting is_active to false stops the project's PI, DLP
-// and controls overrides applying in the gateway; true restores them.
+// Update the fields you send. `routing_policy` replaces the project's
+// own policy in place, keeping its id; `uses_organization_default_routing`
+// true deletes it. Setting `is_active` to false stops the project's prompt
+// injection, DLP and controls overrides applying; true restores them.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15395,7 +16211,8 @@ func (c *ClientWithResponses) UpdateProjectWithResponse(ctx context.Context, pro
 
 // DeleteProjectControlsWithResponse Delete Project Controls
 //
-// Clear the override so the project inherits the organization's controls.
+// Clear the project's override so it inherits the organization's
+// controls again.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15410,7 +16227,9 @@ func (c *ClientWithResponses) DeleteProjectControlsWithResponse(ctx context.Cont
 
 // GetProjectControlsWithResponse Get Project Controls
 //
-// Return the project's control override and the resulting effective controls.
+// Return the project's zero-data-retention, vendor and region override,
+// and the controls actually in force for it: the organization's, with the
+// project's units applied.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15425,7 +16244,12 @@ func (c *ClientWithResponses) GetProjectControlsWithResponse(ctx context.Context
 
 // UpdateProjectControlsWithBodyWithResponse Update Project Controls
 //
-// Replace the project's control override with exactly the fields sent.
+// Replace the project's override with exactly the fields you send; omit a
+// unit to inherit it. A management key can only tighten the organization's
+// controls (narrow an allowlist, add to a denylist, turn zero data
+// retention on); anything that loosens them is refused with 403
+// `scoped_controls_loosening_forbidden`. Loosening is available in the
+// dashboard.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15440,7 +16264,12 @@ func (c *ClientWithResponses) UpdateProjectControlsWithBodyWithResponse(ctx cont
 
 // UpdateProjectControlsWithResponse Update Project Controls
 //
-// Replace the project's control override with exactly the fields sent.
+// Replace the project's override with exactly the fields you send; omit a
+// unit to inherit it. A management key can only tighten the organization's
+// controls (narrow an allowlist, add to a denylist, turn zero data
+// retention on); anything that loosens them is refused with 403
+// `scoped_controls_loosening_forbidden`. Loosening is available in the
+// dashboard.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15455,7 +16284,8 @@ func (c *ClientWithResponses) UpdateProjectControlsWithResponse(ctx context.Cont
 
 // DeleteProjectDlpSettingsWithResponse Delete Project DLP Settings
 //
-// Clear the override so the project inherits the org's DLP rules.
+// Clear the override so the project inherits the organization's DLP rules
+// as a whole.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -15472,7 +16302,7 @@ func (c *ClientWithResponses) DeleteProjectDlpSettingsWithResponse(ctx context.C
 
 // GetProjectDlpSettingsWithResponse Get Project DLP Settings
 //
-// Return the project's DLP override plus the resolved per-entity outcome.
+// Return the project's DLP override, keyed by entity type, and how every entity type in the organization's rules resolves for the project. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
@@ -15489,7 +16319,7 @@ func (c *ClientWithResponses) GetProjectDlpSettingsWithResponse(ctx context.Cont
 
 // UpdateProjectDlpSettingsWithBodyWithResponse Update Project DLP Settings
 //
-// Replace the project's DLP override wholesale + sync to the data plane.
+// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -15506,7 +16336,7 @@ func (c *ClientWithResponses) UpdateProjectDlpSettingsWithBodyWithResponse(ctx c
 
 // UpdateProjectDlpSettingsWithResponse Update Project DLP Settings
 //
-// Replace the project's DLP override wholesale + sync to the data plane.
+// Replace the project's DLP override as a whole. Entity types you omit inherit the organization's rule; an empty `override` means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -15523,7 +16353,10 @@ func (c *ClientWithResponses) UpdateProjectDlpSettingsWithResponse(ctx context.C
 
 // ListProjectModelsWithResponse List Project Models
 //
-// Models this project can route to under its effective controls.
+// The models this project can route to: the active catalog filtered by
+// the project's effective controls (its vendor, region and zero data
+// retention overrides over the organization's), the organization's BYOK-only
+// setting, and its vendor access.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15538,7 +16371,8 @@ func (c *ClientWithResponses) ListProjectModelsWithResponse(ctx context.Context,
 
 // DeleteProjectPiSettingsWithResponse Delete Project PI Settings
 //
-// Clear the override so the project inherits the org PI policy wholesale.
+// Clear the override so the project inherits the organization's prompt
+// injection policy as a whole.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -15555,7 +16389,7 @@ func (c *ClientWithResponses) DeleteProjectPiSettingsWithResponse(ctx context.Co
 
 // GetProjectPiSettingsWithResponse Get Project PI Settings
 //
-// Return the project's PI override, the effective policy, and what it inherits.
+// Return the project's prompt injection override, the effective policy after merging it with the organization's, and which fields are inherited. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `view_security_rules`, `manage_security_rules` or `manage_projects`.
 //
@@ -15572,11 +16406,7 @@ func (c *ClientWithResponses) GetProjectPiSettingsWithResponse(ctx context.Conte
 
 // UpdateProjectPiSettingsWithBodyWithResponse Update Project PI Settings
 //
-// Replace the project's PI override wholesale + sync to the data plane.
-//
-// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
-// field back to inheritance. An empty body therefore means "inherit
-// everything", the same as DELETE.
+// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -15593,11 +16423,7 @@ func (c *ClientWithResponses) UpdateProjectPiSettingsWithBodyWithResponse(ctx co
 
 // UpdateProjectPiSettingsWithResponse Update Project PI Settings
 //
-// Replace the project's PI override wholesale + sync to the data plane.
-//
-// Sparse: unset fields inherit the org value, and an explicit “null“ clears a
-// field back to inheritance. An empty body therefore means "inherit
-// everything", the same as DELETE.
+// Replace the project's prompt injection override as a whole. Fields you omit inherit the organization's value; send a field as null to clear it back to inheritance. An empty body means inherit everything, the same as DELETE. A project pinned to an API key uses this policy as written. A project named per request (`project_id` body field or `X-Project-Id` header) can only tighten the organization policy; anything that loosens it is ignored at request time.
 //
 // Needs `manage_security_rules` or `manage_projects`.
 //
@@ -15614,12 +16440,9 @@ func (c *ClientWithResponses) UpdateProjectPiSettingsWithResponse(ctx context.Co
 
 // GetProjectUsageWithResponse Get Project Usage
 //
-// Project spend totals (day-granular) plus a per-model breakdown.
-//
-// model_spend aggregates the project's monthly ledger rows (BYOK-corrected),
-// so like the org endpoint it is month-granular over the months the range
-// overlaps. The monthly project rows only accrue from when the data plane
-// started writing them — earlier months report totals but an empty map.
+// Spend totals for one project over a date range, plus a per-model
+// breakdown. Totals are by day; the per-model breakdown is by month and
+// covers the whole months the range overlaps.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15634,11 +16457,8 @@ func (c *ClientWithResponses) GetProjectUsageWithResponse(ctx context.Context, p
 
 // ListRoutingPoliciesWithResponse List Routing Policies
 //
-// List the org's standalone routing policies. Accepts a management key or a
-// gateway API key.
-//
-// Returns all of them (an org has a handful, like the ERS customer surface),
-// so no cursor pagination.
+// List the organization's routing policies, all in one page. Policies
+// that belong to a project or a customer aren't included. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15653,9 +16473,10 @@ func (c *ClientWithResponses) ListRoutingPoliciesWithResponse(ctx context.Contex
 
 // CreateRoutingPolicyWithBodyWithResponse Create Routing Policy
 //
-// Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default. Needs a
-// management key: a gateway API key gets 403.
+// Create an organization routing policy. Clients use it by sending its
+// `model` (`@alias/<slug>`) as the model. The organization's first policy
+// becomes the default automatically; otherwise send `is_default` true to make
+// it the default. Needs a management key.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15670,9 +16491,10 @@ func (c *ClientWithResponses) CreateRoutingPolicyWithBodyWithResponse(ctx contex
 
 // CreateRoutingPolicyWithResponse Create Routing Policy
 //
-// Create an org routing policy. The org's first policy becomes the default
-// automatically; otherwise pass is_default=true to make it the default. Needs a
-// management key: a gateway API key gets 403.
+// Create an organization routing policy. Clients use it by sending its
+// `model` (`@alias/<slug>`) as the model. The organization's first policy
+// becomes the default automatically; otherwise send `is_default` true to make
+// it the default. Needs a management key.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15687,11 +16509,10 @@ func (c *ClientWithResponses) CreateRoutingPolicyWithResponse(ctx context.Contex
 
 // DeleteRoutingPolicyWithResponse Delete Routing Policy
 //
-// Delete an org routing policy. Deleting the default leaves the org with no
-// default until another is set (requests fall back to per-request model pins).
-// Refused (409, with the count) while any API key is bound to the policy:
-// unbind or delete those keys first. Needs a management key: a gateway API
-// key gets 403.
+// Delete a routing policy. Deleting the default leaves the organization
+// with no default until another is set, so requests must name a model.
+// Refused with 409 while API keys are bound to the policy; unbind or delete
+// them first. Needs a management key.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15706,7 +16527,7 @@ func (c *ClientWithResponses) DeleteRoutingPolicyWithResponse(ctx context.Contex
 
 // GetRoutingPolicyWithResponse Get Routing Policy
 //
-// Get one org routing policy. Accepts a management key or a gateway API key.
+// Return an organization routing policy. A gateway API key of the organization can also read policies, except in Merge for Workforce organizations.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -15721,8 +16542,9 @@ func (c *ClientWithResponses) GetRoutingPolicyWithResponse(ctx context.Context, 
 
 // UpdateRoutingPolicyWithBodyWithResponse Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs). Needs a
-// management key: a gateway API key gets 403.
+// Update the fields you send. The policy is updated in place, so its id
+// stays the same. To change the routing, send `strategy` with its fields.
+// Needs a management key.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15737,8 +16559,9 @@ func (c *ClientWithResponses) UpdateRoutingPolicyWithBodyWithResponse(ctx contex
 
 // UpdateRoutingPolicyWithResponse Update Routing Policy
 //
-// Update an org routing policy in place (stable id for IaC diffs). Needs a
-// management key: a gateway API key gets 403.
+// Update the fields you send. The policy is updated in place, so its id
+// stays the same. To change the routing, send `strategy` with its fields.
+// Needs a management key.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15753,8 +16576,8 @@ func (c *ClientWithResponses) UpdateRoutingPolicyWithResponse(ctx context.Contex
 
 // SetDefaultRoutingPolicyWithResponse Set Default Routing Policy
 //
-// Make this policy the org's default (unsets the previous default). Needs a
-// management key: a gateway API key gets 403.
+// Make this policy the organization's default, unsetting the previous
+// default. Needs a management key.
 //
 // Returns a wrapper object for the known response body format(s).
 //
