@@ -18,8 +18,13 @@ permissions:
 jobs:
   acceptance:
     name: Acceptance Tests
-    # Pull requests from forks don't get secrets, so they skip.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Pull requests from forks don't get secrets, so they skip. So do
+    # Dependabot's: it doesn't get the repo's secrets either, and the nightly
+    # and push-to-main runs test its updates once merged.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]')
     # Every run shares the test org, so runs take turns rather than sweeping
     # each other's resources. A running one is never cancelled, and queue: max
     # keeps every waiting run in line instead of dropping all but the newest.
