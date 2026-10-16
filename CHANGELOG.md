@@ -1,4 +1,4 @@
-## 0.1.0 (Unreleased)
+## 0.1.0 (October 16, 2026)
 
 First release of the Merge Gateway provider.
 
