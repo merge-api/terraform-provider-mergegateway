@@ -19,12 +19,13 @@ Acceptance tests (`internal/acceptance/`) create and delete real resources throu
 
 ```shell
 export MERGE_GATEWAY_MANAGEMENT_KEY=...   # a management key with every scope
-export MERGE_GATEWAY_BASE_URL=...         # optional; defaults to http://localhost:8001, not the provider's https://api-gateway.merge.dev
+export MERGE_GATEWAY_TEST_ORG_ID=...      # the id of the key's test organization
+export MERGE_GATEWAY_BASE_URL=...         # the API to test against; required
 TF_ACC=1 go test -count=1 -v -timeout 30m ./internal/acceptance/...
 ```
 
 Every test resource is named `tf-acc-*`. Each run first deletes the `tf-acc-` resources a previous run left behind, so only one run may use an organization at a time: two runs at once delete each other's resources.
 
-**Never run them against an organization you use for real work.** Use a dedicated test organization. It needs a payment method so it can create API keys, a Pro or Enterprise plan for `mergegateway_credential`, and the telemetry export feature for `mergegateway_export_destination`.
+**Never run them against an organization you use for real work.** Use a dedicated test organization. Before anything runs, the suite checks that the management key belongs to `MERGE_GATEWAY_TEST_ORG_ID` and stops if it doesn't. It needs a payment method so it can create API keys, a Pro or Enterprise plan for `mergegateway_credential`, and the telemetry export feature for `mergegateway_export_destination`.
 
 CI (`.github/workflows/acceptance.yml`) runs the suite for maintainers. Pull requests from forks don't get its secrets, so their acceptance run is skipped; a maintainer runs the suite on the change before merging it.
